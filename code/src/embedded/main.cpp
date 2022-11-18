@@ -1,14 +1,11 @@
+#ifndef PIO_UNIT_TESTING
+
 #include "Arduino.h"
 #include "RotaryEncoder.h"
-#include "battery.h"
 #include "constants.h"
 
 void setupPins()
 {
-  pinMode(PIN_BAT_CHARGE_STATUS, INPUT_PULLUP);
-  pinMode(PIN_V_BAT, INPUT);
-
-  pinMode(PIN_BUZZER, OUTPUT);
 }
 
 RotaryEncoder encoder(PIN_ENC_A, PIN_ENC_B, RotaryEncoder::LatchMode::FOUR3);
@@ -21,12 +18,6 @@ void setup()
 
 void loop()
 {
-  // Serial.printf("Battery voltage: %f, ", batteryVoltage());
-  // Serial.printf("percentage: %f, ", batteryPercentage());
-  // Serial.printf("charging: %d", batteryCharging());
-  // Serial.print("\n");
-  // delay(1000);
-
   static int pos = 0;
   encoder.tick();
 
@@ -40,3 +31,5 @@ void loop()
     pos = newPos;
   } // if
 }
+
+#endif

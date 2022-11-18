@@ -1,3 +1,5 @@
+#ifndef NATIVE
+
 #pragma once
 
 // Pin definitions
@@ -15,7 +17,7 @@
 #define PIN_ENC_B 19
 #define PIN_ENC_BTN 17
 
-#define PIN_V_BAT 36
+#define PIN_BAT_ADC 36
 
 // Other constants
 #define BAT_V_MULTIPLIER 2.0f
@@ -23,3 +25,8 @@
 #define BAT_V_MAX 4.2f
 
 #define ADC_OFFSET 0.04f
+
+// num samples for computing average of load cell value
+#define LC_NUM_SAMPLES 5
+
+#endif
