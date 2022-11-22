@@ -1,4 +1,3 @@
-#pragma once
 #include "loadcell.h"
 #include "user_interface.h"
 #include <math.h>
@@ -19,7 +18,7 @@ public:
     bool newWeight = false;
 };
 
-class MockButtons : public Buttons
+class MockButtons : public UserInput
 {
 public:
     void update() {}
@@ -35,12 +34,15 @@ public:
 class MockDisplay : public Display
 {
 public:
+    void begin() {}
     void update() {}
     void display(float weight, unsigned long time)
     {
         this->weight = weight;
         this->time = time;
     };
+    void promptText(const char *prompt, const char *subtext){};
+    void singleText(const char *text){};
     void clear()
     {
         weight = NAN;

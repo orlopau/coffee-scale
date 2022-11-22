@@ -1,13 +1,12 @@
 #pragma once
 #include <cstdio>
 #include <math.h>
+#include "button.h"
 
-enum class ClickType {NONE, SINGLE, DOUBLE, LONG};
-
-class Buttons
+class UserInput
 {
 public:
-    virtual ~Buttons() {}
+    virtual ~UserInput() {}
     virtual void update() = 0;
     virtual int getEncoderTicks() = 0;
     virtual void resetEncoderTicks() = 0;
@@ -21,10 +20,8 @@ public:
     virtual ~Display() {}
     virtual void begin() = 0;
     virtual void display(float weight, unsigned long time) = 0;
+    virtual void promptText(const char *prompt, const char *subtext) = 0;
+    virtual void singleText(const char *text) = 0;
     virtual void update() = 0;
     virtual void clear() = 0;
 };
-
-char *formatWeight(float weight);
-char *formatTime(unsigned long time);
-
