@@ -3,15 +3,22 @@
 #include <math.h>
 #include "button.h"
 
+enum class EncoderDirection
+{
+    NONE,
+    CW,
+    CCW,
+};
+
 class UserInput
 {
 public:
     virtual ~UserInput() {}
     virtual void update() = 0;
-    virtual int getEncoderTicks() = 0;
+    virtual EncoderDirection getEncoderDirection() = 0;
+    virtual long getEncoderTicks() = 0;
     virtual void resetEncoderTicks() = 0;
     virtual ClickType getEncoderClick() = 0;
-    virtual ClickType getBootClick() = 0;
 };
 
 class Display

@@ -12,7 +12,7 @@ void test_hx711_read(void)
     TEST_ASSERT_TRUE(hx711.isNewWeight());
     float weight = hx711.getWeight();
     TEST_ASSERT_GREATER_OR_EQUAL(0, weight);
-    Serial.printf("weight: %f", weight);
+    Serial.printf("weight: %f\n", weight);
 }
 
 void test_loadcell_all()

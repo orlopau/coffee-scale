@@ -4,7 +4,7 @@
 
 inline void wait_confirm()
 {
-    Serial.println("press y to confirm...");
+    Serial.println("Press y to confirm...");
     while (true)
     {
         while (Serial.available() == 0)
