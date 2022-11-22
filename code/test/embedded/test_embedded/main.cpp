@@ -20,9 +20,7 @@ void setup()
     Serial.begin(115200);
 
     UNITY_BEGIN();
-    test_loadcell_all();
     test_adc_battery_all();
-    test_display_all();
     UNITY_END();
 }
 
