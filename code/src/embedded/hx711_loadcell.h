@@ -23,6 +23,7 @@ private:
     byte index = 0;
     bool newWeight = false;
     long weight = 0;
+    unsigned long lastUpdate = 0;
 };
 
 #endif

@@ -34,6 +34,11 @@ long EmbeddedUserInput::getEncoderTicks()
     return encoder.getPosition();
 }
 
+void EmbeddedUserInput::setEncoderTicks(long ticks)
+{
+    encoder.setPosition(ticks);
+}
+
 void EmbeddedUserInput::resetEncoderTicks()
 {
     encoder.setPosition(0);

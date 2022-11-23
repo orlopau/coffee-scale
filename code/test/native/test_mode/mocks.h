@@ -42,7 +42,7 @@ public:
         this->time = time;
     };
     void promptText(const char *prompt, const char *subtext){};
-    void singleText(const char *text){};
+    void text(const char *text){};
     void clear()
     {
         weight = NAN;

@@ -20,18 +20,23 @@ void HX711LoadCell::update()
         newWeight = false;
     }
 
-    if (hx711.is_ready())
+    if (millis() - lastUpdate > 100)
     {
-        sumWeights += hx711.read();
-        index++;
-    }
+        lastUpdate = millis();
+        if (hx711.is_ready())
+        {
+            sumWeights += hx711.read();
+            index++;
+        }
 
-    if (index = LC_NUM_SAMPLES)
-    {
-        newWeight = true;
-        weight = sumWeights / LC_NUM_SAMPLES;
-        sumWeights = 0;
-        index = 0;
+        if (index = LC_NUM_SAMPLES)
+        {
+            newWeight = true;
+            weight = (float)sumWeights / (float)LC_NUM_SAMPLES;
+            sumWeights = 0;
+            index = 0;
+            Serial.println(weight);
+        }
     }
 }
 

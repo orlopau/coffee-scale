@@ -27,6 +27,6 @@
 #define ADC_OFFSET 0.04f
 
 // num samples for computing average of load cell value
-#define LC_NUM_SAMPLES 5
+#define LC_NUM_SAMPLES 10
 
 #endif

@@ -12,6 +12,7 @@ public:
     void update();
     EncoderDirection getEncoderDirection();
     long getEncoderTicks();
+    void setEncoderTicks(long ticks);
     void resetEncoderTicks();
     ClickType getEncoderClick();
 

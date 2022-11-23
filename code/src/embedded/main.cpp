@@ -1,35 +1,68 @@
 #ifndef PIO_UNIT_TESTING
 
-#include "Arduino.h"
-#include "RotaryEncoder.h"
-#include "constants.h"
+#include <Arduino.h>
 
-void setupPins()
+#include "constants.h"
+#include "mode.h"
+#include "hx711_loadcell.h"
+#include "u8g_display.h"
+#include "user_input.h"
+#include "adc_battery.h"
+
+#define AVERAGING_LOOPS 100
+
+HX711LoadCell loadcell(PIN_HX711_DAT, PIN_HX711_SCK);
+U8GDisplay display(PIN_I2C_SDA, PIN_I2C_SCL, U8G2_R1);
+EmbeddedUserInput input(PIN_ENC_A, PIN_ENC_B, PIN_ENC_BTN);
+Stopwatch stopwatch;
+
+void saveScale(float scale)
 {
+    Serial.printf("New scale: %f\n", scale);
 }
 
-RotaryEncoder encoder(PIN_ENC_A, PIN_ENC_B, RotaryEncoder::LatchMode::FOUR3);
+ModeCalibrateLoadCell modeCalibrateLoadCell(loadcell, input, display, stopwatch, saveScale);
+ModeDefault modeDefault(loadcell, input, display, stopwatch);
+
+void IRAM_ATTR isr_input()
+{
+    input.update();
+}
 
 void setup()
 {
   Serial.begin(115200);
-  setupPins();
+  Serial.println("CoffeeScale v1.0.0");
+
+  attachInterrupt(PIN_ENC_A, isr_input, CHANGE);
+  attachInterrupt(PIN_ENC_B, isr_input, CHANGE);
+  attachInterrupt(PIN_ENC_BTN, isr_input, CHANGE);
+
+  display.begin();
+  loadcell.begin();
 }
+
+#ifdef PERF
+unsigned int loops = 0;
+unsigned long lastTime = millis();
+#endif
 
 void loop()
 {
-  static int pos = 0;
-  encoder.tick();
-
-  int newPos = encoder.getPosition();
-  if (pos != newPos)
+  #ifdef PERF
+  if (loops >= AVERAGING_LOOPS)
   {
-    Serial.print("pos:");
-    Serial.print(newPos);
-    Serial.print(" dir:");
-    Serial.println((int)(encoder.getDirection()));
-    pos = newPos;
-  } // if
+    Serial.printf("Loop time: %lu\n", (millis() - lastTime) / loops);
+    loops = 0;
+    lastTime = millis();
+  }
+  loops++;
+  #endif
+
+  input.update();
+  loadcell.update();
+  display.update();
+  modeDefault.update();
 }
 
 #endif

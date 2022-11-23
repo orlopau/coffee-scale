@@ -18,6 +18,7 @@ public:
     virtual EncoderDirection getEncoderDirection() = 0;
     virtual long getEncoderTicks() = 0;
     virtual void resetEncoderTicks() = 0;
+    virtual void setEncoderTicks(long ticks) = 0;
     virtual ClickType getEncoderClick() = 0;
 };
 
@@ -28,7 +29,7 @@ public:
     virtual void begin() = 0;
     virtual void display(float weight, unsigned long time) = 0;
     virtual void promptText(const char *prompt, const char *subtext) = 0;
-    virtual void singleText(const char *text) = 0;
+    virtual void text(const char *text) = 0;
     virtual void update() = 0;
     virtual void clear() = 0;
 };
