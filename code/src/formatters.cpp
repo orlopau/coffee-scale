@@ -15,6 +15,6 @@ char *formatTime(unsigned long millis)
     unsigned int _millis = millis % 1000;
 
     static char buffer[10];
-    sprintf(buffer, "%d:%d.%d", mins, secs, _millis / 100);
+    sprintf(buffer, "%02d:%02d.%d", mins, secs % 60, _millis / 100);
     return buffer;
 }

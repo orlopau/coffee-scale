@@ -11,6 +11,7 @@ HX711LoadCell::HX711LoadCell(int dout, int sck, float scale) : dout(dout), sck(s
 void HX711LoadCell::begin()
 {
     hx711.begin(dout, sck);
+    hx711.set_scale(1);
 }
 
 void HX711LoadCell::update()
@@ -20,7 +21,7 @@ void HX711LoadCell::update()
         newWeight = false;
     }
 
-    if (millis() - lastUpdate > 100)
+    if (millis() - lastUpdate > 200)
     {
         lastUpdate = millis();
         if (hx711.is_ready())
@@ -35,7 +36,6 @@ void HX711LoadCell::update()
             weight = (float)sumWeights / (float)LC_NUM_SAMPLES;
             sumWeights = 0;
             index = 0;
-            Serial.println(weight);
         }
     }
 }

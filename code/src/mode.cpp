@@ -2,6 +2,7 @@
 #include "loadcell.h"
 #include "user_interface.h"
 #include "formatters.h"
+#include "millis.h"
 
 void ModeDefault::update()
 {

@@ -26,9 +26,10 @@ void U8GDisplay::display(float weight, unsigned long time)
     char *weightText = formatWeight(weight);
     char *timeText = formatTime(time);
     u8g.clearBuffer();
-    u8g.setFont(u8g_font_6x10);
-    u8g.drawStr(0, 10, weightText);
-    u8g.drawStr(0, 20, timeText);
+    u8g.setFont(u8g2_font_logisoso30_tf);
+    u8g.drawStr(0, 30, weightText);
+    u8g.setFont(u8g2_font_logisoso22_tf);
+    u8g.drawStr(0, 64, timeText);
     u8g.sendBuffer();
 }
 
@@ -38,6 +39,31 @@ void U8GDisplay::promptText(const char *prompt, const char *text)
     u8g.setFont(u8g_font_6x10);
     u8g.drawStr(0, 10, prompt);
     u8g.drawStr(0, 20, text);
+    u8g.sendBuffer();
+}
+
+void U8GDisplay::centerText(const char *text, const uint8_t size)
+{
+    u8g.clearBuffer();
+
+    int mid = 0;
+    switch (size)
+    {
+    case 16:
+        u8g.setFont(u8g2_font_logisoso16_tf);
+        mid = 32 + 8;
+        break;
+    case 30:
+        u8g.setFont(u8g2_font_logisoso30_tf);
+        mid = 32 + 15;
+        break;
+    default:
+        u8g.setFont(u8g_font_6x10);
+        mid = 32 + 5;
+        break;
+    }
+
+    u8g.drawStr(0, mid, text);
     u8g.sendBuffer();
 }
 

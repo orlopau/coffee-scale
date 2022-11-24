@@ -22,13 +22,16 @@ class MockButtons : public UserInput
 {
 public:
     void update() {}
-    int getEncoderTicks() { return encoderTicks; };
+    long getEncoderTicks() { return encoderTicks; };
     void resetEncoderTicks() { encoderTicks = 0; };
     ClickType getEncoderClick() { return encoderClick; };
+    EncoderDirection getEncoderDirection() { return encoderDirection; };
+    void setEncoderTicks(long ticks) { encoderTicks = ticks; };
     ClickType getBootClick() { return bootClick; };
     ClickType encoderClick = ClickType::NONE;
     ClickType bootClick = ClickType::NONE;
     int encoderTicks = 0;
+    EncoderDirection encoderDirection = EncoderDirection::NONE;
 };
 
 class MockDisplay : public Display
@@ -42,6 +45,7 @@ public:
         this->time = time;
     };
     void promptText(const char *prompt, const char *subtext){};
+    void centerText(const char *text, const uint8_t size){};
     void text(const char *text){};
     void clear()
     {

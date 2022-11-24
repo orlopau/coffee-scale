@@ -13,12 +13,13 @@ public:
     void begin();
     void display(float weight, unsigned long time);
     void promptText(const char *prompt, const char *text);
+    void centerText(const char *text, const uint8_t size);
     void text(const char *text);
-    void update() {};
+    void update(){};
     void clear();
+
 private:
     U8G2_SH1107_64X128_F_HW_I2C u8g;
 };
-
 
 #endif

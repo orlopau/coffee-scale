@@ -8,6 +8,7 @@
 #include "u8g_display.h"
 #include "user_input.h"
 #include "adc_battery.h"
+#include "mode_manager.h"
 
 #define AVERAGING_LOOPS 100
 
@@ -18,15 +19,20 @@ Stopwatch stopwatch;
 
 void saveScale(float scale)
 {
-    Serial.printf("New scale: %f\n", scale);
+  Serial.printf("New scale: %f\n", scale);
 }
 
 ModeCalibrateLoadCell modeCalibrateLoadCell(loadcell, input, display, stopwatch, saveScale);
 ModeDefault modeDefault(loadcell, input, display, stopwatch);
 
+Mode *modes[] = {&modeDefault};
+const char *names[] = {"Scale"};
+
+ModeManager modeManager(modes, names, 1, display);
+
 void IRAM_ATTR isr_input()
 {
-    input.update();
+  input.update();
 }
 
 void setup()
@@ -49,7 +55,7 @@ unsigned long lastTime = millis();
 
 void loop()
 {
-  #ifdef PERF
+#ifdef PERF
   if (loops >= AVERAGING_LOOPS)
   {
     Serial.printf("Loop time: %lu\n", (millis() - lastTime) / loops);
@@ -57,12 +63,12 @@ void loop()
     lastTime = millis();
   }
   loops++;
-  #endif
+#endif
 
   input.update();
   loadcell.update();
   display.update();
-  modeDefault.update();
+  modeManager.update((int)input.getEncoderDirection());
 }
 
 #endif

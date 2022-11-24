@@ -29,6 +29,7 @@ public:
     virtual void begin() = 0;
     virtual void display(float weight, unsigned long time) = 0;
     virtual void promptText(const char *prompt, const char *subtext) = 0;
+    virtual void centerText(const char *text, const uint8_t size) = 0;
     virtual void text(const char *text) = 0;
     virtual void update() = 0;
     virtual void clear() = 0;
