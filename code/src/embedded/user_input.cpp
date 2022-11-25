@@ -18,14 +18,14 @@ EncoderDirection EmbeddedUserInput::getEncoderDirection()
 {
     switch (encoder.getDirection())
     {
-        case RotaryEncoder::Direction::NOROTATION:
-            return EncoderDirection::NONE;
-        case RotaryEncoder::Direction::CLOCKWISE:
-            return EncoderDirection::CW;
-        case RotaryEncoder::Direction::COUNTERCLOCKWISE:
-            return EncoderDirection::CCW;
-        default:
-            return EncoderDirection::NONE;
+    case RotaryEncoder::Direction::NOROTATION:
+        return EncoderDirection::NONE;
+    case RotaryEncoder::Direction::CLOCKWISE:
+        return EncoderDirection::CW;
+    case RotaryEncoder::Direction::COUNTERCLOCKWISE:
+        return EncoderDirection::CCW;
+    default:
+        return EncoderDirection::NONE;
     }
 }
 
@@ -47,6 +47,11 @@ void EmbeddedUserInput::resetEncoderTicks()
 ClickType EmbeddedUserInput::getEncoderClick()
 {
     return encoderButton.getClickType();
+}
+
+bool EmbeddedUserInput::isEncoderPressed()
+{
+    return encoderButton.isPressed();
 }
 
 #endif

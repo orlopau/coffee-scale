@@ -101,6 +101,14 @@
         "climits": "cpp",
         "*.inc": "cpp",
         "authenticationmap": "cpp",
-        "*.rh": "cpp"
+        "*.rh": "cpp",
+        "light": "cpp",
+        "callback": "cpp",
+        "image": "cpp",
+        "graphicscostestimator": "cpp",
+        "scriptengine": "cpp",
+        "imageutils": "cpp",
+        "stringutils": "cpp",
+        "*.txx": "cpp"
     }
 }

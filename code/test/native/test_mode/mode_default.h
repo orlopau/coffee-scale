@@ -2,33 +2,12 @@
 #include "mode.h"
 #include "mocks.h"
 #include "stopwatch.h"
+#include "globals.h"
 
 #include <chrono>
 #include <thread>
 
-Stopwatch *stopwatch;
-MockLoadCell *loadCell;
-MockButtons *buttons;
-MockDisplay *display;
 ModeDefault *modeDefault;
-
-void setUp(void)
-{
-    stopwatch = new Stopwatch();
-    loadCell = new MockLoadCell();
-    buttons = new MockButtons();
-    display = new MockDisplay();
-    modeDefault = new ModeDefault(*loadCell, *buttons, *display, *stopwatch);
-}
-
-void tearDown(void)
-{
-    delete stopwatch;
-    delete loadCell;
-    delete buttons;
-    delete display;
-    delete modeDefault;
-}
 
 void test_stopwatch_start_when_click(void)
 {
@@ -70,8 +49,20 @@ void test_display_shows_time(void)
     TEST_ASSERT_GREATER_OR_EQUAL(2, display->time);
 }
 
+void setUpDefault(void)
+{
+    modeDefault = new ModeDefault(*loadCell, *buttons, *display, *stopwatch);
+}
+
+void tearDownDefault(void)
+{
+    delete modeDefault;
+}
+
 void run_all_mode_default()
 {
+    currSetUp = setUpDefault;
+    currTearDown = tearDownDefault;
     RUN_TEST(test_stopwatch_start_when_click);
     RUN_TEST(test_stopwatch_stop_when_click_again);
 

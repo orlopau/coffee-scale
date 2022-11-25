@@ -15,6 +15,7 @@ public:
     void setEncoderTicks(long ticks);
     void resetEncoderTicks();
     ClickType getEncoderClick();
+    bool isEncoderPressed();
 
 private:
     uint8_t encoderButtonPin;

@@ -25,6 +25,7 @@ void saveScale(float scale)
 ModeCalibrateLoadCell modeCalibrateLoadCell(loadcell, input, display, stopwatch, saveScale);
 ModeDefault modeDefault(loadcell, input, display, stopwatch);
 
+EncoderDirection encoderDirection;
 Mode *modes[] = {&modeDefault};
 const char *names[] = {"Scale"};
 
@@ -68,7 +69,14 @@ void loop()
   input.update();
   loadcell.update();
   display.update();
-  modeManager.update((int)input.getEncoderDirection());
+
+  encoderDirection = EncoderDirection::NONE;
+  if (input.isEncoderPressed())
+  {
+    encoderDirection = input.getEncoderDirection();
+  }
+
+  modeManager.update(static_cast<int>(encoderDirection));
 }
 
 #endif
