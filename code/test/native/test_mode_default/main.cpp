@@ -1,13 +1,35 @@
-#include "unity.h"
+#include <unity.h>
 #include "mode.h"
 #include "mocks.h"
 #include "stopwatch.h"
-#include "globals.h"
 
 #include <chrono>
 #include <thread>
 
+static Stopwatch *stopwatch;
+static MockLoadCell *loadCell;
+static MockButtons *buttons;
+static MockDisplay *display;
+
 ModeDefault *modeDefault;
+
+void setUp(void)
+{
+    stopwatch = new Stopwatch();
+    loadCell = new MockLoadCell();
+    buttons = new MockButtons();
+    display = new MockDisplay();
+    modeDefault = new ModeDefault(*loadCell, *buttons, *display, *stopwatch);
+}
+
+void tearDown(void)
+{
+    delete stopwatch;
+    delete loadCell;
+    delete buttons;
+    delete display;
+    delete modeDefault;
+}
 
 void test_stopwatch_start_when_click(void)
 {
@@ -29,7 +51,7 @@ void test_loadcell_tare_when_click(void)
 {
     loadCell->weight = 1.0;
 
-    buttons->bootClick = ClickType::SINGLE;
+    buttons->encoderClick = ClickType::LONG;
     modeDefault->update();
     TEST_ASSERT_EQUAL(0, loadCell->weight);
 }
@@ -49,24 +71,14 @@ void test_display_shows_time(void)
     TEST_ASSERT_GREATER_OR_EQUAL(2, display->time);
 }
 
-void setUpDefault(void)
+int main(void)
 {
-    modeDefault = new ModeDefault(*loadCell, *buttons, *display, *stopwatch);
-}
-
-void tearDownDefault(void)
-{
-    delete modeDefault;
-}
-
-void run_all_mode_default()
-{
-    currSetUp = setUpDefault;
-    currTearDown = tearDownDefault;
+    UNITY_BEGIN();
     RUN_TEST(test_stopwatch_start_when_click);
     RUN_TEST(test_stopwatch_stop_when_click_again);
 
     RUN_TEST(test_loadcell_tare_when_click);
     RUN_TEST(test_display_shows_weight);
     RUN_TEST(test_display_shows_time);
+    UNITY_END();
 }

@@ -3,6 +3,7 @@
 #include "unity.h"
 #include "mode_manager.h"
 #include "millis.h"
+#include "mocks.h"
 
 class MockMode : public Mode
 {
@@ -14,22 +15,6 @@ public:
         updateCalled = true;
     };
     bool updateCalled;
-};
-
-class MockDisplay : public Display
-{
-public:
-    void begin(){};
-    void display(float weight, unsigned long time){};
-    void promptText(const char *prompt, const char *subtext){};
-    void centerText(const char *text, const uint8_t size)
-    {
-        this->lastText = strdup(text);
-    };
-    void text(const char *text){};
-    void update(){};
-    void clear() { lastText = strdup(""); };
-    char *lastText;
 };
 
 MockDisplay *display;
@@ -59,9 +44,9 @@ void tearDown(void)
 void test_mode_manager_displays_text_when_changing(void)
 {
     modeManager->update(1);
-    TEST_ASSERT_EQUAL_STRING("mode2", display->lastText);
+    TEST_ASSERT_EQUAL_STRING("mode2", display->lastCenterText);
     modeManager->update(-1);
-    TEST_ASSERT_EQUAL_STRING("mode1", display->lastText);
+    TEST_ASSERT_EQUAL_STRING("mode1", display->lastCenterText);
 }
 
 void test_mode_manager_calls_update_on_current_mode(void)

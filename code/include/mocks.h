@@ -46,6 +46,7 @@ public:
         delete recipeName;
         delete recipeDescription;
         delete weightConfigHeader;
+        delete lastCenterText;
     }
     void begin() {}
     void update() {}
@@ -55,7 +56,10 @@ public:
         this->time = time;
     };
     void promptText(const char *prompt, const char *subtext){};
-    void centerText(const char *text, const uint8_t size){};
+    void centerText(const char *text, const uint8_t size){
+        delete lastCenterText;
+        lastCenterText = strdup(text);
+    };
     void switcher(const char *current, const uint8_t index, const uint8_t count)
     {
         delete switcherText;
@@ -87,6 +91,9 @@ public:
         weight = NAN;
         time = -1;
     };
+
+    char* lastCenterText = nullptr;
+
     float weight = NAN;
     unsigned long time = -1;
     char *switcherText = nullptr;
