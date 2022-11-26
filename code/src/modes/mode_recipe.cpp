@@ -1,12 +1,30 @@
+#include <cstring>
+
 #include "mode_recipe.h"
 #include "millis.h"
 
 #define WEIGHT_ADJUST_MULTIPLIER 1000
 
+ModeRecipes::~ModeRecipes()
+{
+    delete[] recipeSwitcherEntries;
+}
+
 ModeRecipes::ModeRecipes(LoadCell &loadCell, UserInput &input, Display &display, const Recipe recipes[],
                          uint8_t recipeCount)
     : loadCell(loadCell), input(input), display(display), state(RECIPE_SELECTION), recipes(recipes),
-      recipeCount(recipeCount), recipeIndex(0), recipePourIndex(0), pourStartMillis(0), coffeeWeightAdjustmentMg(0){};
+      recipeCount(recipeCount), recipeIndex(0), recipePourIndex(0), pourStartMillis(0), coffeeWeightAdjustmentMg(0)
+{
+    recipeSwitcherEntries = new char[recipeCount * 64 + recipeCount];
+    for (uint8_t i = 0; i < recipeCount; i++)
+    {
+        strcat(recipeSwitcherEntries, recipes[i].name);
+        if (i < recipeCount - 1)
+        {
+            strcat(recipeSwitcherEntries, "\n");
+        }
+    }
+};
 
 void ModeRecipes::update()
 {
@@ -88,7 +106,7 @@ void ModeRecipes::updateRecipeSwitcher()
         recipeIndex += change;
     }
 
-    display.switcher(recipes[recipeIndex].name, recipeIndex, recipeCount);
+    display.switcher(recipes[recipeIndex].name, recipeIndex, recipeCount, recipeSwitcherEntries);
 }
 
 void ModeRecipes::updateRecipeSummary()

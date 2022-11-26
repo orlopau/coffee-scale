@@ -47,6 +47,9 @@ void setup()
 
   display.begin();
   loadcell.begin();
+
+  display.switcher("V60 Tetsu Kasuya", 1, 6,
+                   "V60 Tetsu Kasuya\nV60 James Hoffmann\nAeropress James Hoffmann\nKalita Recipe\nSpecial Recipe\nSomeething\nTake that recipe!");
 }
 
 #ifdef PERF
@@ -56,6 +59,18 @@ unsigned long lastTime = millis();
 
 void loop()
 {
+  // input.update();
+  // loadcell.update();
+  // display.update();
+
+  // encoderDirection = EncoderDirection::NONE;
+  // if (input.isEncoderPressed())
+  // {
+  //   encoderDirection = input.getEncoderDirection();
+  // }
+
+  // modeManager.update(static_cast<int>(encoderDirection));
+
 #ifdef PERF
   if (loops >= AVERAGING_LOOPS)
   {
@@ -65,18 +80,6 @@ void loop()
   }
   loops++;
 #endif
-
-  input.update();
-  loadcell.update();
-  display.update();
-
-  encoderDirection = EncoderDirection::NONE;
-  if (input.isEncoderPressed())
-  {
-    encoderDirection = input.getEncoderDirection();
-  }
-
-  modeManager.update(static_cast<int>(encoderDirection));
 }
 
 #endif

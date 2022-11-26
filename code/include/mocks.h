@@ -42,11 +42,11 @@ class MockDisplay : public Display
 public:
     ~MockDisplay()
     {
-        delete switcherText;
-        delete recipeName;
-        delete recipeDescription;
-        delete weightConfigHeader;
-        delete lastCenterText;
+        delete[] switcherText;
+        delete[] recipeName;
+        delete[] recipeDescription;
+        delete[] weightConfigHeader;
+        delete[] lastCenterText;
     }
     void begin() {}
     void update() {}
@@ -57,24 +57,24 @@ public:
     };
     void promptText(const char *prompt, const char *subtext){};
     void centerText(const char *text, const uint8_t size){
-        delete lastCenterText;
+        delete[] lastCenterText;
         lastCenterText = strdup(text);
     };
-    void switcher(const char *current, const uint8_t index, const uint8_t count)
+    void switcher(const char *current, const uint8_t index, const uint8_t count, const char* options)
     {
-        delete switcherText;
+        delete[] switcherText;
         switcherText = strdup(current);
     };
     void recipeSummary(const char *name, const char *description)
     {
-        delete recipeName;
-        delete recipeDescription;
+        delete[] recipeName;
+        delete[] recipeDescription;
         recipeName = strdup(name);
         recipeDescription = strdup(description);
     };
     void recipeCoffeeWeightConfig(const char *header, unsigned int weightMg, unsigned int waterWeightMl)
     {
-        delete weightConfigHeader;
+        delete[] weightConfigHeader;
         weightConfigHeader = strdup(header);
         weightConfigWeightMg = weightMg;
         weightConfigWaterWeightMl = waterWeightMl;

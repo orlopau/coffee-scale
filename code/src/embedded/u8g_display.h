@@ -14,6 +14,10 @@ public:
     void display(float weight, unsigned long time);
     void promptText(const char *prompt, const char *text);
     void centerText(const char *text, const uint8_t size);
+    void switcher(const char *current, const uint8_t index, const uint8_t count, const char* options);
+    void recipeSummary(const char *name, const char *description);
+    void recipeCoffeeWeightConfig(const char *header, unsigned int weightMg, unsigned int waterWeightMl);
+    void recipePour(uint32_t weightToPour, uint64_t timeToFinish, bool isPause, uint8_t pourIndex, uint8_t pours);
     void text(const char *text);
     void update(){};
     void clear();

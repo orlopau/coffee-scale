@@ -6,6 +6,7 @@
 class ModeRecipes : public Mode
 {
 public:
+    ~ModeRecipes();
     ModeRecipes(LoadCell &loadCell, UserInput &input,
                 Display &display, const Recipe recipes[], uint8_t recipeCount);
     void update();
@@ -28,6 +29,8 @@ private:
     LoadCell &loadCell;
     UserInput &input;
     Display &display;
+
+    char *recipeSwitcherEntries;
 
     void updateRecipeSwitcher();
     void updateRecipeSummary();

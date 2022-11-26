@@ -67,6 +67,18 @@ void U8GDisplay::centerText(const char *text, const uint8_t size)
     u8g.sendBuffer();
 }
 
+void U8GDisplay::switcher(const char *current, const uint8_t index, const uint8_t count, const char* options) {
+    u8g.clearBuffer();
+    u8g.userInterfaceSelectionList("Select a recipe.", index, options);
+    u8g.setFont(u8g_font_6x10);
+    u8g.drawStr(0, 10, current);
+    u8g.sendBuffer();
+};
+
+void U8GDisplay::recipeSummary(const char *name, const char *description) {}
+void U8GDisplay::recipeCoffeeWeightConfig(const char *header, unsigned int weightMg, unsigned int waterWeightMl) {}
+void U8GDisplay::recipePour(uint32_t weightToPour, uint64_t timeToFinish, bool isPause, uint8_t pourIndex, uint8_t pours) {}
+
 void U8GDisplay::text(const char *text)
 {
     u8g.clearBuffer();
