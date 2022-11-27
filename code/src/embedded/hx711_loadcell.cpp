@@ -3,15 +3,8 @@
 #include "hx711_loadcell.h"
 #include "constants.h"
 
-HX711LoadCell::HX711LoadCell(int dout, int sck, float scale) : dout(dout), sck(sck)
+HX711LoadCell::HX711LoadCell(int dout, int sck, float scale) : hx711(dout, sck), scale(scale)
 {
-    hx711.set_scale(scale);
-}
-
-void HX711LoadCell::begin()
-{
-    hx711.begin(dout, sck);
-    hx711.set_scale(1);
 }
 
 void HX711LoadCell::update()
@@ -21,28 +14,24 @@ void HX711LoadCell::update()
         newWeight = false;
     }
 
-    if (millis() - lastUpdate > 200)
+    if (hx711.readyToSend())
     {
-        lastUpdate = millis();
-        if (hx711.is_ready())
-        {
-            sumWeights += hx711.read();
-            index++;
-        }
+        sumWeights += hx711.read();
+        index++;
+    }
 
-        if (index = LC_NUM_SAMPLES)
-        {
-            newWeight = true;
-            weight = (float)sumWeights / (float)LC_NUM_SAMPLES;
-            sumWeights = 0;
-            index = 0;
-        }
+    if (index == LC_NUM_SAMPLES)
+    {
+        newWeight = true;
+        lastWeight = (float)sumWeights / (float)LC_NUM_SAMPLES;
+        sumWeights = 0;
+        index = 0;
     }
 }
 
 float HX711LoadCell::getWeight()
 {
-    return (weight - hx711.get_offset()) / hx711.get_scale();
+    return ((float)lastWeight * scale) - (float)offset;
 }
 
 bool HX711LoadCell::isNewWeight()
@@ -52,12 +41,12 @@ bool HX711LoadCell::isNewWeight()
 
 void HX711LoadCell::tare()
 {
-    hx711.set_offset(weight);
+    offset = lastWeight;
 }
 
 void HX711LoadCell::setScale(float scale)
 {
-    hx711.set_scale(scale);
+    this->scale = scale;
 }
 
 #endif

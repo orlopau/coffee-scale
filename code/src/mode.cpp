@@ -4,6 +4,8 @@
 #include "formatters.h"
 #include "millis.h"
 
+#include <Arduino.h>
+
 void ModeDefault::update()
 {
     display.display(loadCell.getWeight(), stopwatch.getTime());
@@ -36,6 +38,7 @@ void ModeCalibrateLoadCell::update()
     {
     case CalibrationStep::BEGIN:
         display.text("Starting calibration.\nRemove all items from\nscale.\n \nClick to continue!");
+        loadCell.setScale(1);
         sumMeasurements = 0;
         numMeasurements = 0;
 
@@ -43,6 +46,9 @@ void ModeCalibrateLoadCell::update()
         {
             calibrationStep = CalibrationStep::ENTER_WEIGHT;
         }
+
+        Serial.println(loadCell.getWeight());
+
         break;
     case CalibrationStep::ENTER_WEIGHT:
         loadCell.tare();
@@ -63,6 +69,9 @@ void ModeCalibrateLoadCell::update()
         {
             calibrationStep = CalibrationStep::CALIBRATING;
         }
+
+        Serial.println(loadCell.getWeight());
+
         break;
     case CalibrationStep::CALIBRATING:
         display.text("Calibrating...");
@@ -73,13 +82,14 @@ void ModeCalibrateLoadCell::update()
             numMeasurements++;
         }
 
-        if (numMeasurements >= 100)
+        if (numMeasurements >= 20)
         {
             calibrationStep = CalibrationStep::SUCCESS;
         }
         break;
     case CalibrationStep::SUCCESS:
-        scale = weight / (sumMeasurements / numMeasurements);
+        Serial.printf("Sum: %f, num: %d\n", sumMeasurements, numMeasurements);
+        scale = (float)weight / (sumMeasurements / (float)numMeasurements);
 
         saveScaleFnc(scale);
         display.text("Calibration success!\n\nPlease reboot!");

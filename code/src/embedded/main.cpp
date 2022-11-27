@@ -1,6 +1,7 @@
 #ifndef PIO_UNIT_TESTING
 
 #include <Arduino.h>
+#include <EEPROM.h>
 
 #include "constants.h"
 #include "mode.h"
@@ -20,6 +21,9 @@ Stopwatch stopwatch;
 void saveScale(float scale)
 {
   Serial.printf("New scale: %f\n", scale);
+  Serial.println("Saving scale to EEPROM...");  
+  EEPROM.put(EEPROM_ADDR_SCALE, scale);
+  EEPROM.commit();
 }
 
 ModeCalibrateLoadCell modeCalibrateLoadCell(loadcell, input, display, stopwatch, saveScale);
@@ -40,16 +44,26 @@ void setup()
 {
   Serial.begin(115200);
   Serial.println("CoffeeScale v1.0.0");
+  EEPROM.begin(1024);
 
   attachInterrupt(PIN_ENC_A, isr_input, CHANGE);
   attachInterrupt(PIN_ENC_B, isr_input, CHANGE);
   attachInterrupt(PIN_ENC_BTN, isr_input, CHANGE);
 
-  display.begin();
-  loadcell.begin();
+  float scale;
+  EEPROM.get(EEPROM_ADDR_SCALE, scale);
+  if (scale == 0 || isnan(scale))
+  {
+    scale = 1.0f;
+  }
 
-  display.switcher("V60 Tetsu Kasuya", 1, 6,
-                   "V60 Tetsu Kasuya\nV60 James Hoffmann\nAeropress James Hoffmann\nKalita Recipe\nSpecial Recipe\nSomeething\nTake that recipe!");
+  Serial.printf("Existing scale: %f\n", scale);
+  loadcell.setScale(scale);
+
+  display.begin();
+
+  // display.switcher("V60 Tetsu Kasuya", 1, 6,
+  //                  "V60 Tetsu Kasuya\nV60 James Hoffmann\nAeropress James Hoffmann\nKalita Recipe\nSpecial Recipe\nSomeething\nTake that recipe!");
 }
 
 #ifdef PERF
@@ -59,9 +73,11 @@ unsigned long lastTime = millis();
 
 void loop()
 {
-  // input.update();
-  // loadcell.update();
-  // display.update();
+  input.update();
+  loadcell.update();
+  display.update();
+
+  modeCalibrateLoadCell.update();
 
   // encoderDirection = EncoderDirection::NONE;
   // if (input.isEncoderPressed())

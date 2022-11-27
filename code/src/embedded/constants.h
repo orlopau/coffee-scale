@@ -29,4 +29,7 @@
 // num samples for computing average of load cell value
 #define LC_NUM_SAMPLES 10
 
+// EEPROM addresses
+#define EEPROM_ADDR_SCALE 0
+
 #endif
