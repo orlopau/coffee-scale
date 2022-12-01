@@ -4,6 +4,7 @@ class LoadCell
 {
 public:
     virtual ~LoadCell() {}
+    virtual void begin() = 0;
     virtual void update() = 0;
     virtual float getWeight() = 0;
     virtual bool isNewWeight() = 0;

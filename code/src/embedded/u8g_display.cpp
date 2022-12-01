@@ -67,7 +67,8 @@ void U8GDisplay::centerText(const char *text, const uint8_t size)
     u8g.sendBuffer();
 }
 
-void U8GDisplay::switcher(const char *current, const uint8_t index, const uint8_t count, const char* options) {
+void U8GDisplay::switcher(const char *current, const uint8_t index, const uint8_t count, const char *options)
+{
     u8g.clearBuffer();
     u8g.userInterfaceSelectionList("Select a recipe.", index, options);
     u8g.setFont(u8g_font_6x10);
@@ -95,11 +96,9 @@ void U8GDisplay::text(const char *text)
         line += 10;
         pointer = strtok(NULL, "\n");
     }
-
-    u8g.drawStr(0, 10, text);
-    u8g.sendBuffer();
-
     delete textCopy;
+
+    u8g.sendBuffer();
 }
 
 #endif

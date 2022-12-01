@@ -10,6 +10,7 @@
 #include "user_input.h"
 #include "adc_battery.h"
 #include "mode_manager.h"
+#include "modes/mode_calibrate.h"
 
 #define AVERAGING_LOOPS 100
 
@@ -21,13 +22,14 @@ Stopwatch stopwatch;
 void saveScale(float scale)
 {
   Serial.printf("New scale: %f\n", scale);
-  Serial.println("Saving scale to EEPROM...");  
-  EEPROM.put(EEPROM_ADDR_SCALE, scale);
-  EEPROM.commit();
+  Serial.println("Saving scale to EEPROM...");
+  // EEPROM.put(EEPROM_ADDR_SCALE, scale);
+  // EEPROM.commit();
 }
 
 ModeCalibrateLoadCell modeCalibrateLoadCell(loadcell, input, display, stopwatch, saveScale);
 ModeDefault modeDefault(loadcell, input, display, stopwatch);
+ModeCalibration modeCalibration(loadcell, input, display, stopwatch, saveScale);
 
 EncoderDirection encoderDirection;
 Mode *modes[] = {&modeDefault};
@@ -37,6 +39,7 @@ ModeManager modeManager(modes, names, 1, display);
 
 void IRAM_ATTR isr_input()
 {
+  Serial.println("ISR");
   input.update();
 }
 
@@ -44,27 +47,30 @@ void setup()
 {
   Serial.begin(115200);
   Serial.println("CoffeeScale v1.0.0");
-  EEPROM.begin(1024);
+  // EEPROM.begin(1024);
 
-  attachInterrupt(PIN_ENC_A, isr_input, CHANGE);
-  attachInterrupt(PIN_ENC_B, isr_input, CHANGE);
-  attachInterrupt(PIN_ENC_BTN, isr_input, CHANGE);
+  // attachInterrupt(PIN_ENC_A, isr_input, CHANGE);
+  // attachInterrupt(PIN_ENC_B, isr_input, CHANGE);
+  // attachInterrupt(PIN_ENC_BTN, isr_input, CHANGE);
 
-  float scale;
-  EEPROM.get(EEPROM_ADDR_SCALE, scale);
-  if (scale == 0 || isnan(scale))
-  {
-    scale = 1.0f;
-  }
+  // float scale;
+  // EEPROM.get(EEPROM_ADDR_SCALE, scale);
+  // if (scale == 0 || isnan(scale))
+  // {
+  //   scale = 1.0f;
+  // }
 
-  Serial.printf("Existing scale: %f\n", scale);
-  loadcell.setScale(scale);
+  // Serial.printf("Existing scale: %f\n", scale);
+  // loadcell.setScale(scale);
 
-  display.begin();
+  // display.begin();
+  loadcell.begin();
 
   // display.switcher("V60 Tetsu Kasuya", 1, 6,
   //                  "V60 Tetsu Kasuya\nV60 James Hoffmann\nAeropress James Hoffmann\nKalita Recipe\nSpecial Recipe\nSomeething\nTake that recipe!");
 }
+
+#define PERF
 
 #ifdef PERF
 unsigned int loops = 0;
@@ -73,11 +79,13 @@ unsigned long lastTime = millis();
 
 void loop()
 {
-  input.update();
-  loadcell.update();
-  display.update();
-
-  modeCalibrateLoadCell.update();
+  // loadcell.update();
+  // modeCalibration.update();
+  while (!loadcell.isReady())
+  {
+    delay(1);
+  }
+  Serial.println(loadcell.read(), BIN);
 
   // encoderDirection = EncoderDirection::NONE;
   // if (input.isEncoderPressed())
