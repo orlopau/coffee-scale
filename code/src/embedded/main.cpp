@@ -40,7 +40,6 @@ EncoderDirection encoderDirection;
 
 void IRAM_ATTR isr_input()
 {
-  Serial.println("ISR");
   input.update();
 }
 
@@ -82,6 +81,7 @@ unsigned long lastTime = millis();
 
 void loop()
 {
+  input.update();
   loadcell.update();
   display.update();
   modeManager.update();

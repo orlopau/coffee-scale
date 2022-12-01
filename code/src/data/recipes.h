@@ -6,7 +6,7 @@
 #pragma once
 #include "recipe.h"
 
-const uint8_t RECIPE_COUNT = 2;
+const uint8_t RECIPE_COUNT = 1;
 const Recipe RECIPES[] = {
     {"Ultimate Aeropress Technique", "Aeropress recipe by James Hofmann.", 12000, 1667, 3,
         {

@@ -15,10 +15,12 @@ ModeRecipes::ModeRecipes(LoadCell &loadCell, UserInput &input, Display &display,
     : loadCell(loadCell), input(input), display(display), state(RECIPE_SELECTION), recipes(recipes),
       recipeCount(recipeCount), recipeIndex(0), recipePourIndex(0), pourStartMillis(0), coffeeWeightAdjustmentMg(0)
 {
-    recipeSwitcherEntries = new char[recipeCount * 64 + recipeCount];
+    recipeSwitcherEntries = new char[recipeCount * 64 + recipeCount * 2];
+    strcpy(recipeSwitcherEntries, "\0");
+
     for (uint8_t i = 0; i < recipeCount; i++)
     {
-        strcat(recipeSwitcherEntries, recipes[i].name);
+        strncat(recipeSwitcherEntries, recipes[i].name, 64);
         if (i < recipeCount - 1)
         {
             strcat(recipeSwitcherEntries, "\n");
