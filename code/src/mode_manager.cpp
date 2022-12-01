@@ -6,8 +6,6 @@ ModeManager::ModeManager(Mode *modes[], const int modeCount, Display &display, U
 
 void ModeManager::update()
 {
-    inModeChange = (inModeChange && input.getEncoderClick() != ClickType::SINGLE) || (modes[currentMode]->canSwitchMode() && input.getEncoderClick() == ClickType::LONG);
-
     if (inModeChange)
     {
         currentMode += static_cast<int>(input.getEncoderDirection());
@@ -21,10 +19,13 @@ void ModeManager::update()
             currentMode = modeCount - 1;
         }
 
-        display.centerText(modes[currentMode]->getName(), 30);
+        display.centerText(modes[currentMode]->getName(), 16);
     }
     else
     {
         modes[currentMode]->update();
     }
+
+    // update mode change at next tick, else button clicks etc. could be passed to the selected mode on first tick
+    inModeChange = (inModeChange && input.getEncoderClick() != ClickType::SINGLE) || (modes[currentMode]->canSwitchMode() && input.getEncoderClick() == ClickType::LONG);
 }
