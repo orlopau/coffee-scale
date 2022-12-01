@@ -23,17 +23,16 @@ void saveScale(float scale)
 {
   Serial.printf("New scale: %f\n", scale);
   Serial.println("Saving scale to EEPROM...");
-  // EEPROM.put(EEPROM_ADDR_SCALE, scale);
-  // EEPROM.commit();
+  EEPROM.put(EEPROM_ADDR_SCALE, scale);
+  EEPROM.commit();
 }
 
-ModeCalibrateLoadCell modeCalibrateLoadCell(loadcell, input, display, stopwatch, saveScale);
 ModeDefault modeDefault(loadcell, input, display, stopwatch);
 ModeCalibration modeCalibration(loadcell, input, display, stopwatch, saveScale);
 
 EncoderDirection encoderDirection;
-Mode *modes[] = {&modeDefault};
-const char *names[] = {"Scale"};
+Mode *modes[] = {&modeDefault, &modeCalibration};
+const char *names[] = {"Scale", "Calibration"};
 
 ModeManager modeManager(modes, names, 1, display);
 
@@ -47,27 +46,27 @@ void setup()
 {
   Serial.begin(115200);
   Serial.println("CoffeeScale v1.0.0");
-  // EEPROM.begin(1024);
+  EEPROM.begin(1024);
 
-  // attachInterrupt(PIN_ENC_A, isr_input, CHANGE);
-  // attachInterrupt(PIN_ENC_B, isr_input, CHANGE);
-  // attachInterrupt(PIN_ENC_BTN, isr_input, CHANGE);
+  attachInterrupt(PIN_ENC_A, isr_input, CHANGE);
+  attachInterrupt(PIN_ENC_B, isr_input, CHANGE);
+  attachInterrupt(PIN_ENC_BTN, isr_input, CHANGE);
 
-  // float scale;
-  // EEPROM.get(EEPROM_ADDR_SCALE, scale);
-  // if (scale == 0 || isnan(scale))
-  // {
-  //   scale = 1.0f;
-  // }
+  float scale;
+  EEPROM.get(EEPROM_ADDR_SCALE, scale);
+  if (scale == 0 || isnan(scale))
+  {
+    scale = 1.0f;
+  }
 
-  // Serial.printf("Existing scale: %f\n", scale);
-  // loadcell.setScale(scale);
+  Serial.printf("Existing scale: %f\n", scale);
+  loadcell.setScale(scale);
 
-  // display.begin();
+  display.begin();
   loadcell.begin();
 
-  // display.switcher("V60 Tetsu Kasuya", 1, 6,
-  //                  "V60 Tetsu Kasuya\nV60 James Hoffmann\nAeropress James Hoffmann\nKalita Recipe\nSpecial Recipe\nSomeething\nTake that recipe!");
+  display.switcher("V60 Tetsu Kasuya", 1, 6,
+                   "V60 Tetsu Kasuya\nV60 James Hoffmann\nAeropress James Hoffmann\nKalita Recipe\nSpecial Recipe\nSomeething\nTake that recipe!");
 }
 
 #define PERF
