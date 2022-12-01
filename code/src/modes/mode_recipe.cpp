@@ -204,3 +204,13 @@ void ModeRecipes::updateRecipeDone()
         state = RECIPE_SELECTION;
     }
 };
+
+bool ModeRecipes::canSwitchMode()
+{
+    return state == RECIPE_SELECTION;
+}
+
+const char* ModeRecipes::getName()
+{
+    return "Recipes";
+}

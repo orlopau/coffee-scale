@@ -4,8 +4,6 @@
 #include "formatters.h"
 #include "millis.h"
 
-#include <Arduino.h>
-
 void ModeDefault::update()
 {
     display.display(loadCell.getWeight(), stopwatch.getTime());
@@ -19,4 +17,14 @@ void ModeDefault::update()
     {
         stopwatch.toggle();
     }
+}
+
+bool ModeDefault::canSwitchMode()
+{
+    return true;
+}
+
+const char* ModeDefault::getName()
+{
+    return "Scale";
 }

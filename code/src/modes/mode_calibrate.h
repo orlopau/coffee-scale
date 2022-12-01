@@ -14,6 +14,8 @@ public:
     ModeCalibration(LoadCell &loadCell, UserInput &buttons, Display &display, Stopwatch &stopwatch, void (*saveScaleFnc)(float));
     ~ModeCalibration(){};
     void update();
+    const char* getName();
+    bool canSwitchMode();
 
 private:
     enum class CalibrationStep

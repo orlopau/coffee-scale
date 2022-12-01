@@ -2,6 +2,7 @@
 
 #include <Arduino.h>
 #include <EEPROM.h>
+#include <WiFi.h>
 
 #include "constants.h"
 #include "mode.h"
@@ -11,6 +12,8 @@
 #include "adc_battery.h"
 #include "mode_manager.h"
 #include "modes/mode_calibrate.h"
+#include "modes/mode_recipe.h"
+#include "data/recipes.h"
 
 #define AVERAGING_LOOPS 100
 
@@ -29,12 +32,11 @@ void saveScale(float scale)
 
 ModeDefault modeDefault(loadcell, input, display, stopwatch);
 ModeCalibration modeCalibration(loadcell, input, display, stopwatch, saveScale);
+ModeRecipes modeRecipes(loadcell, input, display, RECIPES, RECIPE_COUNT);
+Mode *modes[] = {&modeDefault, &modeRecipes, &modeCalibration};
+ModeManager modeManager(modes, 3, display, input);
 
 EncoderDirection encoderDirection;
-Mode *modes[] = {&modeDefault, &modeCalibration};
-const char *names[] = {"Scale", "Calibration"};
-
-ModeManager modeManager(modes, names, 1, display);
 
 void IRAM_ATTR isr_input()
 {
@@ -46,7 +48,11 @@ void setup()
 {
   Serial.begin(115200);
   Serial.println("CoffeeScale v1.0.0");
+
   EEPROM.begin(1024);
+
+  btStop();
+  WiFi.mode(WIFI_OFF);
 
   attachInterrupt(PIN_ENC_A, isr_input, CHANGE);
   attachInterrupt(PIN_ENC_B, isr_input, CHANGE);
@@ -65,11 +71,9 @@ void setup()
   display.begin();
   loadcell.begin();
 
-  display.switcher("V60 Tetsu Kasuya", 1, 6,
-                   "V60 Tetsu Kasuya\nV60 James Hoffmann\nAeropress James Hoffmann\nKalita Recipe\nSpecial Recipe\nSomeething\nTake that recipe!");
+  // display.switcher("V60 Tetsu Kasuya", 1, 6,
+  //                  "V60 Tetsu Kasuya\nV60 James Hoffmann\nAeropress James Hoffmann\nKalita Recipe\nSpecial Recipe\nSomeething\nTake that recipe!");
 }
-
-#define PERF
 
 #ifdef PERF
 unsigned int loops = 0;
@@ -78,21 +82,9 @@ unsigned long lastTime = millis();
 
 void loop()
 {
-  // loadcell.update();
-  // modeCalibration.update();
-  while (!loadcell.isReady())
-  {
-    delay(1);
-  }
-  Serial.println(loadcell.read(), BIN);
-
-  // encoderDirection = EncoderDirection::NONE;
-  // if (input.isEncoderPressed())
-  // {
-  //   encoderDirection = input.getEncoderDirection();
-  // }
-
-  // modeManager.update(static_cast<int>(encoderDirection));
+  loadcell.update();
+  display.update();
+  modeManager.update();
 
 #ifdef PERF
   if (loops >= AVERAGING_LOOPS)

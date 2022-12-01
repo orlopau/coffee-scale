@@ -10,6 +10,8 @@ public:
     ModeRecipes(LoadCell &loadCell, UserInput &input,
                 Display &display, const Recipe recipes[], uint8_t recipeCount);
     void update();
+    const char* getName();
+    bool canSwitchMode();
     uint8_t recipeIndex;
     uint8_t recipePourIndex;
 

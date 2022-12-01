@@ -1,17 +1,16 @@
 #include "mode_manager.h"
 #include "millis.h"
 
-ModeManager::ModeManager(Mode *modes[], const char *modeNames[], const int modeCount, Display &display)
-    : modes(modes), modeCount(modeCount), currentMode(0), inModeChange(false), modeNames(modeNames),
-      lastChangeMillis(0), display(display) {}
+ModeManager::ModeManager(Mode *modes[], const int modeCount, Display &display, UserInput &input)
+    : modes(modes), modeCount(modeCount), currentMode(0), inModeChange(false), display(display), input(input) {}
 
-void ModeManager::update(const int modeChange)
+void ModeManager::update()
 {
-    if (modeChange != 0)
+    inModeChange = (inModeChange && input.getEncoderClick() != ClickType::SINGLE) || (modes[currentMode]->canSwitchMode() && input.getEncoderClick() == ClickType::LONG);
+
+    if (inModeChange)
     {
-        currentMode += modeChange;
-        inModeChange = true;
-        lastChangeMillis = now();
+        currentMode += static_cast<int>(input.getEncoderDirection());
 
         if (currentMode < 0)
         {
@@ -21,22 +20,11 @@ void ModeManager::update(const int modeChange)
         {
             currentMode = modeCount - 1;
         }
-    }
 
-    if (inModeChange)
-    {
-        if (now() - lastChangeMillis > MODE_SWITCH_DELAY_MS)
-        {
-            inModeChange = false;
-        }
-    }
-
-    if (!inModeChange)
-    {
-        modes[currentMode]->update();
+        display.centerText(modes[currentMode]->getName(), 30);
     }
     else
     {
-        display.centerText(modeNames[currentMode], 30);
+        modes[currentMode]->update();
     }
 }
