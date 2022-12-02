@@ -1,0 +1,1 @@
+Chemex Picture: https://thenounproject.com/icon/chemex-929984/, Joshua Lepley, CC BY 3.0 US

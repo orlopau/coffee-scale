@@ -50,6 +50,12 @@ void setup()
   EEPROM.begin(1024);
   btStop();
 
+  display.begin();
+  loadcell.begin();
+
+  display.drawOpener();
+  delay(3000);
+
   attachInterrupt(PIN_ENC_A, isr_input, CHANGE);
   attachInterrupt(PIN_ENC_B, isr_input, CHANGE);
   attachInterrupt(PIN_ENC_BTN, isr_input, CHANGE);
@@ -63,9 +69,6 @@ void setup()
 
   Serial.printf("Existing scale: %f\n", scale);
   loadcell.setScale(scale);
-
-  display.begin();
-  loadcell.begin();
 }
 
 #ifdef PERF

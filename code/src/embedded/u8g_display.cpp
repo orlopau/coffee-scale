@@ -4,6 +4,7 @@
 
 #include "u8g_display.h"
 #include "formatters.h"
+#include "data/bitmaps.h"
 
 U8GDisplay::U8GDisplay(const uint8_t pin_sda, const uint8_t pin_scl, const u8g2_cb_t *rotation)
     : u8g(rotation, U8X8_PIN_NONE, pin_scl, pin_sda)
@@ -267,6 +268,46 @@ void U8GDisplay::text(const char *text)
         pointer = strtok(NULL, "\n");
     }
     delete textCopy;
+
+    u8g.sendBuffer();
+}
+
+void U8GDisplay::drawOpener()
+{
+    u8g.clearBuffer();
+
+    u8g.drawXBM(0, 0, chemex_width, chemex_height, chemex_bits);
+
+    u8g.setFont(u8g_font_10x20);
+    const static char *textLine1 = "Coffee";
+    const static char *textLine2 = "Scale";
+    int ascent = u8g.getAscent();
+    int width = u8g.getDisplayWidth();
+    int height = u8g.getDisplayHeight();
+
+    int remainingCenter = chemex_width + (width - chemex_width) / 2.0;
+
+    int textWidth = u8g.getStrWidth(textLine1);
+    int yy = 6 + ascent;
+    u8g.drawStr(remainingCenter - textWidth / 2.0, yy, textLine1);
+    yy += ascent + 4;
+    textWidth = u8g.getStrWidth(textLine2);
+    u8g.drawStr(remainingCenter - textWidth / 2.0, yy, textLine2);
+
+    u8g.setFont(u8g_font_7x13);
+    ascent = u8g.getAscent();
+    const static char *textLineUrl = "orlopau.dev";
+    const static char *textLineVersion = "V1.0.0";
+    textWidth = u8g.getStrWidth("v0.1");
+
+    yy += ascent + 5;
+    textWidth = u8g.getStrWidth(textLineUrl);
+    u8g.drawStr(remainingCenter - textWidth / 2.0, yy, textLineUrl);
+
+    u8g.setFont(u8g_font_6x12);
+    ascent = u8g.getAscent();
+    textWidth = u8g.getStrWidth(textLineVersion);
+    u8g.drawStr(remainingCenter - textWidth / 2.0, height - 2, textLineVersion);
 
     u8g.sendBuffer();
 }

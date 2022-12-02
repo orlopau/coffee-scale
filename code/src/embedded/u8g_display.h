@@ -21,6 +21,7 @@ public:
     void text(const char *text);
     void update(){};
     void clear();
+    void drawOpener();
 
 private:
     U8G2_SH1107_64X128_F_HW_I2C u8g;
