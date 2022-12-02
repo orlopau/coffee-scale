@@ -15,16 +15,10 @@ ModeRecipes::ModeRecipes(LoadCell &loadCell, UserInput &input, Display &display,
     : loadCell(loadCell), input(input), display(display), state(RECIPE_SELECTION), recipes(recipes),
       recipeCount(recipeCount), recipeIndex(0), recipePourIndex(0), pourStartMillis(0), coffeeWeightAdjustmentMg(0)
 {
-    recipeSwitcherEntries = new char[recipeCount * 64 + recipeCount * 2];
-    strcpy(recipeSwitcherEntries, "\0");
-
+    recipeSwitcherEntries = new const char*[recipeCount];
     for (uint8_t i = 0; i < recipeCount; i++)
     {
-        strncat(recipeSwitcherEntries, recipes[i].name, 64);
-        if (i < recipeCount - 1)
-        {
-            strcat(recipeSwitcherEntries, "\n");
-        }
+        recipeSwitcherEntries[i] = recipes[i].name;
     }
 };
 
@@ -134,7 +128,7 @@ void ModeRecipes::updateRecipeConfig()
     coffeeWeightAdjustmentMg = input.getEncoderTicks() * WEIGHT_ADJUST_MULTIPLIER;
 
     const uint32_t coffeeWeightMg = recipe->coffeeWeightMg + coffeeWeightAdjustmentMg;
-    const uint32_t waterWeight = coffeeWeightMg * (recipe->ratio / 100);
+    const uint32_t waterWeight = (coffeeWeightMg * (recipe->ratio / 100.0)) / 1000;
     display.recipeCoffeeWeightConfig(recipe->name, coffeeWeightMg, waterWeight);
 }
 
@@ -160,6 +154,8 @@ void ModeRecipes::updateRecipeBrewing()
     const Pour *pour = &recipe->pours[recipePourIndex];
 
     const uint32_t coffeeWeightMg = recipe->coffeeWeightMg + coffeeWeightAdjustmentMg;
+
+    // TODO add all previous weights!
     const int32_t remainingWeightMg = (coffeeWeightMg * (pour->ratio / 100)) - (loadCell.getWeight() * 1000);
 
     uint64_t passedTimeMs = now() - pourStartMillis;
@@ -195,7 +191,7 @@ void ModeRecipes::updateRecipeBrewing()
         }
     }
 
-    display.recipePour(remainingWeightMg, remainingTimeMs, brewState == PAUSE, recipePourIndex, recipe->poursCount);
+    display.recipePour(pour->note, remainingWeightMg, remainingTimeMs, brewState == PAUSE, recipePourIndex, recipe->poursCount);
 }
 
 void ModeRecipes::updateRecipeDone()

@@ -32,7 +32,7 @@ private:
     UserInput &input;
     Display &display;
 
-    char *recipeSwitcherEntries;
+    const char **recipeSwitcherEntries;
 
     void updateRecipeSwitcher();
     void updateRecipeSummary();

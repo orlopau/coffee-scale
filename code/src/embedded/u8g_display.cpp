@@ -42,6 +42,11 @@ void U8GDisplay::promptText(const char *prompt, const char *text)
     u8g.sendBuffer();
 }
 
+void U8GDisplay::drawCenterText(const char *text, uint8_t y)
+{
+    u8g.drawStr(u8g.getDisplayWidth() / 2.0 - u8g.getStrWidth(text) / 2.0, y, text);
+}
+
 void U8GDisplay::centerText(const char *text, const uint8_t size)
 {
     u8g.clearBuffer();
@@ -67,18 +72,183 @@ void U8GDisplay::centerText(const char *text, const uint8_t size)
     u8g.sendBuffer();
 }
 
-void U8GDisplay::switcher(const char *current, const uint8_t index, const uint8_t count, const char *options)
+int U8GDisplay::drawTitleLine(const char *title)
 {
+    int ascent = u8g.getAscent();
+    int descent = u8g.getDescent();
+    int width = u8g.getDisplayWidth();
+    int yy = ascent - descent;
+
+    // draw title line
+    u8g.drawStr(width / 2.0 - u8g.getStrWidth(title) / 2.0, yy, title);
+    yy += 2;
+    u8g.drawHLine(0, yy, width);
+    yy += 2;
+    return yy;
+}
+
+void U8GDisplay::switcher(const char *current, const uint8_t index, const uint8_t count, const char *options[])
+{
+    static const char *title = "Select recipe.";
+
     u8g.clearBuffer();
-    u8g.userInterfaceSelectionList("Select a recipe.", index, options);
     u8g.setFont(u8g_font_6x10);
-    u8g.drawStr(0, 10, current);
+
+    int ascent = u8g.getAscent();
+    int descent = u8g.getDescent();
+    int height = u8g.getDisplayHeight();
+    int width = u8g.getDisplayWidth();
+
+    int yy = drawTitleLine(title);
+
+    int optionHeight = ascent + 2;
+    int visibleOptionsCount = (height - yy) / optionHeight;
+    if (visibleOptionsCount > count)
+    {
+        visibleOptionsCount = count;
+    }
+
+    int firstVisibleOptionIndex = index - visibleOptionsCount / 2;
+    if (firstVisibleOptionIndex < 0)
+    {
+        firstVisibleOptionIndex = 0;
+    }
+    else if (firstVisibleOptionIndex + visibleOptionsCount > count)
+    {
+        // if last displayed item would be out of bounds, start displaying at the last possible item
+        firstVisibleOptionIndex = count - visibleOptionsCount;
+    }
+
+    // yy in for loop is the top of the current option
+    for (int i = 0; i < visibleOptionsCount; i++)
+    {
+        int optionIndex = firstVisibleOptionIndex + i;
+
+        // when option is selected, draw inverted
+        if (optionIndex == index)
+        {
+            u8g.drawBox(0, yy, width, optionHeight);
+            u8g.setDrawColor(0);
+        }
+
+        u8g.drawStr(0, yy + ascent, options[optionIndex]);
+        u8g.setDrawColor(1);
+        yy += (optionHeight + 1);
+    }
+
     u8g.sendBuffer();
 };
 
-void U8GDisplay::recipeSummary(const char *name, const char *description) {}
-void U8GDisplay::recipeCoffeeWeightConfig(const char *header, unsigned int weightMg, unsigned int waterWeightMl) {}
-void U8GDisplay::recipePour(uint32_t weightToPour, uint64_t timeToFinish, bool isPause, uint8_t pourIndex, uint8_t pours) {}
+int U8GDisplay::drawLinebreakText(const char *text, uint8_t x, uint8_t y)
+{
+    // draw text, move to next line when linebreak is detected
+    char *textCopy = strdup(text);
+    char *pointer = strtok(textCopy, "\n");
+
+    int yy = y;
+    int ascent = u8g.getAscent();
+    int descent = u8g.getDescent();
+    while (pointer != NULL)
+    {
+        yy += (ascent - descent);
+        u8g.drawStr(x, yy, pointer);
+        pointer = strtok(NULL, "\n");
+    }
+
+    delete textCopy;
+    return yy;
+}
+
+void U8GDisplay::recipeSummary(const char *name, const char *description)
+{
+    u8g.clearBuffer();
+    u8g.setFont(u8g_font_6x10);
+
+    int ascent = u8g.getAscent();
+    int descent = u8g.getDescent();
+
+    int height = u8g.getDisplayHeight();
+    int width = u8g.getDisplayWidth();
+
+    int yy = drawTitleLine(name);
+
+    drawLinebreakText(description, 0, yy);
+    u8g.sendBuffer();
+}
+
+void U8GDisplay::recipeCoffeeWeightConfig(const char *header, unsigned int weightMg, unsigned int waterWeightMl)
+{
+    u8g.clearBuffer();
+    u8g.setFont(u8g_font_6x10);
+
+    int ascent = u8g.getAscent();
+    int yy = drawTitleLine(header);
+
+    yy += (ascent + 4);
+    drawCenterText("Enter coffee weight.", yy);
+
+    yy += (ascent + 8);
+    static char buffer[16];
+    sprintf(buffer, "Coffee: %.2fg", weightMg / 1000.0);
+    drawCenterText(buffer, yy);
+
+    yy += (ascent + 2);
+
+    sprintf(buffer, "Water: %dml", waterWeightMl);
+    drawCenterText(buffer, yy);
+
+    u8g.sendBuffer();
+}
+void U8GDisplay::recipePour(const char *text, uint32_t weightToPourMg, uint64_t timeToFinishMs, bool isPause, uint8_t pourIndex, uint8_t pours)
+{
+    u8g.clearBuffer();
+    u8g.setFont(u8g_font_6x10);
+
+    int width = u8g.getDisplayWidth();
+    int ascent = u8g.getAscent();
+
+    // display header shwoing number of pours as rectangles with current pur highlighted by a filled rectangle
+    static const int PROGRESS_HEIGHT = 4;
+    int boxWidth = width / pours;
+    u8g.drawFrame(0, 0, width, PROGRESS_HEIGHT);
+    for (int i = 1; i < pours; i++)
+    {
+        u8g.drawVLine(i * boxWidth, 0, PROGRESS_HEIGHT);
+    }
+    u8g.drawBox(pourIndex * boxWidth, 0, boxWidth, PROGRESS_HEIGHT);
+
+    // draw info text
+    int yy = drawLinebreakText(text, 0, PROGRESS_HEIGHT + 2);
+    yy += 3;
+    u8g.drawHLine(0, yy, width);
+    yy += 3;
+
+    // get center of remaining y space
+    int center = yy + (u8g.getDisplayHeight() - yy) / 2.0;
+
+    // TODO add lines showing progress of weight and time
+    const static int Y_SPACING = 5;
+    static char buffer[16];
+
+    u8g.setFont(u8g_font_7x13);
+    sprintf(buffer, "-%.2fg", weightToPourMg / 1000.0);
+
+    const static int TEXT_X_PADDING = 3;
+    u8g.drawStr(TEXT_X_PADDING, center + ascent / 2.0, buffer);
+
+    if (isPause)
+    {
+        sprintf(buffer, "TP-%02d:%02d", (int)(timeToFinishMs / 1000 / 60), (int)(timeToFinishMs / 1000 % 60));
+    }
+    else
+    {
+        sprintf(buffer, "T-%02d:%02d", (int)(timeToFinishMs / 1000 / 60), (int)(timeToFinishMs / 1000 % 60));
+    }
+    int textWidth = u8g.getStrWidth(buffer);
+    u8g.drawStr(width - textWidth - TEXT_X_PADDING, center + ascent / 2.0, buffer);
+
+    u8g.sendBuffer();
+}
 
 void U8GDisplay::text(const char *text)
 {

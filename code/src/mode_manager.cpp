@@ -20,12 +20,21 @@ void ModeManager::update()
         }
 
         display.centerText(modes[currentMode]->getName(), 16);
+
+        if (input.getEncoderClick() == ClickType::SINGLE)
+        {
+            inModeChange = false;
+        }
     }
     else
     {
-        modes[currentMode]->update();
+        if (input.getEncoderClick() == ClickType::LONG && modes[currentMode]->canSwitchMode())
+        {
+            inModeChange = true;
+        }
+        else
+        {
+            modes[currentMode]->update();
+        }
     }
-
-    // update mode change at next tick, else button clicks etc. could be passed to the selected mode on first tick
-    inModeChange = (inModeChange && input.getEncoderClick() != ClickType::SINGLE) || (modes[currentMode]->canSwitchMode() && input.getEncoderClick() == ClickType::LONG);
 }

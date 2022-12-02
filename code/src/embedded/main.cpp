@@ -2,7 +2,6 @@
 
 #include <Arduino.h>
 #include <EEPROM.h>
-#include <WiFi.h>
 
 #include "constants.h"
 #include "mode.h"
@@ -49,9 +48,7 @@ void setup()
   Serial.println("CoffeeScale v1.0.0");
 
   EEPROM.begin(1024);
-
   btStop();
-  WiFi.mode(WIFI_OFF);
 
   attachInterrupt(PIN_ENC_A, isr_input, CHANGE);
   attachInterrupt(PIN_ENC_B, isr_input, CHANGE);
@@ -69,9 +66,6 @@ void setup()
 
   display.begin();
   loadcell.begin();
-
-  // display.switcher("V60 Tetsu Kasuya", 1, 6,
-  //                  "V60 Tetsu Kasuya\nV60 James Hoffmann\nAeropress James Hoffmann\nKalita Recipe\nSpecial Recipe\nSomeething\nTake that recipe!");
 }
 
 #ifdef PERF

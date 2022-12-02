@@ -145,21 +145,21 @@ void test_recipe_configuration()
 
     // initial weight and water weight are displayed
     TEST_ASSERT_EQUAL(3000, display->weightConfigWeightMg);
-    // 1000mg coffee -> 2 pours with 2 and 3 times coffee weight as water respectively
-    TEST_ASSERT_EQUAL(15000, display->weightConfigWaterWeightMl);
+    // 3000mg coffee -> 2 pours with 2 and 3 times coffee weight as water respectively, resulting in 15g water
+    TEST_ASSERT_EQUAL(15, display->weightConfigWaterWeightMl);
 
     // encoder ticks adjust coffee weight
     // turning encoder left should decrease
     buttons->encoderTicks = -1;
     modeRecipes->update();
     TEST_ASSERT_EQUAL(2000, display->weightConfigWeightMg);
-    TEST_ASSERT_EQUAL(10000, display->weightConfigWaterWeightMl);
+    TEST_ASSERT_EQUAL(10, display->weightConfigWaterWeightMl);
 
     // cant reduce to 0 or below
     buttons->encoderTicks = -3;
     modeRecipes->update();
     TEST_ASSERT_EQUAL(1000, display->weightConfigWeightMg);
-    TEST_ASSERT_EQUAL(5000, display->weightConfigWaterWeightMl);
+    TEST_ASSERT_EQUAL(5, display->weightConfigWaterWeightMl);
 }
 
 void test_recipe_brewing()

@@ -60,7 +60,7 @@ public:
         delete[] lastCenterText;
         lastCenterText = strdup(text);
     };
-    void switcher(const char *current, const uint8_t index, const uint8_t count, const char* options)
+    void switcher(const char *current, const uint8_t index, const uint8_t count, const char* options[])
     {
         delete[] switcherText;
         switcherText = strdup(current);
@@ -79,7 +79,7 @@ public:
         weightConfigWeightMg = weightMg;
         weightConfigWaterWeightMl = waterWeightMl;
     }
-    void recipePour(uint32_t weightToPour, uint64_t timeToFinish, bool isPause, uint8_t pourIndex, uint8_t pours)
+    void recipePour(const char* text, uint32_t weightToPour, uint64_t timeToFinish, bool isPause, uint8_t pourIndex, uint8_t pours)
     {
         recipeWeightToPourMg = weightToPour;
         recipeTimeToFinishMs = timeToFinish;
