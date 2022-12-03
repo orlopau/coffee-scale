@@ -41,15 +41,14 @@ void ModeCalibration::update()
 
         if (numMeasurements >= CALIBRATION_SAMPLE_SIZE)
         {
+            average = static_cast<float>(sumMeasurements) / static_cast<float>(numMeasurements);
+            scale = static_cast<float>(DEFAULT_CALIBRATION_WEIGHT) / average;
+            saveScaleFnc(scale);
             calibrationStep = CalibrationStep::END;
         }
         break;
     case CalibrationStep::END:
         display.text("Calibration complete.\n\nClick to continue!");
-        average = static_cast<float>(sumMeasurements) / static_cast<float>(numMeasurements);
-        scale = static_cast<float>(DEFAULT_CALIBRATION_WEIGHT) / average;
-        saveScaleFnc(scale);
-        calibrationStep = CalibrationStep::END;
         break;
     }
 }
@@ -59,7 +58,7 @@ bool ModeCalibration::canSwitchMode()
     return calibrationStep == CalibrationStep::END;
 }
 
-const char* ModeCalibration::getName()
+const char *ModeCalibration::getName()
 {
     return "Calibration";
 }

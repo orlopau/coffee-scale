@@ -17,7 +17,7 @@ public:
 
 private:
     float scale;
-    float lastWeight;
+    long lastWeight;
     uint8_t sck, dout;
 
     bool newWeight = false;

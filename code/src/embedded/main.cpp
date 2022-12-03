@@ -62,7 +62,7 @@ void setup()
 
   float scale;
   EEPROM.get(EEPROM_ADDR_SCALE, scale);
-  if (scale == 0 || isnan(scale))
+  if (scale <= 0 || isnan(scale))
   {
     scale = 1.0f;
   }

@@ -25,9 +25,6 @@ long HX711LoadCell::read()
     portMUX_TYPE mux = portMUX_INITIALIZER_UNLOCKED;
     portENTER_CRITICAL(&mux);
 
-    // read hx711 without waiting for ready signal
-    // delayMicroseconds(1);
-
     // shift out bits
     long value = 0;
     for (int i = 0; i < 24; i++)
@@ -49,21 +46,24 @@ long HX711LoadCell::read()
     digitalWrite(sck, LOW);
     delayMicroseconds(1);
 
-	portEXIT_CRITICAL(&mux);
+    portEXIT_CRITICAL(&mux);
     return value;
 }
 
 void HX711LoadCell::update()
 {
-    if (newWeight)
+    newWeight = false;
+
+    if (isReady())
     {
-        newWeight = false;
+        lastWeight = read();
+        newWeight = true;
     }
 }
 
 float HX711LoadCell::getWeight()
 {
-    return ((float)lastWeight * scale) - (float)offset;
+    return (lastWeight - offset) * scale;
 }
 
 bool HX711LoadCell::isNewWeight()
