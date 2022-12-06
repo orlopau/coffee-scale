@@ -47,11 +47,11 @@ void test_stopwatch_stop_when_click_again(void)
     TEST_ASSERT_FALSE(stopwatch->isRunning());
 }
 
-void test_loadcell_tare_when_click(void)
+void test_loadcell_tare_when_encoder_rotated(void)
 {
     loadCell->weight = 1.0;
 
-    buttons->encoderClick = ClickType::LONG;
+    buttons->encoderDirection = EncoderDirection::CW;
     modeDefault->update();
     TEST_ASSERT_EQUAL(0, loadCell->weight);
 }
@@ -77,7 +77,7 @@ int main(void)
     RUN_TEST(test_stopwatch_start_when_click);
     RUN_TEST(test_stopwatch_stop_when_click_again);
 
-    RUN_TEST(test_loadcell_tare_when_click);
+    RUN_TEST(test_loadcell_tare_when_encoder_rotated);
     RUN_TEST(test_display_shows_weight);
     RUN_TEST(test_display_shows_time);
     UNITY_END();
