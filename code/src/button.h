@@ -40,6 +40,11 @@ public:
     ClickType getClickType();
 
     /**
+     * @brief Get the current click type and reset it to NONE.
+     */
+    ClickType consumeClickType();
+
+    /**
      * @brief Returns the debounced button state.
      *
      * @return true when pressed, false when released

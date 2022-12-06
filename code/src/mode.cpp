@@ -8,7 +8,7 @@ void ModeDefault::update()
 {
     display.display(loadCell.getWeight(), stopwatch.getTime());
 
-    if (buttons.getEncoderClick() == ClickType::LONG)
+    if (buttons.getEncoderDirection() != EncoderDirection::NONE)
     {
         loadCell.tare();
     }

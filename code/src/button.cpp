@@ -65,6 +65,13 @@ bool Button::isPressed()
     return buttonStateDebounced;
 }
 
+ClickType Button::consumeClickType()
+{
+    ClickType result = clickType;
+    clickType = ClickType::NONE;
+    return result;
+}
+
 ClickType Button::getClickType()
 {
     return clickType;

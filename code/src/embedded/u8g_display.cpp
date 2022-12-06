@@ -200,6 +200,26 @@ void U8GDisplay::recipeCoffeeWeightConfig(const char *header, unsigned int weigh
 
     u8g.sendBuffer();
 }
+
+void U8GDisplay::recipeConfigRatio(const char *header, unsigned int coffee, unsigned int water)
+{
+    u8g.clearBuffer();
+    u8g.setFont(u8g_font_6x10);
+
+    int ascent = u8g.getAscent();
+    int yy = drawTitleLine(header);
+
+    yy += (ascent + 4);
+    drawCenterText("Enter ratio.", yy);
+
+    yy += (ascent + 8);
+    static char buffer[16];
+    sprintf(buffer, "%.1f:%.1f", coffee / 100.0, water / 100.0);
+    drawCenterText(buffer, yy);
+
+    u8g.sendBuffer();
+}
+
 void U8GDisplay::recipePour(const char *text, uint32_t weightToPourMg, uint64_t timeToFinishMs, bool isPause, uint8_t pourIndex, uint8_t pours)
 {
     u8g.clearBuffer();

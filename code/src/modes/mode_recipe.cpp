@@ -4,211 +4,307 @@
 #include "millis.h"
 
 #define WEIGHT_ADJUST_MULTIPLIER 1000
+#define RATIO_ADJUST_MULTIPLIER 10
 
-ModeRecipes::~ModeRecipes()
+class RecipeSwitcherStep : public RecipeStep
 {
-    delete[] recipeSwitcherEntries;
-}
-
-ModeRecipes::ModeRecipes(LoadCell &loadCell, UserInput &input, Display &display, const Recipe recipes[],
-                         uint8_t recipeCount)
-    : loadCell(loadCell), input(input), display(display), state(RECIPE_SELECTION), recipes(recipes),
-      recipeCount(recipeCount), recipeIndex(0), recipePourIndex(0), pourStartMillis(0), coffeeWeightAdjustmentMg(0)
-{
-    recipeSwitcherEntries = new const char*[recipeCount];
-    for (uint8_t i = 0; i < recipeCount; i++)
+public:
+    ~RecipeSwitcherStep()
     {
-        recipeSwitcherEntries[i] = recipes[i].name;
+        delete[] recipeSwitcherEntries;
     }
+
+    RecipeSwitcherStep(RecipeStepState &state, Display &display, UserInput &input, const Recipe recipes[], const uint8_t recipeCount)
+        : state(state), display(display), input(input), recipes(recipes), recipeCount(recipeCount), recipeIndex(0)
+    {
+        recipeSwitcherEntries = new const char *[recipeCount];
+        for (uint8_t i = 0; i < recipeCount; i++)
+        {
+            recipeSwitcherEntries[i] = recipes[i].name;
+        }
+    }
+
+    void update() override
+    {
+        int16_t change = static_cast<int16_t>(input.getEncoderDirection());
+
+        if (recipeIndex + change >= recipeCount)
+        {
+            recipeIndex = recipeCount - 1;
+        }
+        else if (recipeIndex + change < 0)
+        {
+            recipeIndex = 0;
+        }
+        else
+        {
+            recipeIndex += change;
+        }
+
+        display.switcher(recipes[recipeIndex].name, recipeIndex, recipeCount, recipeSwitcherEntries);
+    }
+
+    void exit() override
+    {
+        state.originalRecipe = &recipes[recipeIndex];
+        state.configRecipe = recipes[recipeIndex];
+    }
+
+private:
+    RecipeStepState &state;
+    Display &display;
+    UserInput &input;
+
+    const Recipe *recipes;
+    const char **recipeSwitcherEntries;
+    uint8_t recipeCount;
+    uint8_t recipeIndex;
 };
 
-void ModeRecipes::update()
+class RecipeSummaryStep : public RecipeStep
 {
-    updateSteps();
-
-    switch (state)
+public:
+    RecipeSummaryStep(RecipeStepState &state, Display &display) : state(state), display(display){};
+    void update() override
     {
-    case RECIPE_SELECTION:
-        updateRecipeSwitcher();
-        break;
-    case RECIPE_SUMMARY:
-        updateRecipeSummary();
-        break;
-    case RECIPE_CONFIG:
-        updateRecipeConfig();
-        break;
-    case RECIPE_PREPARE:
-        updateRecipePrepare();
-        break;
-    case RECIPE_BREWING:
-        updateRecipeBrewing();
-        break;
-    case RECIPE_DONE:
-        updateRecipeDone();
-        break;
-    }
-}
-
-void ModeRecipes::updateSteps()
-{
-    // long press returns, single press advances
-    bool hasChanged = false;
-    if (input.getEncoderClick() == ClickType::LONG && state != RECIPE_DONE)
-    {
-        if (static_cast<uint8_t>(state) > 0)
-        {
-            state = static_cast<State>(static_cast<uint8_t>(state) - 1);
-            hasChanged = true;
-        }
-    }
-    else if (input.getEncoderClick() == ClickType::SINGLE && state != RECIPE_BREWING && state != RECIPE_DONE)
-    {
-        // prevent forward state change when brewing is active
-        if (static_cast<uint8_t>(state) + 1 < static_cast<uint8_t>(SIZE))
-        {
-            state = static_cast<State>(static_cast<uint8_t>(state) + 1);
-            hasChanged = true;
-        }
+        display.recipeSummary(state.originalRecipe->name, state.originalRecipe->note);
     }
 
-    if (hasChanged)
-    {
-        switch (state)
-        {
-        case RECIPE_BREWING:
-            loadCell.tare();
-            recipePourIndex = 0;
-            pourStartMillis = 0;
-            pourStartMillis = now();
-            break;
-        }
-    }
-}
-
-void ModeRecipes::updateRecipeSwitcher()
-{
-    int16_t change = static_cast<int16_t>(input.getEncoderDirection());
-
-    if (recipeIndex + change >= recipeCount)
-    {
-        recipeIndex = recipeCount - 1;
-    }
-    else if (recipeIndex + change < 0)
-    {
-        recipeIndex = 0;
-    }
-    else
-    {
-        recipeIndex += change;
-    }
-
-    display.switcher(recipes[recipeIndex].name, recipeIndex, recipeCount, recipeSwitcherEntries);
-}
-
-void ModeRecipes::updateRecipeSummary()
-{
-    display.recipeSummary(recipes[recipeIndex].name, recipes[recipeIndex].note);
-}
-
-void ModeRecipes::updateRecipeConfig()
-{
-    const Recipe *recipe = &recipes[recipeIndex];
-
-    int lowerBoundTicks = -((recipe->coffeeWeightMg - 1) / WEIGHT_ADJUST_MULTIPLIER);
-    int upperBoundTicks = 128;
-    if (input.getEncoderTicks() > upperBoundTicks)
-    {
-        input.setEncoderTicks(upperBoundTicks);
-    }
-    else if (input.getEncoderTicks() < lowerBoundTicks)
-    {
-        input.setEncoderTicks(lowerBoundTicks);
-    }
-
-    coffeeWeightAdjustmentMg = input.getEncoderTicks() * WEIGHT_ADJUST_MULTIPLIER;
-
-    const uint32_t coffeeWeightMg = recipe->coffeeWeightMg + coffeeWeightAdjustmentMg;
-    const uint32_t waterWeight = (coffeeWeightMg * (recipe->ratio / 100.0)) / 1000;
-    display.recipeCoffeeWeightConfig(recipe->name, coffeeWeightMg, waterWeight);
-}
-
-void ModeRecipes::updateRecipePrepare()
-{
-    // display that user should insert coffee grounds
-    static char buffer[64];
-    sprintf(buffer, "Insert %dg coffee,\nthen click to\ncontinue.",
-            (recipes[recipeIndex].coffeeWeightMg + coffeeWeightAdjustmentMg) / 1000);
-    display.text(buffer);
-}
-
-enum BrewState
-{
-    POUR,
-    PAUSE,
-    DONE,
+private:
+    RecipeStepState &state;
+    Display &display;
 };
 
-void ModeRecipes::updateRecipeBrewing()
+class RecipeConfigRatioStep : public RecipeStep
 {
-    const Recipe *recipe = &recipes[recipeIndex];
-    const Pour *pour = &recipe->pours[recipePourIndex];
-
-    const uint32_t coffeeWeightMg = recipe->coffeeWeightMg + coffeeWeightAdjustmentMg;
-
-    // TODO add all previous weights!
-    const int32_t remainingWeightMg = (coffeeWeightMg * (pour->ratio / 100)) - (loadCell.getWeight() * 1000);
-
-    uint64_t passedTimeMs = now() - pourStartMillis;
-    uint64_t remainingTimeMs;
-
-    BrewState brewState;
-    if (passedTimeMs < pour->timePour)
+public:
+    RecipeConfigRatioStep(RecipeStepState &state, Display &display, UserInput &input) : state(state), display(display), input(input){};
+    void update() override
     {
-        brewState = POUR;
-        remainingTimeMs = pour->timePour - passedTimeMs;
-    }
-    else if (passedTimeMs < pour->timePour + pour->timePause)
-    {
-        brewState = PAUSE;
-        remainingTimeMs = pour->timePour + pour->timePause - passedTimeMs;
-    }
-    else
-    {
-        brewState = DONE;
-        remainingTimeMs = 0;
-        if (input.getEncoderClick() == ClickType::SINGLE)
+        // declare bounds for adjustment
+        int lowerBoundTicks, upperBoundTicks;
+        lowerBoundTicks = -(state.originalRecipe->ratio - 100) / RATIO_ADJUST_MULTIPLIER;
+        upperBoundTicks = 64 * RATIO_ADJUST_MULTIPLIER;
+
+        // enforce bounds
+        if (input.getEncoderTicks() > upperBoundTicks)
         {
-            // if whole recipe is done, go to done, else go to next pour
-            if (recipePourIndex + 1 < recipe->poursCount)
+            input.setEncoderTicks(upperBoundTicks);
+        }
+        else if (input.getEncoderTicks() < lowerBoundTicks)
+        {
+            input.setEncoderTicks(lowerBoundTicks);
+        }
+
+        // update values and display
+        state.configRecipe.ratio = state.originalRecipe->ratio + input.getEncoderTicks() * RATIO_ADJUST_MULTIPLIER;
+        display.recipeConfigRatio(state.configRecipe.name, 100, state.configRecipe.ratio);
+    }
+    void enter() override
+    {
+        input.resetEncoderTicks();
+    }
+
+private:
+    RecipeStepState &state;
+    Display &display;
+    UserInput &input;
+};
+
+class RecipeConfigWeightStep : public RecipeStep
+{
+public:
+    RecipeConfigWeightStep(RecipeStepState &state, Display &display, UserInput &input) : state(state), display(display), input(input){};
+    void update() override
+    {
+        // declare bounds for adjustment
+        int lowerBoundTicks, upperBoundTicks;
+        lowerBoundTicks = -((state.originalRecipe->coffeeWeightMg - 1) / WEIGHT_ADJUST_MULTIPLIER);
+        upperBoundTicks = 128;
+
+        // enforce bounds
+        if (input.getEncoderTicks() > upperBoundTicks)
+        {
+            input.setEncoderTicks(upperBoundTicks);
+        }
+        else if (input.getEncoderTicks() < lowerBoundTicks)
+        {
+            input.setEncoderTicks(lowerBoundTicks);
+        }
+
+        // update values and display
+        state.configRecipe.coffeeWeightMg = state.originalRecipe->coffeeWeightMg + input.getEncoderTicks() * WEIGHT_ADJUST_MULTIPLIER;
+        display.recipeCoffeeWeightConfig(state.configRecipe.name, state.configRecipe.coffeeWeightMg,
+                                         state.configRecipe.coffeeWeightMg * (state.configRecipe.ratio / 100.0) / 1000);
+    }
+    void enter() override
+    {
+        input.resetEncoderTicks();
+    }
+
+private:
+    RecipeStepState &state;
+    Display &display;
+    UserInput &input;
+};
+
+class RecipePrepare : public RecipeStep
+{
+public:
+    RecipePrepare(RecipeStepState &state, Display &display, LoadCell &loadCell) : state(state), display(display), loadCell(loadCell){};
+    void update() override
+    {
+        // display that user should insert coffee grounds
+        static char buffer[64];
+        sprintf(buffer, "Insert %dg coffee,\nthen click to\ncontinue.", state.configRecipe.coffeeWeightMg / 1000);
+        display.text(buffer);
+    }
+    void exit() override
+    {
+        loadCell.tare();
+    }
+
+private:
+    RecipeStepState &state;
+    Display &display;
+    LoadCell &loadCell;
+};
+
+class RecipeBrewing : public RecipeStep
+{
+public:
+    RecipeBrewing(RecipeStepState &state, Display &display, UserInput &input, LoadCell &loadCell)
+        : state(state), display(display), input(input), loadCell(loadCell){};
+    void update() override
+    {
+        const Pour *pour = &state.configRecipe.pours[recipePourIndex];
+
+        const int32_t remainingWeightMg = (state.configRecipe.coffeeWeightMg * (pour->ratio / 100)) - (loadCell.getWeight() * 1000);
+        const uint64_t passedTimePourMs = now() - pourStartMillis;
+        uint64_t remainingTimePourMs;
+
+        BrewState brewState;
+        if (passedTimePourMs < pour->timePour)
+        {
+            brewState = POUR;
+            remainingTimePourMs = pour->timePour - passedTimePourMs;
+        }
+        else if (passedTimePourMs < pour->timePour + pour->timePause)
+        {
+            brewState = PAUSE;
+            remainingTimePourMs = pour->timePour + pour->timePause - passedTimePourMs;
+        }
+        else
+        {
+            brewState = DONE;
+            remainingTimePourMs = 0;
+            // if there is another pour, start it
+            if (input.getEncoderClick() == ClickType::SINGLE && recipePourIndex + 1 < state.configRecipe.poursCount)
             {
                 recipePourIndex++;
                 pourStartMillis = now();
             }
-            else
-            {
-                state = RECIPE_DONE;
-            }
+        }
+
+        display.recipePour(pour->note, remainingWeightMg, remainingTimePourMs, brewState == PAUSE, recipePourIndex, state.configRecipe.poursCount);
+    }
+    void enter() override
+    {
+        recipePourIndex = 0;
+        pourStartMillis = now();
+    }
+    bool canStepForward() override
+    {
+        return recipePourIndex + 1 >= state.configRecipe.poursCount;
+    }
+
+private:
+    RecipeStepState &state;
+    Display &display;
+    UserInput &input;
+    LoadCell &loadCell;
+
+    enum BrewState
+    {
+        POUR,
+        PAUSE,
+        DONE,
+    };
+    unsigned long pourStartMillis = 0;
+    uint8_t recipePourIndex = 0;
+};
+
+class RecipeDone : public RecipeStep
+{
+public:
+    RecipeDone(RecipeStepState &state, Display &display) : state(state), display(display){};
+    void update() override
+    {
+        display.centerText("Done!", 30);
+    }
+
+private:
+    RecipeStepState &state;
+    Display &display;
+};
+
+ModeRecipes::ModeRecipes(LoadCell &loadCell, UserInput &input, Display &display, const Recipe recipes[],
+                         uint8_t recipeCount)
+    : loadCell(loadCell), input(input), display(display), currentRecipeStep(0),
+      recipeSteps{
+          new RecipeSwitcherStep(recipeStepState, display, input, recipes, recipeCount),
+          new RecipeSummaryStep(recipeStepState, display),
+          new RecipeConfigRatioStep(recipeStepState, display, input),
+          new RecipeConfigWeightStep(recipeStepState, display, input),
+          new RecipePrepare(recipeStepState, display, loadCell),
+          new RecipeBrewing(recipeStepState, display, input, loadCell),
+          new RecipeDone(recipeStepState, display),
+      } {};
+
+void ModeRecipes::update()
+{
+    // update current step
+    // checks if step is ready to advance, and if so, advances
+    // if long click, go back to previous step
+    // when all steos are done, advancing to next step returns to first step
+    uint8_t previousStep = currentRecipeStep;
+    if (input.getEncoderClick() == ClickType::SINGLE && recipeSteps[currentRecipeStep]->canStepForward())
+    {
+        currentRecipeStep++;
+        if (currentRecipeStep >= recipeStepCount)
+        {
+            currentRecipeStep = 0;
+        }
+    }
+    else if (input.getEncoderClick() == ClickType::LONG && recipeSteps[currentRecipeStep]->canStepBackward())
+    {
+        if (currentRecipeStep > 0)
+        {
+            currentRecipeStep--;
         }
     }
 
-    display.recipePour(pour->note, remainingWeightMg, remainingTimeMs, brewState == PAUSE, recipePourIndex, recipe->poursCount);
-}
-
-void ModeRecipes::updateRecipeDone()
-{
-    display.centerText("Done!", 30);
-    if (input.getEncoderClick() == ClickType::SINGLE)
+    if (previousStep != currentRecipeStep)
     {
-        state = RECIPE_SELECTION;
+        recipeSteps[previousStep]->exit();
+        recipeSteps[currentRecipeStep]->enter();
+        input.consumeEncoderClick();
     }
-};
+
+    recipeSteps[currentRecipeStep]->update();
+}
 
 bool ModeRecipes::canSwitchMode()
 {
-    return state == RECIPE_SELECTION;
+    return currentRecipeStep == 0;
 }
 
-const char* ModeRecipes::getName()
+uint8_t ModeRecipes::getCurrentStepIndex()
+{
+    return currentRecipeStep;
+}
+
+const char *ModeRecipes::getName()
 {
     return "Recipes";
 }

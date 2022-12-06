@@ -44,6 +44,11 @@ void EmbeddedUserInput::resetEncoderTicks()
     encoder.setPosition(0);
 }
 
+ClickType EmbeddedUserInput::consumeEncoderClick()
+{
+    return encoderButton.consumeClickType();
+}
+
 ClickType EmbeddedUserInput::getEncoderClick()
 {
     return encoderButton.getClickType();

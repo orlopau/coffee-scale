@@ -17,6 +17,7 @@ public:
     void switcher(const char *current, const uint8_t index, const uint8_t count, const char *options[]);
     void recipeSummary(const char *name, const char *description);
     void recipeCoffeeWeightConfig(const char *header, unsigned int weightMg, unsigned int waterWeightMl);
+    void recipeConfigRatio(const char *header, unsigned int coffee, unsigned int water);
     void recipePour(const char *text, uint32_t weightToPourMg, uint64_t timeToFinishMs, bool isPause, uint8_t pourIndex, uint8_t pours);
     void text(const char *text);
     void update(){};

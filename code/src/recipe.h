@@ -2,6 +2,14 @@
 
 #include <stdint.h>
 
+enum class AdjustableParameter : uint8_t
+{
+    RATIO = 0x01,
+    COFFEE_WEIGHT = 0x02,
+    KASUYA_RATIO = 0x04,
+    KASUYA_NUM_POURS = 0x08,
+};
+
 /**
  * @brief Defines a single pour.
  *
@@ -35,6 +43,8 @@ struct Recipe
     uint16_t ratio;
     /// The number of pours in the recipe.
     uint8_t poursCount;
+    // Adjustable parameters one-hot encoded.
+    uint8_t adjustableParameters;
     /// Pours for the recipe.
     Pour pours[10];
 };

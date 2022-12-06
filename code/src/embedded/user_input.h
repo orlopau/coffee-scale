@@ -14,6 +14,7 @@ public:
     long getEncoderTicks();
     void setEncoderTicks(long ticks);
     void resetEncoderTicks();
+    ClickType consumeEncoderClick();
     ClickType getEncoderClick();
     bool isEncoderPressed();
 

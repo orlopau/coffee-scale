@@ -27,6 +27,11 @@ public:
     void update() {}
     long getEncoderTicks() { return encoderTicks; };
     void resetEncoderTicks() { encoderTicks = 0; };
+    ClickType consumeEncoderClick() {
+        ClickType click = encoderClick;
+        encoderClick = ClickType::NONE;
+        return click;
+    }
     ClickType getEncoderClick() { return encoderClick; };
     EncoderDirection getEncoderDirection() { return encoderDirection; };
     void setEncoderTicks(long ticks) { encoderTicks = ticks; };
@@ -56,14 +61,17 @@ public:
         this->time = time;
     };
     void promptText(const char *prompt, const char *subtext){};
-    void centerText(const char *text, const uint8_t size){
+    void centerText(const char *text, const uint8_t size)
+    {
         delete[] lastCenterText;
         lastCenterText = strdup(text);
     };
-    void switcher(const char *current, const uint8_t index, const uint8_t count, const char* options[])
+    void switcher(const char *current, const uint8_t index, const uint8_t count, const char *options[])
     {
         delete[] switcherText;
         switcherText = strdup(current);
+        switcherIndex = index;
+        switcherCount = count;
     };
     void recipeSummary(const char *name, const char *description)
     {
@@ -78,8 +86,13 @@ public:
         weightConfigHeader = strdup(header);
         weightConfigWeightMg = weightMg;
         weightConfigWaterWeightMl = waterWeightMl;
-    }
-    void recipePour(const char* text, uint32_t weightToPour, uint64_t timeToFinish, bool isPause, uint8_t pourIndex, uint8_t pours)
+    };
+    void recipeConfigRatio(const char *header, unsigned int coffee, unsigned int water)
+    {
+        ratioCoffee = coffee;
+        ratioWater = water;
+    };
+    void recipePour(const char *text, uint32_t weightToPour, uint64_t timeToFinish, bool isPause, uint8_t pourIndex, uint8_t pours)
     {
         recipeWeightToPourMg = weightToPour;
         recipeTimeToFinishMs = timeToFinish;
@@ -92,7 +105,7 @@ public:
         time = -1;
     };
 
-    char* lastCenterText = nullptr;
+    char *lastCenterText = nullptr;
 
     float weight = NAN;
     unsigned long time = -1;
@@ -106,6 +119,9 @@ public:
     char *weightConfigHeader = nullptr;
     unsigned int weightConfigWeightMg = 0;
     unsigned int weightConfigWaterWeightMl = 0;
+
+    unsigned int ratioCoffee = 0;
+    unsigned int ratioWater = 0;
 
     uint32_t recipeWeightToPourMg = 0;
     uint64_t recipeTimeToFinishMs = 0;

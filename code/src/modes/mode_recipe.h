@@ -3,49 +3,41 @@
 #include "mode.h"
 #include "recipe.h"
 
+struct RecipeStepState
+{
+    const Recipe *originalRecipe;
+    Recipe configRecipe;
+};
+
+class RecipeStep
+{
+public:
+    virtual ~RecipeStep(){};
+    virtual void update() = 0;
+    virtual void enter(){};
+    virtual void exit(){};
+    virtual bool canStepForward() { return true; };
+    virtual bool canStepBackward() { return true; };
+};
+
 class ModeRecipes : public Mode
 {
 public:
-    ~ModeRecipes();
     ModeRecipes(LoadCell &loadCell, UserInput &input,
                 Display &display, const Recipe recipes[], uint8_t recipeCount);
     void update();
-    const char* getName();
+    const char *getName();
     bool canSwitchMode();
-    uint8_t recipeIndex;
-    uint8_t recipePourIndex;
-
-    enum State
-    {
-        RECIPE_SELECTION = 0,
-        RECIPE_SUMMARY,
-        RECIPE_CONFIG,
-        RECIPE_PREPARE,
-        RECIPE_BREWING,
-        RECIPE_DONE,
-        SIZE,
-    };
-    State state;
+    uint8_t getCurrentStepIndex();
 
 private:
     LoadCell &loadCell;
     UserInput &input;
     Display &display;
 
-    const char **recipeSwitcherEntries;
+    RecipeStepState recipeStepState;
 
-    void updateRecipeSwitcher();
-    void updateRecipeSummary();
-    void updateRecipeConfig();
-    void updateRecipePrepare();
-    void updateRecipeBrewing();
-    void updateRecipeDone();
-
-    void updateSteps();
-
-    const Recipe *recipes;
-    uint8_t recipeCount;
-
-    unsigned long pourStartMillis;
-    int32_t coffeeWeightAdjustmentMg;
+    uint8_t currentRecipeStep;
+    static const uint8_t recipeStepCount = 7;
+    RecipeStep *recipeSteps[recipeStepCount];
 };
