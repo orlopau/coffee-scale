@@ -36,7 +36,7 @@ public:
     virtual void recipeSummary(const char *name, const char *description) = 0;
     virtual void recipeCoffeeWeightConfig(const char *header, unsigned int weightMg, unsigned int waterWeightMl) = 0;
     virtual void recipeConfigRatio(const char *header, float coffee, float water) = 0;
-    virtual void recipePour(const char *text, uint32_t weightToPourMg, uint64_t timeToFinishMs, bool isPause, uint8_t pourIndex, uint8_t pours) = 0;
+    virtual void recipePour(const char *text, int32_t weightToPourMg, uint64_t timeToFinishMs, bool isPause, uint8_t pourIndex, uint8_t pours) = 0;
     virtual void text(const char *text) = 0;
     virtual void update() = 0;
     virtual void clear() = 0;

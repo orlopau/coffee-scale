@@ -107,7 +107,7 @@ public:
         ratioCoffee = coffee;
         ratioWater = water;
     };
-    void recipePour(const char *text, uint32_t weightToPour, uint64_t timeToFinish, bool isPause, uint8_t pourIndex, uint8_t pours)
+    void recipePour(const char *text, int32_t weightToPour, uint64_t timeToFinish, bool isPause, uint8_t pourIndex, uint8_t pours)
     {
         recipeWeightToPourMg = weightToPour;
         recipeTimeToFinishMs = timeToFinish;

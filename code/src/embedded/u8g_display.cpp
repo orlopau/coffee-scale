@@ -243,7 +243,7 @@ int U8GDisplay::drawSelectedBar(uint8_t index, uint8_t size)
     return PROGRESS_HEIGHT;
 }
 
-void U8GDisplay::recipePour(const char *text, uint32_t weightToPourMg, uint64_t timeToFinishMs, bool isPause, uint8_t pourIndex, uint8_t pours)
+void U8GDisplay::recipePour(const char *text, int32_t weightToPourMg, uint64_t timeToFinishMs, bool isPause, uint8_t pourIndex, uint8_t pours)
 {
     u8g.clearBuffer();
     u8g.setFont(u8g_font_6x10);
