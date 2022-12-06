@@ -31,6 +31,7 @@ public:
     virtual void display(float weight, unsigned long time) = 0;
     virtual void promptText(const char *prompt, const char *subtext) = 0;
     virtual void centerText(const char *text, const uint8_t size) = 0;
+    virtual void modeSwitcher(const char *current, const uint8_t index, const uint8_t count, float batV, float batPercentage, bool batCharging) = 0;
     virtual void switcher(const char *current, const uint8_t index, const uint8_t count, const char *options[]) = 0;
     virtual void recipeSummary(const char *name, const char *description) = 0;
     virtual void recipeCoffeeWeightConfig(const char *header, unsigned int weightMg, unsigned int waterWeightMl) = 0;

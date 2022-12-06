@@ -14,6 +14,7 @@ public:
     void display(float weight, unsigned long time);
     void promptText(const char *prompt, const char *text);
     void centerText(const char *text, const uint8_t size);
+    void modeSwitcher(const char *current, const uint8_t index, const uint8_t count, float batV, float batPercentage, bool batCharging);
     void switcher(const char *current, const uint8_t index, const uint8_t count, const char *options[]);
     void recipeSummary(const char *name, const char *description);
     void recipeCoffeeWeightConfig(const char *header, unsigned int weightMg, unsigned int waterWeightMl);
@@ -33,8 +34,10 @@ private:
      * @return int current y after drawing
      */
     int drawTitleLine(const char *title);
-    void drawCenterText(const char *text, uint8_t y);
+    void drawHCenterText(const char *text, uint8_t y);
+    void drawCenterText(const char *text);
     int drawLinebreakText(const char *text, uint8_t x, uint8_t y);
+    int drawSelectedBar(uint8_t index, uint8_t size);
 };
 
 #endif

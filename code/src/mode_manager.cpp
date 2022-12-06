@@ -1,8 +1,8 @@
 #include "mode_manager.h"
 #include "millis.h"
 
-ModeManager::ModeManager(Mode *modes[], const int modeCount, Display &display, UserInput &input)
-    : modes(modes), modeCount(modeCount), currentMode(0), inModeChange(false), display(display), input(input) {}
+ModeManager::ModeManager(Mode *modes[], const int modeCount, Display &display, UserInput &input, Battery &battery)
+    : modes(modes), modeCount(modeCount), currentMode(0), inModeChange(false), display(display), input(input), battery(battery) {}
 
 void ModeManager::update()
 {
@@ -19,7 +19,8 @@ void ModeManager::update()
             currentMode = modeCount - 1;
         }
 
-        display.centerText(modes[currentMode]->getName(), 16);
+        display.modeSwitcher(modes[currentMode]->getName(), currentMode, modeCount,
+                             battery.getVoltage(), battery.getPercentage(), battery.isCharging());
 
         if (input.getEncoderClick() == ClickType::SINGLE)
         {

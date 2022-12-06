@@ -4,6 +4,15 @@
 #include "user_interface.h"
 #include <math.h>
 #include <string.h>
+#include "battery.h"
+
+class MockBattery : public Battery
+{
+public:
+    float getVoltage() { return 4.2; };
+    float getPercentage() { return 100; };
+    bool isCharging() { return false; };
+};
 
 class MockLoadCell : public LoadCell
 {
@@ -27,7 +36,8 @@ public:
     void update() {}
     long getEncoderTicks() { return encoderTicks; };
     void resetEncoderTicks() { encoderTicks = 0; };
-    ClickType consumeEncoderClick() {
+    ClickType consumeEncoderClick()
+    {
         ClickType click = encoderClick;
         encoderClick = ClickType::NONE;
         return click;
@@ -52,6 +62,7 @@ public:
         delete[] recipeDescription;
         delete[] weightConfigHeader;
         delete[] lastCenterText;
+        delete[] lastModeText;
     }
     void begin() {}
     void update() {}
@@ -65,6 +76,10 @@ public:
     {
         delete[] lastCenterText;
         lastCenterText = strdup(text);
+    };
+    void modeSwitcher(const char *current, const uint8_t index, const uint8_t count, float batV, float batPercentage, bool batCharging)
+    {
+        lastModeText = strdup(current);
     };
     void switcher(const char *current, const uint8_t index, const uint8_t count, const char *options[])
     {
@@ -106,6 +121,8 @@ public:
     };
 
     char *lastCenterText = nullptr;
+
+    char *lastModeText = nullptr;
 
     float weight = NAN;
     unsigned long time = -1;

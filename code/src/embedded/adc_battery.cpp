@@ -32,7 +32,7 @@ float ADCBattery::getPercentage()
     }
     else
     {
-        return (voltage - min / (max - min)) * 100;
+        return ((voltage - min) / (max - min)) * 100;
     }
 }
 

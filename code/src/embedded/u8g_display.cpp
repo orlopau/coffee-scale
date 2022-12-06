@@ -43,9 +43,14 @@ void U8GDisplay::promptText(const char *prompt, const char *text)
     u8g.sendBuffer();
 }
 
-void U8GDisplay::drawCenterText(const char *text, uint8_t y)
+void U8GDisplay::drawHCenterText(const char *text, uint8_t y)
 {
     u8g.drawStr(u8g.getDisplayWidth() / 2.0 - u8g.getStrWidth(text) / 2.0, y, text);
+}
+
+void U8GDisplay::drawCenterText(const char *text)
+{
+    drawHCenterText(text, u8g.getDisplayHeight() / 2.0 + u8g.getFontAscent() / 2.0);
 }
 
 void U8GDisplay::centerText(const char *text, const uint8_t size)
@@ -69,7 +74,7 @@ void U8GDisplay::centerText(const char *text, const uint8_t size)
         break;
     }
 
-    drawCenterText(text, mid);
+    drawHCenterText(text, mid);
     u8g.sendBuffer();
 }
 
@@ -186,17 +191,17 @@ void U8GDisplay::recipeCoffeeWeightConfig(const char *header, unsigned int weigh
     int yy = drawTitleLine(header);
 
     yy += (ascent + 4);
-    drawCenterText("Enter coffee weight.", yy);
+    drawHCenterText("Enter coffee weight.", yy);
 
     yy += (ascent + 8);
     static char buffer[16];
     sprintf(buffer, "Coffee: %.2fg", weightMg / 1000.0);
-    drawCenterText(buffer, yy);
+    drawHCenterText(buffer, yy);
 
     yy += (ascent + 2);
 
     sprintf(buffer, "Water: %dml", waterWeightMl);
-    drawCenterText(buffer, yy);
+    drawHCenterText(buffer, yy);
 
     u8g.sendBuffer();
 }
@@ -210,14 +215,32 @@ void U8GDisplay::recipeConfigRatio(const char *header, float coffee, float water
     int yy = drawTitleLine(header);
 
     yy += (ascent + 4);
-    drawCenterText("Enter ratio.", yy);
+    drawHCenterText("Enter ratio.", yy);
 
     yy += (ascent + 8);
     static char buffer[16];
     sprintf(buffer, "%.1f:%.1f", coffee, water);
-    drawCenterText(buffer, yy);
+    drawHCenterText(buffer, yy);
 
     u8g.sendBuffer();
+}
+
+int U8GDisplay::drawSelectedBar(uint8_t index, uint8_t size)
+{
+    int width = u8g.getDisplayWidth();
+    int ascent = u8g.getAscent();
+
+    // display header shwoing number of pours as rectangles with current pur highlighted by a filled rectangle
+    static const int PROGRESS_HEIGHT = 4;
+    int boxWidth = width / size;
+    u8g.drawFrame(0, 0, width, PROGRESS_HEIGHT);
+    for (int i = 1; i < size; i++)
+    {
+        u8g.drawVLine(i * boxWidth, 0, PROGRESS_HEIGHT);
+    }
+    u8g.drawBox(index * boxWidth, 0, boxWidth, PROGRESS_HEIGHT);
+
+    return PROGRESS_HEIGHT;
 }
 
 void U8GDisplay::recipePour(const char *text, uint32_t weightToPourMg, uint64_t timeToFinishMs, bool isPause, uint8_t pourIndex, uint8_t pours)
@@ -229,17 +252,11 @@ void U8GDisplay::recipePour(const char *text, uint32_t weightToPourMg, uint64_t 
     int ascent = u8g.getAscent();
 
     // display header shwoing number of pours as rectangles with current pur highlighted by a filled rectangle
-    static const int PROGRESS_HEIGHT = 4;
-    int boxWidth = width / pours;
-    u8g.drawFrame(0, 0, width, PROGRESS_HEIGHT);
-    for (int i = 1; i < pours; i++)
-    {
-        u8g.drawVLine(i * boxWidth, 0, PROGRESS_HEIGHT);
-    }
-    u8g.drawBox(pourIndex * boxWidth, 0, boxWidth, PROGRESS_HEIGHT);
+    int yy = drawSelectedBar(pourIndex, pours);
 
     // draw info text
-    int yy = drawLinebreakText(text, 0, PROGRESS_HEIGHT + 2);
+    yy += 2;
+    yy = drawLinebreakText(text, 0, yy);
     yy += 3;
     u8g.drawHLine(0, yy, width);
     yy += 3;
@@ -288,6 +305,44 @@ void U8GDisplay::text(const char *text)
         pointer = strtok(NULL, "\n");
     }
     delete textCopy;
+
+    u8g.sendBuffer();
+}
+
+void U8GDisplay::modeSwitcher(const char *current, const uint8_t index, const uint8_t count, float batV, float batPercentage, bool batCharging)
+{
+    u8g.clearBuffer();
+
+    drawSelectedBar(index, count);
+
+    u8g.setFont(u8g_font_10x20);
+    drawCenterText(current);
+
+    // battery state
+    u8g.setFont(u8g2_font_battery19_tn);
+    uint16_t batGlyph = 0x0030;
+    if (batCharging)
+    {
+        batGlyph += 6;
+    }
+    else
+    {
+        batGlyph += roundf(batPercentage / 20);
+        Serial.println(batPercentage);
+    }
+    u8g.setFontDirection(1);
+    static const int PADDING = 5;
+    u8g.drawGlyph(PADDING, u8g.getDisplayHeight() - 8 - PADDING, batGlyph);
+    u8g.setFontDirection(0);
+
+    if (!batCharging)
+    {
+        u8g.setFont(u8g_font_6x10);
+        static char buffer[16];
+        sprintf(buffer, "%.2fV", batV);
+        int textWidth = u8g.getStrWidth(buffer);
+        u8g.drawStr(u8g.getDisplayWidth() - textWidth - PADDING, u8g.getDisplayHeight() - PADDING, buffer);
+    }
 
     u8g.sendBuffer();
 }
