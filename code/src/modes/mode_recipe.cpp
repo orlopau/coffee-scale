@@ -214,6 +214,11 @@ public:
         }
         else
         {
+            if (!pourDoneFlag)
+            {
+                pourDoneFlag = true;
+                input.buzzerTone(200);
+            }
             brewState = DONE;
             remainingTimePourMs = 0;
             // if there is another pour, start it
@@ -221,6 +226,7 @@ public:
             {
                 recipePourIndex++;
                 pourStartMillis = now();
+                pourDoneFlag = false;
             }
         }
 
@@ -230,6 +236,7 @@ public:
     {
         recipePourIndex = 0;
         pourStartMillis = now();
+        pourDoneFlag = false;
     }
     bool canStepForward() override
     {
@@ -249,7 +256,8 @@ private:
         DONE,
     };
     unsigned long pourStartMillis = 0;
-    uint8_t recipePourIndex = 0;
+    uint8_t recipePourIndex;
+    bool pourDoneFlag;
 };
 
 class RecipeDone : public RecipeStep
