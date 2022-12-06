@@ -87,7 +87,7 @@ public:
         weightConfigWeightMg = weightMg;
         weightConfigWaterWeightMl = waterWeightMl;
     };
-    void recipeConfigRatio(const char *header, unsigned int coffee, unsigned int water)
+    void recipeConfigRatio(const char *header, float coffee, float water)
     {
         ratioCoffee = coffee;
         ratioWater = water;
@@ -120,8 +120,8 @@ public:
     unsigned int weightConfigWeightMg = 0;
     unsigned int weightConfigWaterWeightMl = 0;
 
-    unsigned int ratioCoffee = 0;
-    unsigned int ratioWater = 0;
+    float ratioCoffee = NAN;
+    float ratioWater = NAN;
 
     uint32_t recipeWeightToPourMg = 0;
     uint64_t recipeTimeToFinishMs = 0;

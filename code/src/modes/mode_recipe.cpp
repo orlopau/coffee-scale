@@ -4,7 +4,7 @@
 #include "millis.h"
 
 #define WEIGHT_ADJUST_MULTIPLIER 1000
-#define RATIO_ADJUST_MULTIPLIER 10
+#define RATIO_ADJUST_MULTIPLIER (RECIPE_RATIO_MUL / 10)
 
 class RecipeSwitcherStep : public RecipeStep
 {
@@ -83,8 +83,8 @@ public:
     {
         // declare bounds for adjustment
         int lowerBoundTicks, upperBoundTicks;
-        lowerBoundTicks = -(state.originalRecipe->ratio - 100) / RATIO_ADJUST_MULTIPLIER;
-        upperBoundTicks = 64 * RATIO_ADJUST_MULTIPLIER;
+        lowerBoundTicks = -(state.originalRecipe->ratio - RECIPE_RATIO_MUL) / RATIO_ADJUST_MULTIPLIER;
+        upperBoundTicks = 64 * RECIPE_RATIO_MUL;
 
         // enforce bounds
         if (input.getEncoderTicks() > upperBoundTicks)
@@ -98,11 +98,20 @@ public:
 
         // update values and display
         state.configRecipe.ratio = state.originalRecipe->ratio + input.getEncoderTicks() * RATIO_ADJUST_MULTIPLIER;
-        display.recipeConfigRatio(state.configRecipe.name, 100, state.configRecipe.ratio);
+        display.recipeConfigRatio(state.configRecipe.name, 1.0, (float)state.configRecipe.ratio / (float)RECIPE_RATIO_MUL);
     }
     void enter() override
     {
         input.resetEncoderTicks();
+    }
+    void exit() override
+    {
+        // adjust ratiuos of pours according to new ratio
+        float ratioMultiplier = (float)state.configRecipe.ratio / (float)state.originalRecipe->ratio;
+        for (uint8_t i = 0; i < state.configRecipe.poursCount; i++)
+        {
+            state.configRecipe.pours[i].ratio *= ratioMultiplier;
+        }
     }
 
 private:
@@ -135,7 +144,7 @@ public:
         // update values and display
         state.configRecipe.coffeeWeightMg = state.originalRecipe->coffeeWeightMg + input.getEncoderTicks() * WEIGHT_ADJUST_MULTIPLIER;
         display.recipeCoffeeWeightConfig(state.configRecipe.name, state.configRecipe.coffeeWeightMg,
-                                         state.configRecipe.coffeeWeightMg * (state.configRecipe.ratio / 100.0) / 1000);
+                                         state.configRecipe.coffeeWeightMg * ((float)state.configRecipe.ratio / (float)RECIPE_RATIO_MUL) / 1000);
     }
     void enter() override
     {
@@ -179,7 +188,7 @@ public:
     {
         const Pour *pour = &state.configRecipe.pours[recipePourIndex];
 
-        const int32_t remainingWeightMg = (state.configRecipe.coffeeWeightMg * (pour->ratio / 100)) - (loadCell.getWeight() * 1000);
+        const int32_t remainingWeightMg = (state.configRecipe.coffeeWeightMg * (pour->ratio / (float)RECIPE_RATIO_MUL)) - (loadCell.getWeight() * 1000);
         const uint64_t passedTimePourMs = now() - pourStartMillis;
         uint64_t remainingTimePourMs;
 

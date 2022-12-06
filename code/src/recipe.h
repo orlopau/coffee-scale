@@ -10,6 +10,8 @@ enum class AdjustableParameter : uint8_t
     KASUYA_NUM_POURS = 0x08,
 };
 
+#define RECIPE_RATIO_MUL 10
+
 /**
  * @brief Defines a single pour.
  *
@@ -18,7 +20,7 @@ struct Pour
 {
     /// Additional notes for the pour.
     char note[128];
-    /// Weight of water per weight of coffee at the current pour step. Must be divided by 100.
+    /// Weight of water per weight of coffee at the current pour step. Must be divided by 10.
     uint32_t ratio;
     /// Time the pour should take in ms.
     uint32_t timePour;
@@ -39,7 +41,7 @@ struct Recipe
     char note[256];
     /// The grams of coffee used for the recipe.
     uint32_t coffeeWeightMg;
-    /// The ratio of coffee to water. Must be divided by 100.
+    /// The ratio of coffee to water. Must be divided by 10.
     uint16_t ratio;
     /// The number of pours in the recipe.
     uint8_t poursCount;

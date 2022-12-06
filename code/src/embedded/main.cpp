@@ -54,7 +54,7 @@ void setup()
   loadcell.begin();
 
   display.drawOpener();
-  delay(3000);
+  delay(1000);
 
   attachInterrupt(PIN_ENC_A, isr_input, CHANGE);
   attachInterrupt(PIN_ENC_B, isr_input, CHANGE);

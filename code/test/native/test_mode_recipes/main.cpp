@@ -10,18 +10,18 @@ static MockButtons *buttons;
 static MockDisplay *display;
 
 const Recipe RECIPES[] = {
-    {"name1", "desc1", 3000, (2 + 3) * 100, 2, static_cast<uint8_t>(AdjustableParameter::COFFEE_WEIGHT) | static_cast<uint8_t>(AdjustableParameter::RATIO), {
-                                                                                                                                                                {"step1", 200, 500, 300, true},
-                                                                                                                                                                {"step2", 500, 0, 300, false},
-                                                                                                                                                            }},
-    {"name2", "desc2", 2000, 2 * 100, 2, 0, {
-                                                {"step1", 100, 0, 2 * 60 * 1000, false},
-                                                {"step2", 100, 0, 30 * 1000, false},
-                                            }},
-    {"name3", "desc3", 3000, 2 * 100, 2, 0, {
-                                                {"step1", 100, 0, 2 * 60 * 1000, false},
-                                                {"step2", 100, 0, 30 * 1000, false},
-                                            }},
+    {"name1", "desc1", 3000, (2 + 3) * RECIPE_RATIO_MUL, 2, static_cast<uint8_t>(AdjustableParameter::COFFEE_WEIGHT) | static_cast<uint8_t>(AdjustableParameter::RATIO), {
+                                                                                                                                                                             {"step1", 2 * RECIPE_RATIO_MUL, 500, 300, true},
+                                                                                                                                                                             {"step2", 5 * RECIPE_RATIO_MUL, 0, 300, false},
+                                                                                                                                                                         }},
+    {"name2", "desc2", 2000, 2 * RECIPE_RATIO_MUL, 2, 0, {
+                                                             {"step1", RECIPE_RATIO_MUL, 0, 2 * 60 * 1000, false},
+                                                             {"step2", RECIPE_RATIO_MUL, 0, 30 * 1000, false},
+                                                         }},
+    {"name3", "desc3", 3000, 2 * RECIPE_RATIO_MUL, 2, 0, {
+                                                             {"step1", RECIPE_RATIO_MUL, 0, 2 * 60 * 1000, false},
+                                                             {"step2", RECIPE_RATIO_MUL, 0, 30 * 1000, false},
+                                                         }},
 };
 
 ModeRecipes *modeRecipes;
@@ -166,31 +166,31 @@ void test_recipe_configuration_ratio()
     // first the ratio is adjusted
     // initial ratio is as given in the recipe, i.e. 1 gram of coffee to 5 grams water
     // ratios must be divided by 100 to get the actual ratio
-    TEST_ASSERT_EQUAL(100, display->ratioCoffee);
-    TEST_ASSERT_EQUAL(500, display->ratioWater);
+    TEST_ASSERT_EQUAL(1, display->ratioCoffee);
+    TEST_ASSERT_EQUAL(5, display->ratioWater);
 
     // by turning encoder, ratio can be adjusted in steps of 0.1
     buttons->encoderTicks = 1;
     modeRecipes->update();
-    TEST_ASSERT_EQUAL(510, display->ratioWater);
+    TEST_ASSERT_EQUAL(5.1, display->ratioWater);
     buttons->encoderTicks = -1;
     modeRecipes->update();
-    TEST_ASSERT_EQUAL(490, display->ratioWater);
+    TEST_ASSERT_EQUAL(4.9, display->ratioWater);
 
     // ratio can not be reduced below 1:1
     buttons->encoderTicks = -10000;
     modeRecipes->update();
-    TEST_ASSERT_EQUAL(100, display->ratioWater);
+    TEST_ASSERT_EQUAL(1, display->ratioWater);
 
-    // maxium ratio is limited by 64 positive ticks
+    // maxium ratio is limited by 64
     buttons->encoderTicks = 10000;
     modeRecipes->update();
-    TEST_ASSERT_EQUAL(6400 + 500, display->ratioWater);
+    TEST_ASSERT_EQUAL(64 + 5, display->ratioWater);
 
     // return to normal ratio
     buttons->encoderTicks = 0;
     modeRecipes->update();
-    TEST_ASSERT_EQUAL(500, display->ratioWater);
+    TEST_ASSERT_EQUAL(5, display->ratioWater);
 }
 
 void test_recipe_configuration_weight()
@@ -335,6 +335,41 @@ void test_recipe_brewing()
     TEST_ASSERT_EQUAL(0, modeRecipes->getCurrentStepIndex());
 }
 
+void test_adjusting_global_ratio_affects_pour_ratio()
+{
+    // select recipe
+    buttons->encoderClick = ClickType::SINGLE;
+    modeRecipes->update();
+    // summary
+    buttons->encoderClick = ClickType::SINGLE;
+    modeRecipes->update();
+    // config
+    buttons->encoderClick = ClickType::NONE;
+
+    // increase ratio by 5, doubling the ratio to 10
+    buttons->encoderTicks = 50;
+    modeRecipes->update();
+    TEST_ASSERT_EQUAL(10, display->ratioWater);
+
+    buttons->encoderClick = ClickType::SINGLE;
+    modeRecipes->update();
+    // weight config
+    buttons->encoderClick = ClickType::SINGLE;
+    modeRecipes->update();
+    // prepare
+    buttons->encoderClick = ClickType::SINGLE;
+    modeRecipes->update();
+    // brewing
+
+    // verify brewing step
+    TEST_ASSERT_EQUAL(5, modeRecipes->getCurrentStepIndex());
+    modeRecipes->update();
+
+    // first pour had a ratio of 2, now it should be 4
+    // coffee weight is 3000mg, so water weight should be 12000mg
+    TEST_ASSERT_EQUAL(12000, display->recipeWeightToPourMg);
+}
+
 int main(void)
 {
     UNITY_BEGIN();
@@ -344,5 +379,6 @@ int main(void)
     RUN_TEST(test_recipe_configuration_ratio);
     RUN_TEST(test_recipe_configuration_weight);
     RUN_TEST(test_recipe_brewing);
+    RUN_TEST(test_adjusting_global_ratio_affects_pour_ratio);
     UNITY_END();
 }
