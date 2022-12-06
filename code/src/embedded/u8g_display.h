@@ -19,6 +19,7 @@ public:
     void recipeSummary(const char *name, const char *description);
     void recipeCoffeeWeightConfig(const char *header, unsigned int weightMg, unsigned int waterWeightMl);
     void recipeConfigRatio(const char *header, float coffee, float water);
+    void recipeInsertCoffee(int32_t weightMg, uint32_t requiredWeightMg);
     void recipePour(const char *text, int32_t weightToPourMg, uint64_t timeToFinishMs, bool isPause, uint8_t pourIndex, uint8_t pours);
     void text(const char *text);
     void update(){};

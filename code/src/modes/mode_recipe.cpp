@@ -160,13 +160,21 @@ private:
 class RecipePrepare : public RecipeStep
 {
 public:
-    RecipePrepare(RecipeStepState &state, Display &display, LoadCell &loadCell) : state(state), display(display), loadCell(loadCell){};
+    RecipePrepare(RecipeStepState &state, Display &display, UserInput &input, LoadCell &loadCell)
+        : state(state), input(input), display(display), loadCell(loadCell){};
     void update() override
     {
-        // display that user should insert coffee grounds
-        static char buffer[64];
-        sprintf(buffer, "Insert %dg coffee,\nthen click to\ncontinue.", state.configRecipe.coffeeWeightMg / 1000);
-        display.text(buffer);
+        // tare on encoder rotate
+        if (input.getEncoderDirection() != EncoderDirection::NONE)
+        {
+            loadCell.tare();
+        }
+
+        display.recipeInsertCoffee(loadCell.getWeight() * 1000, state.configRecipe.coffeeWeightMg);
+    }
+    void enter() override
+    {
+        loadCell.tare();
     }
     void exit() override
     {
@@ -176,6 +184,7 @@ public:
 private:
     RecipeStepState &state;
     Display &display;
+    UserInput &input;
     LoadCell &loadCell;
 };
 
@@ -265,7 +274,7 @@ ModeRecipes::ModeRecipes(LoadCell &loadCell, UserInput &input, Display &display,
           new RecipeSummaryStep(recipeStepState, display),
           new RecipeConfigRatioStep(recipeStepState, display, input),
           new RecipeConfigWeightStep(recipeStepState, display, input),
-          new RecipePrepare(recipeStepState, display, loadCell),
+          new RecipePrepare(recipeStepState, display, input, loadCell),
           new RecipeBrewing(recipeStepState, display, input, loadCell),
           new RecipeDone(recipeStepState, display),
       } {};

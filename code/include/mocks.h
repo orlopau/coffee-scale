@@ -107,6 +107,10 @@ public:
         ratioCoffee = coffee;
         ratioWater = water;
     };
+    void recipeInsertCoffee(int32_t weightMg, uint32_t requiredWeightMg){
+        recipeInsertWeight = weightMg;
+        recipeInsertRequiredWeight = requiredWeightMg;
+    };
     void recipePour(const char *text, int32_t weightToPour, uint64_t timeToFinish, bool isPause, uint8_t pourIndex, uint8_t pours)
     {
         recipeWeightToPourMg = weightToPour;
@@ -136,6 +140,9 @@ public:
     char *weightConfigHeader = nullptr;
     unsigned int weightConfigWeightMg = 0;
     unsigned int weightConfigWaterWeightMl = 0;
+
+    int32_t recipeInsertWeight = 0;
+    int32_t recipeInsertRequiredWeight = 0;
 
     float ratioCoffee = NAN;
     float ratioWater = NAN;

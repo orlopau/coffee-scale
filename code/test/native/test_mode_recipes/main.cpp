@@ -370,6 +370,23 @@ void test_adjusting_global_ratio_affects_pour_ratio()
     TEST_ASSERT_EQUAL(12000, display->recipeWeightToPourMg);
 }
 
+void test_recipe_insert_coffee_values()
+{
+    // for loop 4 times
+    for (int i = 0; i < 4; i++)
+    {
+        buttons->encoderClick = ClickType::SINGLE;
+        modeRecipes->update();
+    }
+    buttons->encoderClick = ClickType::NONE;
+    TEST_ASSERT_EQUAL(4, modeRecipes->getCurrentStepIndex());
+    modeRecipes->update();
+
+    // should show required weight and current weight
+    TEST_ASSERT_EQUAL(3000, display->recipeInsertRequiredWeight);
+    TEST_ASSERT_EQUAL(0, display->recipeInsertWeight);
+}
+
 int main(void)
 {
     UNITY_BEGIN();
@@ -380,5 +397,6 @@ int main(void)
     RUN_TEST(test_recipe_configuration_weight);
     RUN_TEST(test_recipe_brewing);
     RUN_TEST(test_adjusting_global_ratio_affects_pour_ratio);
+    RUN_TEST(test_recipe_insert_coffee_values);
     UNITY_END();
 }

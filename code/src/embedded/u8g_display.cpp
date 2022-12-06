@@ -243,6 +243,21 @@ int U8GDisplay::drawSelectedBar(uint8_t index, uint8_t size)
     return PROGRESS_HEIGHT;
 }
 
+void U8GDisplay::recipeInsertCoffee(int32_t weightMg, uint32_t requiredWeightMg)
+{
+    u8g.clearBuffer();
+    u8g.setFont(u8g_font_7x13);
+
+    drawHCenterText("Insert coffee.", u8g.getAscent() + 5);
+
+    u8g.setFont(u8g_font_9x18);
+    static char buffer[16];
+    sprintf(buffer, "%.2fg/%.1fg", weightMg / 1000.0, requiredWeightMg / 1000.0);
+    drawCenterText(buffer);
+
+    u8g.sendBuffer();
+}
+
 void U8GDisplay::recipePour(const char *text, int32_t weightToPourMg, uint64_t timeToFinishMs, bool isPause, uint8_t pourIndex, uint8_t pours)
 {
     u8g.clearBuffer();
