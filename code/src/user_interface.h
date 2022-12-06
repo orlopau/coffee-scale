@@ -21,6 +21,7 @@ public:
     virtual void setEncoderTicks(long ticks) = 0;
     virtual ClickType getEncoderClick() = 0;
     virtual ClickType consumeEncoderClick() = 0;
+    virtual void buzzerTone(uint16_t durationMs){};
 };
 
 class Display

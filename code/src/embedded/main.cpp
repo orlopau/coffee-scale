@@ -18,7 +18,7 @@
 
 HX711LoadCell loadcell(PIN_HX711_DAT, PIN_HX711_SCK);
 U8GDisplay display(PIN_I2C_SDA, PIN_I2C_SCL, U8G2_R1);
-EmbeddedUserInput input(PIN_ENC_A, PIN_ENC_B, PIN_ENC_BTN);
+EmbeddedUserInput input(PIN_ENC_A, PIN_ENC_B, PIN_ENC_BTN, PIN_BUZZER);
 ADCBattery battery(PIN_BAT_ADC, PIN_BAT_CHARGE_STATUS, 2, 0, 3.6, 4.2);
 Stopwatch stopwatch;
 
