@@ -69,7 +69,7 @@ void U8GDisplay::centerText(const char *text, const uint8_t size)
         break;
     }
 
-    u8g.drawStr(0, mid, text);
+    drawCenterText(text, mid);
     u8g.sendBuffer();
 }
 
