@@ -328,7 +328,6 @@ void U8GDisplay::modeSwitcher(const char *current, const uint8_t index, const ui
     else
     {
         batGlyph += roundf(batPercentage / 20);
-        Serial.println(batPercentage);
     }
     u8g.setFontDirection(1);
     static const int PADDING = 5;
