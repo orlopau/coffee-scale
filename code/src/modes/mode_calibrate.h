@@ -11,7 +11,7 @@
 class ModeCalibration : public Mode
 {
 public:
-    ModeCalibration(LoadCell &loadCell, UserInput &buttons, Display &display, Stopwatch &stopwatch, void (*saveScaleFnc)(float));
+    ModeCalibration(WeightSensor &weightSensor, UserInput &buttons, Display &display, Stopwatch &stopwatch, void (*saveScaleFnc)(float));
     ~ModeCalibration(){};
     void update();
     const char* getName();
@@ -26,7 +26,7 @@ private:
         END
     };
 
-    LoadCell &loadCell;
+    WeightSensor &weightSensor;
     UserInput &buttons;
     Display &display;
     Stopwatch &stopwatch;

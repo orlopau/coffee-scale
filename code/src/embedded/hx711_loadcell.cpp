@@ -5,9 +5,7 @@
 #include "hx711_loadcell.h"
 #include "constants.h"
 
-HX711LoadCell::HX711LoadCell(int dout, int sck, float scale) : scale(scale), sck(sck), dout(dout)
-{
-}
+HX711LoadCell::HX711LoadCell(int dout, int sck) : sck(sck), dout(dout) {}
 
 void HX711LoadCell::begin()
 {
@@ -48,37 +46,6 @@ long HX711LoadCell::read()
 
     portEXIT_CRITICAL(&mux);
     return value;
-}
-
-void HX711LoadCell::update()
-{
-    newWeight = false;
-
-    if (isReady())
-    {
-        lastWeight = read();
-        newWeight = true;
-    }
-}
-
-float HX711LoadCell::getWeight()
-{
-    return (lastWeight - offset) * scale;
-}
-
-bool HX711LoadCell::isNewWeight()
-{
-    return newWeight;
-}
-
-void HX711LoadCell::tare()
-{
-    offset = lastWeight;
-}
-
-void HX711LoadCell::setScale(float scale)
-{
-    this->scale = scale;
 }
 
 #endif

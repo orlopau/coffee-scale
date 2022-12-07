@@ -7,7 +7,7 @@
 #include <thread>
 
 static Stopwatch *stopwatch;
-static MockLoadCell *loadCell;
+static MockWeightSensor *weightSensor;
 static MockButtons *buttons;
 static MockDisplay *display;
 
@@ -16,19 +16,19 @@ ModeDefault *modeDefault;
 void setUp(void)
 {
     stopwatch = new Stopwatch();
-    loadCell = new MockLoadCell();
+    weightSensor = new MockWeightSensor();
     buttons = new MockButtons();
     display = new MockDisplay();
-    modeDefault = new ModeDefault(*loadCell, *buttons, *display, *stopwatch);
+    modeDefault = new ModeDefault(*weightSensor, *buttons, *display, *stopwatch);
 }
 
 void tearDown(void)
 {
     delete stopwatch;
-    delete loadCell;
     delete buttons;
     delete display;
     delete modeDefault;
+    delete weightSensor;
 }
 
 void test_stopwatch_start_when_click(void)
@@ -49,16 +49,17 @@ void test_stopwatch_stop_when_click_again(void)
 
 void test_loadcell_tare_when_encoder_rotated(void)
 {
-    loadCell->weight = 1.0;
+    weightSensor->weight = 1;
 
     buttons->encoderDirection = EncoderDirection::CW;
     modeDefault->update();
-    TEST_ASSERT_EQUAL(0, loadCell->weight);
+    TEST_ASSERT_EQUAL(0, weightSensor->getWeight());
 }
 
 void test_display_shows_weight(void)
 {
-    loadCell->weight = 1.0;
+    weightSensor->weight = 1;
+
     modeDefault->update();
     TEST_ASSERT_EQUAL(1.0, display->weight);
 }

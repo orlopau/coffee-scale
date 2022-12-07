@@ -5,7 +5,7 @@
 #include "millis.h"
 
 static Stopwatch *stopwatch;
-static MockLoadCell *loadCell;
+static MockWeightSensor *weightSensor;
 static MockButtons *buttons;
 static MockDisplay *display;
 
@@ -29,16 +29,16 @@ ModeRecipes *modeRecipes;
 void setUp(void)
 {
     stopwatch = new Stopwatch();
-    loadCell = new MockLoadCell();
+    weightSensor = new MockWeightSensor();
     buttons = new MockButtons();
     display = new MockDisplay();
-    modeRecipes = new ModeRecipes(*loadCell, *buttons, *display, RECIPES, 3);
+    modeRecipes = new ModeRecipes(*weightSensor, *buttons, *display, RECIPES, 3);
 }
 
 void tearDown(void)
 {
     delete stopwatch;
-    delete loadCell;
+    delete weightSensor;
     delete buttons;
     delete display;
     delete modeRecipes;

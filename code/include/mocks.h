@@ -14,18 +14,16 @@ public:
     bool isCharging() { return false; };
 };
 
-class MockLoadCell : public LoadCell
+class MockWeightSensor : public WeightSensor
 {
 public:
-    void begin() {}
-    void update() {}
-    float getWeight() { return weight; }
-    bool isNewWeight() { return newWeight; }
-    void tare()
+    float getWeight() override { return weight; }
+    bool isNewWeight() override { return newWeight; }
+    void tare() override
     {
         weight = 0;
     }
-    void setScale(float scale) {}
+    void setScale(float scale) override {}
     float weight = 0;
     bool newWeight = false;
 };
@@ -107,7 +105,8 @@ public:
         ratioCoffee = coffee;
         ratioWater = water;
     };
-    void recipeInsertCoffee(int32_t weightMg, uint32_t requiredWeightMg){
+    void recipeInsertCoffee(int32_t weightMg, uint32_t requiredWeightMg)
+    {
         recipeInsertWeight = weightMg;
         recipeInsertRequiredWeight = requiredWeightMg;
     };

@@ -23,7 +23,7 @@ public:
 class ModeRecipes : public Mode
 {
 public:
-    ModeRecipes(LoadCell &loadCell, UserInput &input,
+    ModeRecipes(WeightSensor &weightSensor, UserInput &input,
                 Display &display, const Recipe recipes[], uint8_t recipeCount);
     void update();
     const char *getName();
@@ -31,7 +31,7 @@ public:
     uint8_t getCurrentStepIndex();
 
 private:
-    LoadCell &loadCell;
+    WeightSensor &weightSensor;
     UserInput &input;
     Display &display;
 

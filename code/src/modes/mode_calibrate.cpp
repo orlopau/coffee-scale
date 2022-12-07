@@ -1,7 +1,7 @@
 #include "mode_calibrate.h"
 
-ModeCalibration::ModeCalibration(LoadCell &loadCell, UserInput &buttons, Display &display, Stopwatch &stopwatch, void (*saveScaleFnc)(float))
-    : loadCell(loadCell), buttons(buttons), display(display), stopwatch(stopwatch),
+ModeCalibration::ModeCalibration(WeightSensor &weightSensor, UserInput &buttons, Display &display, Stopwatch &stopwatch, void (*saveScaleFnc)(float))
+    : weightSensor(weightSensor), buttons(buttons), display(display), stopwatch(stopwatch),
       calibrationStep(CalibrationStep::BEGIN), saveScaleFnc(saveScaleFnc) {}
 
 void ModeCalibration::update()
@@ -16,11 +16,11 @@ void ModeCalibration::update()
         display.text("Starting calibration.\nRemove all items from\nscale.\n\nClick to continue!");
         sumMeasurements = 0;
         numMeasurements = 0;
-        loadCell.setScale(1);
+        weightSensor.setScale(1);
 
         if (buttons.getEncoderClick() == ClickType::SINGLE)
         {
-            loadCell.tare();
+            weightSensor.tare();
             calibrationStep = CalibrationStep::ADD_WEIGHT;
         }
         break;
@@ -33,9 +33,9 @@ void ModeCalibration::update()
         break;
     case CalibrationStep::CALIBRATING:
         display.text("Calibrating...");
-        if (loadCell.isNewWeight())
+        if (weightSensor.isNewWeight())
         {
-            sumMeasurements += static_cast<unsigned long>(loadCell.getWeight());
+            sumMeasurements += static_cast<unsigned long>(weightSensor.getWeight());
             numMeasurements++;
         }
 
