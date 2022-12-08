@@ -10,7 +10,7 @@
 
 void test_ring_buffer_push(void)
 {
-    RingBuffer<int, 3> ringBuffer;
+    RingBuffer<int> ringBuffer(3);
     TEST_ASSERT_EQUAL(3, ringBuffer.capacity());
     TEST_ASSERT_EQUAL(0, ringBuffer.size());
 
@@ -26,7 +26,7 @@ void test_ring_buffer_push(void)
 
 void test_ring_buffer_get(void)
 {
-    RingBuffer<int, 3> ringBuffer;
+    RingBuffer<int> ringBuffer(3);
     // push 4 elements, last 3 should remain
     ringBuffer.push(1);
     ringBuffer.push(2);
@@ -45,29 +45,28 @@ void test_ring_buffer_get(void)
     TEST_ASSERT_EQUAL(3, ringBuffer.get(2));
 }
 
-void test_ring_buffer_sum(void)
+void test_ring_buffer_get_relative(void)
 {
-    RingBuffer<int, 3> ringBuffer;
-    TEST_ASSERT_EQUAL(0, ringBuffer.sum());
-
-    // push 4 elements, last 3 should remain
+    RingBuffer<int> ringBuffer(3);
     ringBuffer.push(1);
-    TEST_ASSERT_EQUAL(1, ringBuffer.sum());
-
     ringBuffer.push(2);
-    TEST_ASSERT_EQUAL(3, ringBuffer.sum());
-
     ringBuffer.push(3);
-    TEST_ASSERT_EQUAL(6, ringBuffer.sum());
 
-    ringBuffer.push(4);
-    TEST_ASSERT_EQUAL(9, ringBuffer.sum());
+    TEST_ASSERT_EQUAL(3, ringBuffer.getRelative(0));
+    TEST_ASSERT_EQUAL(2, ringBuffer.getRelative(-1));
+    TEST_ASSERT_EQUAL(1, ringBuffer.getRelative(-2));
+}
 
-    ringBuffer.push(5);
-    TEST_ASSERT_EQUAL(12, ringBuffer.sum());
+void test_ring_buffer_sum_last(void)
+{
+    RingBuffer<int> ringBuffer(3);
+    ringBuffer.push(1);
+    ringBuffer.push(2);
+    ringBuffer.push(3);
 
-    ringBuffer.push(6);
-    TEST_ASSERT_EQUAL(15, ringBuffer.sum());
+    TEST_ASSERT_EQUAL(3, ringBuffer.sumLast(1));
+    TEST_ASSERT_EQUAL(5, ringBuffer.sumLast(2));
+    TEST_ASSERT_EQUAL(6, ringBuffer.sumLast(3));
 }
 
 int main(void)
@@ -75,6 +74,7 @@ int main(void)
     UNITY_BEGIN();
     RUN_TEST(test_ring_buffer_push);
     RUN_TEST(test_ring_buffer_get);
-    RUN_TEST(test_ring_buffer_sum);
+    RUN_TEST(test_ring_buffer_get_relative);
+    RUN_TEST(test_ring_buffer_sum_last);
     UNITY_END();
 }
