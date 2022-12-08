@@ -6,6 +6,7 @@ This project contains the schematics, code and 3D models for a coffee scale base
  
 ## Features
 * Recipe-based brewing
+* Auto averaging of weight values: more values are used to determine weight when weight is relatively constant
 * Brew timer
 * USB-C charging
 * Interchangeable Load Cell
