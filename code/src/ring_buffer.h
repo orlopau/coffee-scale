@@ -1,7 +1,5 @@
 #pragma once
 
-#include "millis.h"
-
 template <typename T>
 class RingBuffer
 {

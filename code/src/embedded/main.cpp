@@ -74,6 +74,10 @@ void setup()
 
   Serial.printf("Existing scale: %f\n", scale);
   weightSensor.setScale(scale);
+
+  float delta = 1 / scale;
+  weightSensor.setAutoAveraging(delta, 64);
+  Serial.printf("Auto averaging delta: %f\n", delta);
 }
 
 #ifdef PERF
