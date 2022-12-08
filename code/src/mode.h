@@ -16,15 +16,15 @@ public:
 class ModeDefault : public Mode
 {
 public:
-    ModeDefault(LoadCell &loadCell, UserInput &buttons, Display &display, Stopwatch &stopwatch)
-        : loadCell(loadCell), buttons(buttons), display(display), stopwatch(stopwatch){};
+    ModeDefault(WeightSensor &weightSensor, UserInput &buttons, Display &display, Stopwatch &stopwatch)
+        : weightSensor(weightSensor), buttons(buttons), display(display), stopwatch(stopwatch){};
     ~ModeDefault(){};
     void update();
     bool canSwitchMode();
     const char* getName();
 
 private:
-    LoadCell &loadCell;
+    WeightSensor &weightSensor;
     UserInput &buttons;
     Display &display;
     Stopwatch &stopwatch;

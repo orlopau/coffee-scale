@@ -17,6 +17,7 @@
 #define AVERAGING_LOOPS 100
 
 HX711LoadCell loadcell(PIN_HX711_DAT, PIN_HX711_SCK);
+DefaultWeightSensor weightSensor(loadcell);
 U8GDisplay display(PIN_I2C_SDA, PIN_I2C_SCL, U8G2_R1);
 EmbeddedUserInput input(PIN_ENC_A, PIN_ENC_B, PIN_ENC_BTN, PIN_BUZZER);
 ADCBattery battery(PIN_BAT_ADC, PIN_BAT_CHARGE_STATUS, 2, 0, 3.6, 4.2);
@@ -30,9 +31,9 @@ void saveScale(float scale)
   EEPROM.commit();
 }
 
-ModeDefault modeDefault(loadcell, input, display, stopwatch);
-ModeCalibration modeCalibration(loadcell, input, display, stopwatch, saveScale);
-ModeRecipes modeRecipes(loadcell, input, display, RECIPES, RECIPE_COUNT);
+ModeDefault modeDefault(weightSensor, input, display, stopwatch);
+ModeCalibration modeCalibration(weightSensor, input, display, stopwatch, saveScale);
+ModeRecipes modeRecipes(weightSensor, input, display, RECIPES, RECIPE_COUNT);
 Mode *modes[] = {&modeDefault, &modeRecipes, &modeCalibration};
 ModeManager modeManager(modes, 3, display, input, battery);
 
@@ -52,13 +53,13 @@ void setup()
   btStop();
 
   display.begin();
-  loadcell.begin();
+  weightSensor.begin();
 
   display.drawOpener();
   delay(3000);
 
-  loadcell.update();
-  loadcell.tare();
+  weightSensor.update();
+  weightSensor.tare();
 
   attachInterrupt(PIN_ENC_A, isr_input, CHANGE);
   attachInterrupt(PIN_ENC_B, isr_input, CHANGE);
@@ -72,7 +73,11 @@ void setup()
   }
 
   Serial.printf("Existing scale: %f\n", scale);
-  loadcell.setScale(scale);
+  weightSensor.setScale(scale);
+
+  float delta = 1 / scale;
+  weightSensor.setAutoAveraging(delta, 64);
+  Serial.printf("Auto averaging delta: %f\n", delta);
 }
 
 #ifdef PERF
@@ -83,7 +88,7 @@ unsigned long lastTime = millis();
 void loop()
 {
   input.update();
-  loadcell.update();
+  weightSensor.update();
   display.update();
   modeManager.update();
 

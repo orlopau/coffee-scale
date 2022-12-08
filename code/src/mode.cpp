@@ -6,11 +6,11 @@
 
 void ModeDefault::update()
 {
-    display.display(loadCell.getWeight(), stopwatch.getTime());
+    display.display(weightSensor.getWeight(), stopwatch.getTime());
 
     if (buttons.getEncoderDirection() != EncoderDirection::NONE)
     {
-        loadCell.tare();
+        weightSensor.tare();
     }
 
     if (buttons.getEncoderClick() == ClickType::SINGLE)

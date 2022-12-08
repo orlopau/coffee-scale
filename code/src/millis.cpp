@@ -3,6 +3,7 @@
 #ifdef NATIVE
 #include <chrono>
 #include <thread>
+#include <cstdio>
 unsigned long now()
 {
     auto now = std::chrono::system_clock::now();

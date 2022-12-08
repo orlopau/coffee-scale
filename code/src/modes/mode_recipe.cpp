@@ -160,44 +160,44 @@ private:
 class RecipePrepare : public RecipeStep
 {
 public:
-    RecipePrepare(RecipeStepState &state, Display &display, UserInput &input, LoadCell &loadCell)
-        : state(state), input(input), display(display), loadCell(loadCell){};
+    RecipePrepare(RecipeStepState &state, Display &display, UserInput &input, WeightSensor &weightSensor)
+        : state(state), input(input), display(display), weightSensor(weightSensor){};
     void update() override
     {
         // tare on encoder rotate
         if (input.getEncoderDirection() != EncoderDirection::NONE)
         {
-            loadCell.tare();
+            weightSensor.tare();
         }
 
-        display.recipeInsertCoffee(loadCell.getWeight() * 1000, state.configRecipe.coffeeWeightMg);
+        display.recipeInsertCoffee(weightSensor.getWeight() * 1000, state.configRecipe.coffeeWeightMg);
     }
     void enter() override
     {
-        loadCell.tare();
+        weightSensor.tare();
     }
     void exit() override
     {
-        loadCell.tare();
+        weightSensor.tare();
     }
 
 private:
     RecipeStepState &state;
     Display &display;
     UserInput &input;
-    LoadCell &loadCell;
+    WeightSensor &weightSensor;
 };
 
 class RecipeBrewing : public RecipeStep
 {
 public:
-    RecipeBrewing(RecipeStepState &state, Display &display, UserInput &input, LoadCell &loadCell)
-        : state(state), display(display), input(input), loadCell(loadCell){};
+    RecipeBrewing(RecipeStepState &state, Display &display, UserInput &input, WeightSensor &weightSensor)
+        : state(state), display(display), input(input), weightSensor(weightSensor){};
     void update() override
     {
         const Pour *pour = &state.configRecipe.pours[recipePourIndex];
 
-        const int32_t remainingWeightMg = (state.configRecipe.coffeeWeightMg * (pour->ratio / (float)RECIPE_RATIO_MUL)) - (loadCell.getWeight() * 1000);
+        const int32_t remainingWeightMg = (state.configRecipe.coffeeWeightMg * (pour->ratio / (float)RECIPE_RATIO_MUL)) - (weightSensor.getWeight() * 1000);
         const uint64_t passedTimePourMs = now() - pourStartMillis;
         uint64_t remainingTimePourMs;
 
@@ -247,7 +247,7 @@ private:
     RecipeStepState &state;
     Display &display;
     UserInput &input;
-    LoadCell &loadCell;
+    WeightSensor &weightSensor;
 
     enum BrewState
     {
@@ -274,16 +274,16 @@ private:
     Display &display;
 };
 
-ModeRecipes::ModeRecipes(LoadCell &loadCell, UserInput &input, Display &display, const Recipe recipes[],
+ModeRecipes::ModeRecipes(WeightSensor &weightSensor, UserInput &input, Display &display, const Recipe recipes[],
                          uint8_t recipeCount)
-    : loadCell(loadCell), input(input), display(display), currentRecipeStep(0),
+    : weightSensor(weightSensor), input(input), display(display), currentRecipeStep(0),
       recipeSteps{
           new RecipeSwitcherStep(recipeStepState, display, input, recipes, recipeCount),
           new RecipeSummaryStep(recipeStepState, display),
           new RecipeConfigRatioStep(recipeStepState, display, input),
           new RecipeConfigWeightStep(recipeStepState, display, input),
-          new RecipePrepare(recipeStepState, display, input, loadCell),
-          new RecipeBrewing(recipeStepState, display, input, loadCell),
+          new RecipePrepare(recipeStepState, display, input, weightSensor),
+          new RecipeBrewing(recipeStepState, display, input, weightSensor),
           new RecipeDone(recipeStepState, display),
       } {};
 
