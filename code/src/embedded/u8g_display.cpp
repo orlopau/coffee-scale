@@ -6,6 +6,13 @@
 #include "formatters.h"
 #include "data/bitmaps.h"
 
+#define Y_PADDING 4
+
+#define FONT_SMALL u8g2_font_profont12_tf
+#define FONT_SMALL_MEDIUM u8g2_font_profont15_tf
+#define FONT_MEDIUM u8g2_font_profont17_tf
+#define FONT_LARGE u8g2_font_logisoso20_tf
+
 U8GDisplay::U8GDisplay(const uint8_t pin_sda, const uint8_t pin_scl, const u8g2_cb_t *rotation)
     : u8g(rotation, U8X8_PIN_NONE, pin_scl, pin_sda)
 {
@@ -80,6 +87,8 @@ void U8GDisplay::centerText(const char *text, const uint8_t size)
 
 int U8GDisplay::drawTitleLine(const char *title)
 {
+    u8g.setFont(FONT_SMALL);
+
     int ascent = u8g.getAscent();
     int descent = u8g.getDescent();
     int width = u8g.getDisplayWidth();
@@ -87,9 +96,8 @@ int U8GDisplay::drawTitleLine(const char *title)
 
     // draw title line
     u8g.drawStr(width / 2.0 - u8g.getStrWidth(title) / 2.0, yy, title);
-    yy += 2;
+    yy += Y_PADDING;
     u8g.drawHLine(0, yy, width);
-    yy += 2;
     return yy;
 }
 
@@ -182,45 +190,73 @@ void U8GDisplay::recipeSummary(const char *name, const char *description)
     u8g.sendBuffer();
 }
 
-void U8GDisplay::recipeCoffeeWeightConfig(const char *header, unsigned int weightMg, unsigned int waterWeightMl)
+bool U8GDisplay::shouldBlinkedBeVisible()
+{
+    // return false each 4th second
+    return millis() % 1000 > 200;
+}
+
+void U8GDisplay::recipeConfigCoffeeWeight(const char *header, unsigned int weightMg, unsigned int waterWeightMl)
 {
     u8g.clearBuffer();
-    u8g.setFont(u8g_font_6x10);
-
-    int ascent = u8g.getAscent();
     int yy = drawTitleLine(header);
+    yy += Y_PADDING;
 
-    yy += (ascent + 4);
-    drawHCenterText("Enter coffee weight.", yy);
-
-    yy += (ascent + 8);
+    int remainingHeight = u8g.getDisplayHeight() - yy;
     static char buffer[16];
-    sprintf(buffer, "Coffee: %.2fg", weightMg / 1000.0);
-    drawHCenterText(buffer, yy);
+    static const int X_OFFSET = 10;
+    // draw coffee string
+    u8g.setFontPosCenter();
+    u8g.setFont(FONT_SMALL_MEDIUM);
+    static const char *coffee = "Coffee:";
+    u8g.drawStr(u8g.getDisplayWidth() / 2.0 - u8g.getStrWidth(coffee) - X_OFFSET, yy + (remainingHeight / 4.0), coffee);
+    if (shouldBlinkedBeVisible())
+    {
+        sprintf(buffer, "%.1fg", weightMg / 1000.0);
+        u8g.setFont(FONT_MEDIUM);
+        u8g.drawStr(u8g.getWidth() / 2.0, yy + (remainingHeight / 4.0), buffer);
+    }
 
-    yy += (ascent + 2);
+    // draw water string
+    u8g.setFont(FONT_SMALL_MEDIUM);
+    static const char *water = "Water:";
+    u8g.drawStr(u8g.getDisplayWidth() / 2.0 - u8g.getStrWidth(water) - X_OFFSET, yy + (remainingHeight / 4.0) * 3, water);
+    sprintf(buffer, "%dml", waterWeightMl);
+    u8g.setFont(FONT_MEDIUM);
+    u8g.drawStr(u8g.getWidth() / 2.0, yy + (remainingHeight / 4.0) * 3, buffer);
 
-    sprintf(buffer, "Water: %dml", waterWeightMl);
-    drawHCenterText(buffer, yy);
-
+    u8g.setFontPosBaseline();
     u8g.sendBuffer();
 }
 
 void U8GDisplay::recipeConfigRatio(const char *header, float coffee, float water)
 {
     u8g.clearBuffer();
-    u8g.setFont(u8g_font_6x10);
-
-    int ascent = u8g.getAscent();
     int yy = drawTitleLine(header);
+    yy += 2 * Y_PADDING;
 
-    yy += (ascent + 4);
-    drawHCenterText("Enter ratio.", yy);
+    u8g.setFont(FONT_MEDIUM);
+    yy += u8g.getAscent();
+    drawHCenterText("Brew Ratio:", yy);
+    yy += Y_PADDING;
 
-    yy += (ascent + 8);
+    u8g.setFont(FONT_LARGE);
+    yy += (u8g.getDisplayHeight() - yy) / 2.0 + u8g.getAscent() / 2.0;
+
+    // draw colon in center
+    u8g.drawStr(u8g.getDisplayWidth() / 2.0 - u8g.getStrWidth(":") / 2.0, yy, ":");
+
     static char buffer[16];
-    sprintf(buffer, "%.1f:%.1f", coffee, water);
-    drawHCenterText(buffer, yy);
+
+    // draw left side
+    sprintf(buffer, "%.1f", coffee);
+    u8g.drawStr(u8g.getDisplayWidth() / 4.0 - u8g.getStrWidth(buffer) / 2.0, yy, buffer);
+    // draw right side, only if blink should show
+    if (shouldBlinkedBeVisible())
+    {
+        sprintf(buffer, "%.1f", water);
+        u8g.drawStr(3 * u8g.getDisplayWidth() / 4.0 - u8g.getStrWidth(buffer) / 2.0, yy, buffer);
+    }
 
     u8g.sendBuffer();
 }

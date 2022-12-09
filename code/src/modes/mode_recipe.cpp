@@ -143,7 +143,7 @@ public:
 
         // update values and display
         state.configRecipe.coffeeWeightMg = state.originalRecipe->coffeeWeightMg + input.getEncoderTicks() * WEIGHT_ADJUST_MULTIPLIER;
-        display.recipeCoffeeWeightConfig(state.configRecipe.name, state.configRecipe.coffeeWeightMg,
+        display.recipeConfigCoffeeWeight(state.configRecipe.name, state.configRecipe.coffeeWeightMg,
                                          state.configRecipe.coffeeWeightMg * ((float)state.configRecipe.ratio / (float)RECIPE_RATIO_MUL) / 1000);
     }
     void enter() override

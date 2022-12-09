@@ -93,7 +93,7 @@ public:
         recipeName = strdup(name);
         recipeDescription = strdup(description);
     };
-    void recipeCoffeeWeightConfig(const char *header, unsigned int weightMg, unsigned int waterWeightMl)
+    void recipeConfigCoffeeWeight(const char *header, unsigned int weightMg, unsigned int waterWeightMl)
     {
         delete[] weightConfigHeader;
         weightConfigHeader = strdup(header);
