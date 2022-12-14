@@ -2307,7 +2307,6 @@
     )
   )
 
-
   (junction (at 261.62 149.86) (diameter 0) (color 0 0 0 0)
     (uuid 0f73d199-0a1f-4492-a239-7a3aa858b574)
   )
@@ -4910,7 +4909,7 @@
     (uuid 87dbf7e4-772b-459d-86dc-433bbfeef2ea)
     (property "Reference" "SW3" (id 0) (at 163.83 116.84 0))
     (property "Value" "RotaryEncoder_Switch" (id 1) (at 171.45 119.38 0))
-    (property "Footprint" "Rotary_Encoder:RotaryEncoder_Alps_EC11E-Switch_Vertical_H20mm_CircularMountingHoles" (id 2) (at 147.32 115.316 0)
+    (property "Footprint" "Rotary_Encoder:RotaryEncoder_Alps_EC11E-Switch_Vertical_H20mm" (id 2) (at 147.32 115.316 0)
       (effects (font (size 1.27 1.27)) hide)
     )
     (property "Datasheet" "~" (id 3) (at 151.13 112.776 0)
@@ -5881,7 +5880,7 @@
       (reference "SW2") (unit 1) (value "SW_Boot") (footprint "Button_Switch_THT:SW_PUSH_6mm_H5mm")
     )
     (path "/87dbf7e4-772b-459d-86dc-433bbfeef2ea"
-      (reference "SW3") (unit 1) (value "RotaryEncoder_Switch") (footprint "Rotary_Encoder:RotaryEncoder_Alps_EC11E-Switch_Vertical_H20mm_CircularMountingHoles")
+      (reference "SW3") (unit 1) (value "RotaryEncoder_Switch") (footprint "Rotary_Encoder:RotaryEncoder_Alps_EC11E-Switch_Vertical_H20mm")
     )
     (path "/554bc97c-dda6-441f-adb0-5b318621d6bc"
       (reference "SW4") (unit 1) (value "SW_Power") (footprint "Connector_Wire:SolderWire-0.5sqmm_1x02_P4.8mm_D0.9mm_OD2.3mm")
