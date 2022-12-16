@@ -15,7 +15,7 @@ public:
     void promptText(const char *prompt, const char *text) override;
     void centerText(const char *text, const uint8_t size) override;
     void modeSwitcher(const char *current, const uint8_t index, const uint8_t count, float batV, float batPercentage, bool batCharging) override;
-    void switcher(const char *current, const uint8_t index, const uint8_t count, const char *options[]) override;
+    void switcher(const uint8_t index, const uint8_t count, const char *options[]) override;
     void recipeSummary(const char *name, const char *description) override;
     void recipeConfigCoffeeWeight(const char *header, unsigned int weightMg, unsigned int waterWeightMl) override;
     void recipeConfigRatio(const char *header, float coffee, float water) override;

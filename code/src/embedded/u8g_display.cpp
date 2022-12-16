@@ -101,19 +101,21 @@ int U8GDisplay::drawTitleLine(const char *title)
     return yy;
 }
 
-void U8GDisplay::switcher(const char *current, const uint8_t index, const uint8_t count, const char *options[])
+void U8GDisplay::switcher(const uint8_t index, const uint8_t count, const char *options[])
 {
     static const char *title = "Select recipe.";
 
     u8g.clearBuffer();
-    u8g.setFont(u8g_font_6x10);
 
+    int yy = drawTitleLine(title);
+    yy += 2;
+
+    u8g.setFont(FONT_SMALL);
+    u8g.setFontPosBaseline();
     int ascent = u8g.getAscent();
     int descent = u8g.getDescent();
     int height = u8g.getDisplayHeight();
     int width = u8g.getDisplayWidth();
-
-    int yy = drawTitleLine(title);
 
     int optionHeight = ascent + 2;
     int visibleOptionsCount = (height - yy) / optionHeight;
@@ -145,9 +147,9 @@ void U8GDisplay::switcher(const char *current, const uint8_t index, const uint8_
             u8g.setDrawColor(0);
         }
 
-        u8g.drawStr(0, yy + ascent, options[optionIndex]);
+        u8g.drawStr(2, yy + ascent + 1, options[optionIndex]);
         u8g.setDrawColor(1);
-        yy += (optionHeight + 1);
+        yy += optionHeight;
     }
 
     u8g.sendBuffer();

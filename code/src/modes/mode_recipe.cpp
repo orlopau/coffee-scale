@@ -41,7 +41,7 @@ public:
             recipeIndex += change;
         }
 
-        display.switcher(recipes[recipeIndex].name, recipeIndex, recipeCount, recipeSwitcherEntries);
+        display.switcher(recipeIndex, recipeCount, recipeSwitcherEntries);
     }
 
     void exit() override
