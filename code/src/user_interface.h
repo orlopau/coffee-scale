@@ -33,9 +33,9 @@ public:
     virtual void promptText(const char *prompt, const char *subtext) = 0;
     virtual void centerText(const char *text, const uint8_t size) = 0;
     virtual void modeSwitcher(const char *current, const uint8_t index, const uint8_t count, float batV, float batPercentage, bool batCharging) = 0;
-    virtual void switcher(const char *current, const uint8_t index, const uint8_t count, const char *options[]) = 0;
+    virtual void switcher(const uint8_t index, const uint8_t count, const char *options[]) = 0;
     virtual void recipeSummary(const char *name, const char *description) = 0;
-    virtual void recipeCoffeeWeightConfig(const char *header, unsigned int weightMg, unsigned int waterWeightMl) = 0;
+    virtual void recipeConfigCoffeeWeight(const char *header, unsigned int weightMg, unsigned int waterWeightMl) = 0;
     virtual void recipeConfigRatio(const char *header, float coffee, float water) = 0;
     virtual void recipeInsertCoffee(int32_t weightMg, uint32_t requiredWeightMg) = 0;
     virtual void recipePour(const char *text, int32_t weightToPourMg, uint64_t timeToFinishMs, bool isPause, uint8_t pourIndex, uint8_t pours) = 0;

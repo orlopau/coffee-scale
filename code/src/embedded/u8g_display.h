@@ -11,19 +11,19 @@ class U8GDisplay : public Display
 public:
     U8GDisplay(const uint8_t pin_sda, const uint8_t pin_scl, const u8g2_cb_t *rotation);
     void begin();
-    void display(float weight, unsigned long time);
-    void promptText(const char *prompt, const char *text);
-    void centerText(const char *text, const uint8_t size);
-    void modeSwitcher(const char *current, const uint8_t index, const uint8_t count, float batV, float batPercentage, bool batCharging);
-    void switcher(const char *current, const uint8_t index, const uint8_t count, const char *options[]);
-    void recipeSummary(const char *name, const char *description);
-    void recipeCoffeeWeightConfig(const char *header, unsigned int weightMg, unsigned int waterWeightMl);
-    void recipeConfigRatio(const char *header, float coffee, float water);
-    void recipeInsertCoffee(int32_t weightMg, uint32_t requiredWeightMg);
-    void recipePour(const char *text, int32_t weightToPourMg, uint64_t timeToFinishMs, bool isPause, uint8_t pourIndex, uint8_t pours);
-    void text(const char *text);
+    void display(float weight, unsigned long time) override;
+    void promptText(const char *prompt, const char *text) override;
+    void centerText(const char *text, const uint8_t size) override;
+    void modeSwitcher(const char *current, const uint8_t index, const uint8_t count, float batV, float batPercentage, bool batCharging) override;
+    void switcher(const uint8_t index, const uint8_t count, const char *options[]) override;
+    void recipeSummary(const char *name, const char *description) override;
+    void recipeConfigCoffeeWeight(const char *header, unsigned int weightMg, unsigned int waterWeightMl) override;
+    void recipeConfigRatio(const char *header, float coffee, float water) override;
+    void recipeInsertCoffee(int32_t weightMg, uint32_t requiredWeightMg) override;
+    void recipePour(const char *text, int32_t weightToPourMg, uint64_t timeToFinishMs, bool isPause, uint8_t pourIndex, uint8_t pours) override;
+    void text(const char *text) override;
     void update(){};
-    void clear();
+    void clear() override;
     void drawOpener();
 
 private:
@@ -39,6 +39,7 @@ private:
     void drawCenterText(const char *text);
     int drawLinebreakText(const char *text, uint8_t x, uint8_t y);
     int drawSelectedBar(uint8_t index, uint8_t size);
+    bool shouldBlinkedBeVisible();
 };
 
 #endif

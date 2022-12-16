@@ -55,7 +55,6 @@ class MockDisplay : public Display
 public:
     ~MockDisplay()
     {
-        delete[] switcherText;
         delete[] recipeName;
         delete[] recipeDescription;
         delete[] weightConfigHeader;
@@ -79,10 +78,8 @@ public:
     {
         lastModeText = strdup(current);
     };
-    void switcher(const char *current, const uint8_t index, const uint8_t count, const char *options[])
+    void switcher(const uint8_t index, const uint8_t count, const char *options[]) override
     {
-        delete[] switcherText;
-        switcherText = strdup(current);
         switcherIndex = index;
         switcherCount = count;
     };
@@ -93,7 +90,7 @@ public:
         recipeName = strdup(name);
         recipeDescription = strdup(description);
     };
-    void recipeCoffeeWeightConfig(const char *header, unsigned int weightMg, unsigned int waterWeightMl)
+    void recipeConfigCoffeeWeight(const char *header, unsigned int weightMg, unsigned int waterWeightMl)
     {
         delete[] weightConfigHeader;
         weightConfigHeader = strdup(header);
@@ -129,7 +126,6 @@ public:
 
     float weight = NAN;
     unsigned long time = -1;
-    char *switcherText = nullptr;
     uint8_t switcherIndex = 0xFF;
     uint8_t switcherCount = 0xFF;
 
