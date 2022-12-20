@@ -12,4 +12,3 @@
 
 unsigned long now();
 void sleep_for(unsigned long millis);
-void println(const char *str);

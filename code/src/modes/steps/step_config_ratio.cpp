@@ -31,7 +31,7 @@ void RecipeConfigRatioStep::enter()
 
 void RecipeConfigRatioStep::exit()
 {
-    // adjust ratiuos of pours according to new ratio
+    // adjust ratios of pours according to new ratio
     float ratioMultiplier = (float)state.configRecipe.ratio / (float)state.originalRecipe->ratio;
     for (uint8_t i = 0; i < state.configRecipe.poursCount; i++)
     {

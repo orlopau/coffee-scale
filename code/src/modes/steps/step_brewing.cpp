@@ -53,5 +53,5 @@ void RecipeBrewing::enter()
 
 bool RecipeBrewing::canStepForward()
 {
-    return recipePourIndex + 1 >= state.configRecipe.poursCount;
+    return recipePourIndex + 1 >= state.configRecipe.poursCount && pourDoneFlag;
 }
