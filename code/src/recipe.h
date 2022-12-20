@@ -26,6 +26,8 @@ struct Pour
     uint32_t timePour;
     /// Time to wait after the pour in ms.
     uint32_t timePause;
+    /// True if timer for step should start automatically.
+    bool autoStart;
     /// True if after all time has passed the next pour should start.
     bool autoAdvance;
 };

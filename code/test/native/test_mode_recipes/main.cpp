@@ -387,6 +387,15 @@ void test_recipe_insert_coffee_values()
     TEST_ASSERT_EQUAL(0, display->recipeInsertWeight);
 }
 
+void test_recipe_auto_advances_to_next_pour_when_flag_is_set()
+{
+    // one recipe with auto advance enabled, no adjustable parameters
+    const Recipe recipes[] = {
+        {"", "", 1000, 10, 2, 0, }
+    };
+    modeRecipes = new ModeRecipes(*weightSensor, *buttons, *display, RECIPES, 3);
+}
+
 int main(void)
 {
     UNITY_BEGIN();
@@ -398,5 +407,6 @@ int main(void)
     RUN_TEST(test_recipe_brewing);
     RUN_TEST(test_adjusting_global_ratio_affects_pour_ratio);
     RUN_TEST(test_recipe_insert_coffee_values);
+    RUN_TEST(test_recipe_auto_advances_to_next_pour_when_flag_is_set);
     UNITY_END();
 }
