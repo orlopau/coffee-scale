@@ -1,10 +1,11 @@
 #pragma once
 
+#include "battery.h"
 #include "loadcell.h"
+#include "millis.h"
 #include "user_interface.h"
 #include <math.h>
 #include <string.h>
-#include "battery.h"
 
 class MockBattery : public Battery
 {
@@ -19,10 +20,7 @@ class MockWeightSensor : public WeightSensor
 public:
     float getWeight() override { return weight; }
     bool isNewWeight() override { return newWeight; }
-    void tare() override
-    {
-        weight = 0;
-    }
+    void tare() override { weight = 0; }
     void setScale(float scale) override {}
     float weight = 0;
     bool newWeight = false;
@@ -74,7 +72,8 @@ public:
         delete[] lastCenterText;
         lastCenterText = strdup(text);
     };
-    void modeSwitcher(const char *current, const uint8_t index, const uint8_t count, float batV, float batPercentage, bool batCharging)
+    void modeSwitcher(const char *current, const uint8_t index, const uint8_t count, float batV, float batPercentage,
+                      bool batCharging)
     {
         lastModeText = strdup(current);
     };
@@ -90,12 +89,12 @@ public:
         recipeName = strdup(name);
         recipeDescription = strdup(description);
     };
-    void recipeConfigCoffeeWeight(const char *header, unsigned int weightMg, unsigned int waterWeightMl)
+    void recipeConfigCoffeeWeight(const char *header, unsigned int weightMg, unsigned int waterWeightMl) override
     {
-        delete[] weightConfigHeader;
-        weightConfigHeader = strdup(header);
         weightConfigWeightMg = weightMg;
         weightConfigWaterWeightMl = waterWeightMl;
+        delete weightConfigHeader;
+        weightConfigHeader = strdup(header);
     };
     void recipeConfigRatio(const char *header, float coffee, float water)
     {
@@ -104,10 +103,11 @@ public:
     };
     void recipeInsertCoffee(int32_t weightMg, uint32_t requiredWeightMg)
     {
-        recipeInsertWeight = weightMg;
-        recipeInsertRequiredWeight = requiredWeightMg;
+        recipeInsertWeightMg = weightMg;
+        recipeInsertRequiredWeightMg = requiredWeightMg;
     };
-    void recipePour(const char *text, int32_t weightToPour, uint64_t timeToFinish, bool isPause, uint8_t pourIndex, uint8_t pours)
+    void recipePour(const char *text, int32_t weightToPour, uint64_t timeToFinish, bool isPause, uint8_t pourIndex,
+                    uint8_t pours)
     {
         recipeWeightToPourMg = weightToPour;
         recipeTimeToFinishMs = timeToFinish;
@@ -121,7 +121,6 @@ public:
     };
 
     char *lastCenterText = nullptr;
-
     char *lastModeText = nullptr;
 
     float weight = NAN;
@@ -136,8 +135,8 @@ public:
     unsigned int weightConfigWeightMg = 0;
     unsigned int weightConfigWaterWeightMl = 0;
 
-    int32_t recipeInsertWeight = 0;
-    int32_t recipeInsertRequiredWeight = 0;
+    int32_t recipeInsertWeightMg = 0;
+    int32_t recipeInsertRequiredWeightMg = 0;
 
     float ratioCoffee = NAN;
     float ratioWater = NAN;
