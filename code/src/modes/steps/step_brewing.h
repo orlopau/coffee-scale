@@ -21,8 +21,13 @@ private:
 
     enum BrewState
     {
+        /// @brief Brew is not started yet.
+        STOPPED,
+        /// @brief Brew is in progress.
         POUR,
+        /// @brief Brew is paused.
         PAUSE,
+        /// @brief Brew is done.
         DONE,
     };
     unsigned long pourStartMillis = 0;

@@ -8,47 +8,71 @@ void RecipeBrewing::update()
 {
     const Pour *pour = &state.configRecipe.pours[recipePourIndex];
 
-    const int32_t remainingWeightMg = (state.configRecipe.coffeeWeightMg * (pour->ratio / (float)RECIPE_RATIO_MUL)) - (weightSensor.getWeight() * 1000);
-    const uint64_t passedTimePourMs = now() - pourStartMillis;
     uint64_t remainingTimePourMs;
+    bool isPause = false;
 
-    BrewState brewState;
-    if (passedTimePourMs < pour->timePour)
+    // autostart brew if enabled
+    // extra if to start on same tick
+    if (pourStartMillis == 0 && pour->autoStart)
     {
-        brewState = POUR;
+        pourStartMillis = now();
+    }
+
+    const uint64_t passedTimePourMs = now() - pourStartMillis;
+
+    // Brew is not started yet.
+    if (pourStartMillis == 0)
+    {
+        remainingTimePourMs = pour->timePour;
+
+        // if encoder is clicked, start brew
+        if (input.getEncoderClick() == ClickType::SINGLE)
+        {
+            pourStartMillis = now();
+        }
+    }
+    // Brew is in progress.
+    else if (passedTimePourMs < pour->timePour)
+    {
         remainingTimePourMs = pour->timePour - passedTimePourMs;
     }
+    // Brew is in progress, pause time.
     else if (passedTimePourMs < pour->timePour + pour->timePause)
     {
-        brewState = PAUSE;
         remainingTimePourMs = pour->timePour + pour->timePause - passedTimePourMs;
+        isPause = true;
     }
+    // Brew is done.
     else
     {
+        remainingTimePourMs = 0;
+
         if (!pourDoneFlag)
         {
             pourDoneFlag = true;
             input.buzzerTone(200);
         }
-        brewState = DONE;
-        remainingTimePourMs = 0;
+
         // if there is another pour, start it when encoder is clicked or auto advance is enabled
         if ((input.getEncoderClick() == ClickType::SINGLE || pour->autoAdvance) &&
             recipePourIndex + 1 < state.configRecipe.poursCount)
         {
             recipePourIndex++;
-            pourStartMillis = now();
+            pourStartMillis = 0;
             pourDoneFlag = false;
         }
     }
 
-    display.recipePour(pour->note, remainingWeightMg, remainingTimePourMs, brewState == PAUSE, recipePourIndex, state.configRecipe.poursCount);
+    const int32_t remainingWeightMg = (state.configRecipe.coffeeWeightMg * (pour->ratio / (float)RECIPE_RATIO_MUL)) -
+                                      (weightSensor.getWeight() * 1000);
+    display.recipePour(pour->note, remainingWeightMg, remainingTimePourMs, isPause, recipePourIndex,
+                       state.configRecipe.poursCount);
 }
 
 void RecipeBrewing::enter()
 {
     recipePourIndex = 0;
-    pourStartMillis = now();
+    pourStartMillis = 0;
     pourDoneFlag = false;
 }
 

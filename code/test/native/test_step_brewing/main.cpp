@@ -35,15 +35,16 @@ void setRecipe(const Recipe &recipe)
 
 void test_can_step_forward(void)
 {
-    const Recipe singlePourRecipe = {"name1",
-                                     "desc1",
-                                     3000,
-                                     2 * RECIPE_RATIO_MUL,
-                                     1,
-                                     0,
-                                     {
-                                         {"pour1", 2 * RECIPE_RATIO_MUL, .timePour = 100, .timePause = 100},
-                                     }};
+    const Recipe singlePourRecipe = {
+        "name1",
+        "desc1",
+        3000,
+        2 * RECIPE_RATIO_MUL,
+        1,
+        0,
+        {
+            {"pour1", 2 * RECIPE_RATIO_MUL, .timePour = 100, .timePause = 100, .autoStart = true, .autoAdvance = true},
+        }};
     setRecipe(singlePourRecipe);
     recipeBrewing->update();
 
@@ -69,8 +70,8 @@ void test_recipe_brewing(void)
                            static_cast<uint8_t>(AdjustableParameter::COFFEE_WEIGHT) |
                                static_cast<uint8_t>(AdjustableParameter::RATIO),
                            {
-                               {"step1", 2 * RECIPE_RATIO_MUL, 500, 300, true},
-                               {"step2", 5 * RECIPE_RATIO_MUL, 0, 300, false},
+                               {"step1", 2 * RECIPE_RATIO_MUL, 500, 300, .autoStart = true, .autoAdvance = true},
+                               {"step2", 5 * RECIPE_RATIO_MUL, 0, 300, .autoStart = true},
                            }};
     setRecipe(recipe);
     recipeBrewing->update();
@@ -156,11 +157,55 @@ void test_recipe_auto_advances_step_when_flag_is_set(void)
     TEST_ASSERT_EQUAL(1, recipeBrewing->recipePourIndex);
 }
 
+void test_recipe_auto_starts_when_flag_is_enbled(void)
+{
+    const Recipe autoAdvanceRecipe = {
+        "name1",
+        "desc1",
+        3000,
+        (2 + 2 + 2) * RECIPE_RATIO_MUL,
+        3,
+        0,
+        {
+            {"pour1", 2 * RECIPE_RATIO_MUL, .timePour = 50, .timePause = 50, .autoStart = true, .autoAdvance = true},
+            {"pour2", 2 * RECIPE_RATIO_MUL, .timePour = 50, .timePause = 50, .autoStart = false, .autoAdvance = true},
+            {"pour3", 2 * RECIPE_RATIO_MUL, .timePour = 50, .timePause = 50},
+        }};
+    setRecipe(autoAdvanceRecipe);
+    recipeBrewing->update();
+
+    // verify that first step is running, as it is auto started
+    TEST_ASSERT_EQUAL(0, recipeBrewing->recipePourIndex);
+    // wait 100ms for completion
+    sleep_for(101);
+    // auto advances to next step
+    recipeBrewing->update();
+
+    // second step does not auto start, recipe should display time to finish
+    recipeBrewing->update();
+    TEST_ASSERT_EQUAL(50, display->recipeTimeToFinishMs);
+    sleep_for(101);
+    recipeBrewing->update();
+    // after 100ms, still 50ms to go
+    TEST_ASSERT_EQUAL(50, display->recipeTimeToFinishMs);
+
+    // only after clicking encoder we should see the next step
+    buttons->encoderClick = ClickType::SINGLE;
+    recipeBrewing->update();
+    buttons->encoderClick = ClickType::NONE;
+
+    // verify that step has started after clicking
+    sleep_for(10);
+    recipeBrewing->update();
+    TEST_ASSERT_LESS_OR_EQUAL(40, display->recipeTimeToFinishMs);
+}
+
 int main(void)
 {
     UNITY_BEGIN();
     RUN_TEST(test_can_step_forward);
     RUN_TEST(test_recipe_brewing);
     RUN_TEST(test_recipe_auto_advances_step_when_flag_is_set);
+    RUN_TEST(test_recipe_auto_starts_when_flag_is_enbled);
     UNITY_END();
 }
