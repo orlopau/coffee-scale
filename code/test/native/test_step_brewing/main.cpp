@@ -200,6 +200,25 @@ void test_recipe_auto_starts_when_flag_is_enbled(void)
     TEST_ASSERT_LESS_OR_EQUAL(40, display->recipeTimeToFinishMs);
 }
 
+void test_recipe_shows_pause_time_when_auto_start_disabled_and_pour_time_0(void)
+{
+    const Recipe autoAdvanceRecipe = {
+        "name1",
+        "desc1",
+        3000,
+        2 * RECIPE_RATIO_MUL,
+        1,
+        0,
+        {
+            {"pour1", 2 * RECIPE_RATIO_MUL, .timePour = 0, .timePause = 50, .autoStart = false, .autoAdvance = false},
+        }};
+    setRecipe(autoAdvanceRecipe);
+    recipeBrewing->update();
+
+    // verify that the remaining time is shown
+    TEST_ASSERT_EQUAL(50, display->recipeTimeToFinishMs);
+}
+
 int main(void)
 {
     UNITY_BEGIN();
@@ -207,5 +226,6 @@ int main(void)
     RUN_TEST(test_recipe_brewing);
     RUN_TEST(test_recipe_auto_advances_step_when_flag_is_set);
     RUN_TEST(test_recipe_auto_starts_when_flag_is_enbled);
+    RUN_TEST(test_recipe_shows_pause_time_when_auto_start_disabled_and_pour_time_0);
     UNITY_END();
 }

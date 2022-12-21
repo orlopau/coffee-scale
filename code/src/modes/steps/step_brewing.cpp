@@ -23,7 +23,7 @@ void RecipeBrewing::update()
     // Brew is not started yet.
     if (pourStartMillis == 0)
     {
-        remainingTimePourMs = pour->timePour;
+        remainingTimePourMs = pour->timePour != 0 ? pour->timePour : pour->timePause;
 
         // if encoder is clicked, start brew
         if (input.getEncoderClick() == ClickType::SINGLE)
