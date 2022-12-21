@@ -1,8 +1,8 @@
 #pragma once
 
+#include "loadcell.h"
 #include "step.h"
 #include "user_interface.h"
-#include "loadcell.h"
 
 class RecipeBrewing : public RecipeStep
 {
@@ -11,6 +11,7 @@ public:
     void update() override;
     void enter() override;
     bool canStepForward() override;
+    uint8_t recipePourIndex;
 
 private:
     RecipeStepState &state;
@@ -25,6 +26,5 @@ private:
         DONE,
     };
     unsigned long pourStartMillis = 0;
-    uint8_t recipePourIndex;
     bool pourDoneFlag;
 };

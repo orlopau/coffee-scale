@@ -125,10 +125,42 @@ void test_recipe_brewing(void)
     TEST_ASSERT_EQUAL(0, display->recipeTimeToFinishMs);
 }
 
+void test_recipe_auto_advances_step_when_flag_is_set(void)
+{
+    const Recipe autoAdvanceRecipe = {
+        "name1",
+        "desc1",
+        3000,
+        (2 + 2 + 2) * RECIPE_RATIO_MUL,
+        3,
+        0,
+        {
+            {"pour1", 2 * RECIPE_RATIO_MUL, .timePour = 50, .timePause = 50, .autoStart = true, .autoAdvance = true},
+            {"pour2", 2 * RECIPE_RATIO_MUL, .timePour = 50, .timePause = 50},
+            {"pour3", 2 * RECIPE_RATIO_MUL, .timePour = 50, .timePause = 50},
+        }};
+    setRecipe(autoAdvanceRecipe);
+    recipeBrewing->update();
+
+    // verify that first step is running
+    TEST_ASSERT_EQUAL(0, recipeBrewing->recipePourIndex);
+    // wait 100ms for completion
+    sleep_for(101);
+    recipeBrewing->update();
+    // verify that second step has started
+    TEST_ASSERT_EQUAL(1, recipeBrewing->recipePourIndex);
+    // wait again 100ms for completion
+    sleep_for(101);
+    recipeBrewing->update();
+    // next step does not auto advance, so we should still see the second step
+    TEST_ASSERT_EQUAL(1, recipeBrewing->recipePourIndex);
+}
+
 int main(void)
 {
     UNITY_BEGIN();
     RUN_TEST(test_can_step_forward);
     RUN_TEST(test_recipe_brewing);
+    RUN_TEST(test_recipe_auto_advances_step_when_flag_is_set);
     UNITY_END();
 }

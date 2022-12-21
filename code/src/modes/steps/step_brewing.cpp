@@ -32,8 +32,9 @@ void RecipeBrewing::update()
         }
         brewState = DONE;
         remainingTimePourMs = 0;
-        // if there is another pour, start it
-        if (input.getEncoderClick() == ClickType::SINGLE && recipePourIndex + 1 < state.configRecipe.poursCount)
+        // if there is another pour, start it when encoder is clicked or auto advance is enabled
+        if ((input.getEncoderClick() == ClickType::SINGLE || pour->autoAdvance) &&
+            recipePourIndex + 1 < state.configRecipe.poursCount)
         {
             recipePourIndex++;
             pourStartMillis = now();
