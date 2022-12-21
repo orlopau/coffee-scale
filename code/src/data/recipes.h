@@ -21,7 +21,8 @@ const Recipe RECIPES[] = {
      3,
      P(AdjustableParameter::COFFEE_WEIGHT) | P(AdjustableParameter::RATIO),
      {
-         {"Add water wetting all\nthe grounds, then\ninsert plunger 1cm\ninto the brewer.", RATIO(16.7), 0, MINUTES(2), false, true},
+         {"Add water wetting all\nthe grounds, then\ninsert plunger 1cm\ninto the brewer.", RATIO(16.7), 0, MINUTES(2),
+          .autoStart = false, .autoAdvance = true},
          {"Gently swirl the\nbrewer.", RATIO(16.7), 0, SECONDS(30), true, true},
          {"Press the plunger\nall the way in.", RATIO(16.7), 0, 0, true, false},
      }},
