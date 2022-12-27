@@ -37,7 +37,6 @@ void test_displays_current_weight_and_target_coffee_weight()
     const Recipe recipe = {"name1",
                            "desc1",
                            .coffeeWeightMg = 3000,
-                           .ratio = (2 + 3) * RECIPE_RATIO_MUL,
                            1,
                            0,
                            {

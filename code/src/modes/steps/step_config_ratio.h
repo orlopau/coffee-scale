@@ -17,4 +17,5 @@ private:
     RecipeStepState &state;
     Display &display;
     UserInput &input;
+    uint32_t newRatio;
 };

@@ -43,8 +43,6 @@ struct Recipe
     char note[256];
     /// The grams of coffee used for the recipe.
     uint32_t coffeeWeightMg;
-    /// The ratio of coffee to water. Must be divided by 10.
-    uint16_t ratio;
     /// The number of pours in the recipe.
     uint8_t poursCount;
     // Adjustable parameters one-hot encoded.
@@ -52,3 +50,9 @@ struct Recipe
     /// Pours for the recipe.
     Pour pours[10];
 };
+
+/**
+ * @brief Calculates the total ratio for a recipe.
+ * 
+ */
+uint32_t recipeGetTotalRatio(const Recipe &recipe);

@@ -1,5 +1,5 @@
-#include <unity.h>
 #include "ring_buffer.h"
+#include <unity.h>
 
 /*
 0 1 2
@@ -7,6 +7,10 @@
 1 2 3
 4
 */
+
+void setUp(void) {}
+
+void tearDown(void) {}
 
 void test_ring_buffer_push(void)
 {

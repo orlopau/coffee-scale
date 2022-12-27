@@ -18,7 +18,7 @@ public:
     void switcher(const uint8_t index, const uint8_t count, const char *options[]) override;
     void recipeSummary(const char *name, const char *description) override;
     void recipeConfigCoffeeWeight(const char *header, unsigned int weightMg, unsigned int waterWeightMl) override;
-    void recipeConfigRatio(const char *header, float coffee, float water) override;
+    void recipeConfigRatio(const char *header, uint32_t coffee, uint32_t water) override;
     void recipeInsertCoffee(int32_t weightMg, uint32_t requiredWeightMg) override;
     void recipePour(const char *text, int32_t weightToPourMg, uint64_t timeToFinishMs, bool isPause, uint8_t pourIndex, uint8_t pours) override;
     void text(const char *text) override;

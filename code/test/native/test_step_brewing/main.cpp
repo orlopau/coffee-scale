@@ -39,7 +39,6 @@ void test_can_step_forward(void)
         "name1",
         "desc1",
         3000,
-        2 * RECIPE_RATIO_MUL,
         1,
         0,
         {
@@ -65,7 +64,6 @@ void test_recipe_brewing(void)
     const Recipe recipe = {"name1",
                            "desc1",
                            3000,
-                           (2 + 3) * RECIPE_RATIO_MUL,
                            2,
                            static_cast<uint8_t>(AdjustableParameter::COFFEE_WEIGHT) |
                                static_cast<uint8_t>(AdjustableParameter::RATIO),
@@ -132,7 +130,6 @@ void test_recipe_auto_advances_step_when_flag_is_set(void)
         "name1",
         "desc1",
         3000,
-        (2 + 2 + 2) * RECIPE_RATIO_MUL,
         3,
         0,
         {
@@ -163,7 +160,6 @@ void test_recipe_auto_starts_when_flag_is_enbled(void)
         "name1",
         "desc1",
         3000,
-        (2 + 2 + 2) * RECIPE_RATIO_MUL,
         3,
         0,
         {
@@ -206,7 +202,6 @@ void test_recipe_shows_pause_time_when_auto_start_disabled_and_pour_time_0(void)
         "name1",
         "desc1",
         3000,
-        2 * RECIPE_RATIO_MUL,
         1,
         0,
         {
