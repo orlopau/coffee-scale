@@ -34,8 +34,7 @@ void test_adjust_weight_via_encoder()
     const Recipe recipe = {"name1",
                                      "desc1",
                                      .coffeeWeightMg = 3000,
-                                     .ratio = (2 + 3) * RECIPE_RATIO_MUL,
-                                     1,
+                                     .poursCount = 2,
                                      0,
                                      {
                                          {"pour1", 2 * RECIPE_RATIO_MUL, .timePour = 100, .timePause = 100},

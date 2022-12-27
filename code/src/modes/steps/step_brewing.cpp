@@ -2,7 +2,9 @@
 #include "millis.h"
 
 RecipeBrewing::RecipeBrewing(RecipeStepState &state, Display &display, UserInput &input, WeightSensor &weightSensor)
-    : state(state), display(display), input(input), weightSensor(weightSensor) {}
+    : state(state), display(display), input(input), weightSensor(weightSensor)
+{
+}
 
 void RecipeBrewing::update()
 {
@@ -54,8 +56,7 @@ void RecipeBrewing::update()
         }
 
         // if there is another pour, start it when encoder is clicked or auto advance is enabled
-        if ((input.getEncoderClick() == ClickType::SINGLE || pour->autoAdvance) &&
-            recipePourIndex + 1 < state.configRecipe.poursCount)
+        if ((input.getEncoderClick() == ClickType::SINGLE || pour->autoAdvance) && recipePourIndex + 1 < state.configRecipe.poursCount)
         {
             recipePourIndex++;
             pourStartMillis = 0;
@@ -63,10 +64,17 @@ void RecipeBrewing::update()
         }
     }
 
-    const int32_t remainingWeightMg = (state.configRecipe.coffeeWeightMg * (pour->ratio / (float)RECIPE_RATIO_MUL)) -
-                                      (weightSensor.getWeight() * 1000);
-    display.recipePour(pour->note, remainingWeightMg, remainingTimePourMs, isPause, recipePourIndex,
-                       state.configRecipe.poursCount);
+    // calculate remaining weight, by adding the weight of all pours including the current one
+    int32_t totalPourWeightMg = 0;
+    for (int i = 0; i <= recipePourIndex; i++)
+    {
+        const Pour *p = &state.configRecipe.pours[i];
+        const int32_t pourWeightMg = (p->ratio / (float)RECIPE_RATIO_MUL) * state.configRecipe.coffeeWeightMg;
+        totalPourWeightMg += pourWeightMg;
+    }
+
+    const int32_t remainingWeightMg = totalPourWeightMg - (weightSensor.getWeight() * 1000);
+    display.recipePour(pour->note, remainingWeightMg, remainingTimePourMs, isPause, recipePourIndex, state.configRecipe.poursCount);
 }
 
 void RecipeBrewing::enter()
@@ -76,7 +84,4 @@ void RecipeBrewing::enter()
     pourDoneFlag = false;
 }
 
-bool RecipeBrewing::canStepForward()
-{
-    return recipePourIndex + 1 >= state.configRecipe.poursCount && pourDoneFlag;
-}
+bool RecipeBrewing::canStepForward() { return recipePourIndex + 1 >= state.configRecipe.poursCount && pourDoneFlag; }

@@ -231,7 +231,7 @@ void U8GDisplay::recipeConfigCoffeeWeight(const char *header, unsigned int weigh
     u8g.sendBuffer();
 }
 
-void U8GDisplay::recipeConfigRatio(const char *header, float coffee, float water)
+void U8GDisplay::recipeConfigRatio(const char *header, uint32_t coffee, uint32_t water)
 {
     u8g.clearBuffer();
     int yy = drawTitleLine(header);
@@ -251,12 +251,12 @@ void U8GDisplay::recipeConfigRatio(const char *header, float coffee, float water
     static char buffer[16];
 
     // draw left side
-    sprintf(buffer, "%.1f", coffee);
+    sprintf(buffer, "%.1f", coffee / 10.0);
     u8g.drawStr(u8g.getDisplayWidth() / 4.0 - u8g.getStrWidth(buffer) / 2.0, yy, buffer);
     // draw right side, only if blink should show
     if (shouldBlinkedBeVisible())
     {
-        sprintf(buffer, "%.1f", water);
+        sprintf(buffer, "%.1f", water / 10.0);
         u8g.drawStr(3 * u8g.getDisplayWidth() / 4.0 - u8g.getStrWidth(buffer) / 2.0, yy, buffer);
     }
 

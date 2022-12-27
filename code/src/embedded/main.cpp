@@ -1,4 +1,4 @@
-#if !defined(PIO_UNIT_TESTING) && !defined(DEV_DISPLAY)
+#if !defined(PIO_UNIT_TESTING) && !defined(DEV_DISPLAY) && !defined(NATIVE)
 
 #include <Arduino.h>
 #include <EEPROM.h>

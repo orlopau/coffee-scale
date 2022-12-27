@@ -25,7 +25,7 @@ void RecipeConfigWeightStep::update()
         state.originalRecipe->coffeeWeightMg + input.getEncoderTicks() * WEIGHT_ADJUST_MULTIPLIER;
     display.recipeConfigCoffeeWeight(state.configRecipe.name, state.configRecipe.coffeeWeightMg,
                                      state.configRecipe.coffeeWeightMg *
-                                         ((float)state.configRecipe.ratio / (float)RECIPE_RATIO_MUL) / 1000);
+                                         ((float)recipeGetTotalRatio(state.configRecipe) / (float)RECIPE_RATIO_MUL) / 1000);
 }
 
 void RecipeConfigWeightStep::enter() { input.resetEncoderTicks(); }

@@ -1,12 +1,15 @@
 #include "step_config_ratio.h"
 
-RecipeConfigRatioStep::RecipeConfigRatioStep(RecipeStepState &state, Display &display, UserInput &input) : state(state), display(display), input(input) {}
+RecipeConfigRatioStep::RecipeConfigRatioStep(RecipeStepState &state, Display &display, UserInput &input)
+    : state(state), display(display), input(input)
+{
+}
 
 void RecipeConfigRatioStep::update()
 {
     // declare bounds for adjustment
     int lowerBoundTicks, upperBoundTicks;
-    lowerBoundTicks = -(state.originalRecipe->ratio - RECIPE_RATIO_MUL) / RATIO_ADJUST_MULTIPLIER;
+    lowerBoundTicks = -(recipeGetTotalRatio(*state.originalRecipe) - RECIPE_RATIO_MUL) / RATIO_ADJUST_MULTIPLIER;
     upperBoundTicks = 64 * RECIPE_RATIO_MUL;
 
     // enforce bounds
@@ -19,20 +22,19 @@ void RecipeConfigRatioStep::update()
         input.setEncoderTicks(lowerBoundTicks);
     }
 
+    // adjust ratios of pours according to new ratio
+    newRatio = recipeGetTotalRatio(*state.originalRecipe) + input.getEncoderTicks() * RATIO_ADJUST_MULTIPLIER;
+
     // update values and display
-    state.configRecipe.ratio = state.originalRecipe->ratio + input.getEncoderTicks() * RATIO_ADJUST_MULTIPLIER;
-    display.recipeConfigRatio(state.configRecipe.name, 1.0, (float)state.configRecipe.ratio / (float)RECIPE_RATIO_MUL);
+    display.recipeConfigRatio(state.configRecipe.name, 1 * RECIPE_RATIO_MUL, newRatio);
 }
 
-void RecipeConfigRatioStep::enter()
-{
-    input.resetEncoderTicks();
-}
+void RecipeConfigRatioStep::enter() { input.resetEncoderTicks(); }
 
 void RecipeConfigRatioStep::exit()
 {
     // adjust ratios of pours according to new ratio
-    float ratioMultiplier = (float)state.configRecipe.ratio / (float)state.originalRecipe->ratio;
+    float ratioMultiplier = newRatio / (float)recipeGetTotalRatio(*state.originalRecipe);
     for (uint8_t i = 0; i < state.configRecipe.poursCount; i++)
     {
         state.configRecipe.pours[i].ratio *= ratioMultiplier;

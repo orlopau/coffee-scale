@@ -10,9 +10,9 @@ RecipeStepState recipeStepState;
 
 const uint8_t RECIPE_COUNT = 3;
 const Recipe RECIPES[] = {
-    {"r1", "note1", .coffeeWeightMg = 3000, .ratio = 1 * RECIPE_RATIO_MUL, 0, 0, {}},
-    {"r2", "note2", .coffeeWeightMg = 3000, .ratio = 1 * RECIPE_RATIO_MUL, 0, 0, {}},
-    {"r3", "note3", .coffeeWeightMg = 3000, .ratio = 1 * RECIPE_RATIO_MUL, 0, 0, {}},
+    {"r1", "note1", .coffeeWeightMg = 3000, 0, 0, {}},
+    {"r2", "note2", .coffeeWeightMg = 3000, 0, 0, {}},
+    {"r3", "note3", .coffeeWeightMg = 3000, 0, 0, {}},
 };
 
 void setUp(void)

@@ -96,7 +96,7 @@ public:
         delete weightConfigHeader;
         weightConfigHeader = strdup(header);
     };
-    void recipeConfigRatio(const char *header, float coffee, float water)
+    void recipeConfigRatio(const char *header, uint32_t coffee, uint32_t water)
     {
         ratioCoffee = coffee;
         ratioWater = water;

@@ -1,4 +1,5 @@
 #pragma once
+#include <stdint.h>
 
 template <typename T>
 class RingBuffer
@@ -8,9 +9,9 @@ public:
     {
         delete[] buffer;
     };
-    RingBuffer(uint8_t size) : head(0), full(false), bufferSize(size)
+    RingBuffer(uint8_t bufferSize) : head(0), full(false), bufferSize(bufferSize)
     {
-        buffer = new T[size];
+        buffer = new T[bufferSize];
     };
     void push(T value)
     {
