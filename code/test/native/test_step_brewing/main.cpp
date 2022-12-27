@@ -69,7 +69,7 @@ void test_recipe_brewing(void)
                                static_cast<uint8_t>(AdjustableParameter::RATIO),
                            {
                                {"step1", 2 * RECIPE_RATIO_MUL, 500, 300, .autoStart = true, .autoAdvance = true},
-                               {"step2", 5 * RECIPE_RATIO_MUL, 0, 300, .autoStart = true},
+                               {"step2", 3 * RECIPE_RATIO_MUL, 0, 300, .autoStart = true},
                            }};
     setRecipe(recipe);
     recipeBrewing->update();
