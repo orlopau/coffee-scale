@@ -322,7 +322,7 @@ void U8GDisplay::recipePour(const char *text, int32_t weightToPourMg, uint64_t t
     static char buffer[16];
 
     u8g.setFont(u8g_font_7x13);
-    sprintf(buffer, "-%.2fg", weightToPourMg / 1000.0);
+    sprintf(buffer, "%.2fg", -1 * weightToPourMg / 1000.0);
 
     const static int TEXT_X_PADDING = 3;
     u8g.drawStr(TEXT_X_PADDING, center + ascent / 2.0, buffer);
