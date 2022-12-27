@@ -17,7 +17,6 @@ const Recipe RECIPES[] = {
     {"AeroPress J.H.",
      "Aeropress recipe by\nJames Hofmann.\nFirst presented in a\nvideo called \"The\nUltimate AeroPress\nTechnique\"",
      GRAMS(12),
-     RATIO(16.7),
      3,
      P(AdjustableParameter::COFFEE_WEIGHT) | P(AdjustableParameter::RATIO),
      {
@@ -29,7 +28,6 @@ const Recipe RECIPES[] = {
     {"V60 4-6 Method",
      "V60 recipe by\nTetsu Kasuya.",
      GRAMS(20),
-     RATIO(15),
      5,
      P(AdjustableParameter::COFFEE_WEIGHT) | P(AdjustableParameter::RATIO),
      {
