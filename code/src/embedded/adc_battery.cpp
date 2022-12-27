@@ -12,11 +12,9 @@ ADCBattery::ADCBattery(unsigned int pinAdc, unsigned int pinState, float multipl
 
 float ADCBattery::getVoltage()
 {
-    double reading = analogRead(pinAdc);
-    if (reading < 1 || reading > 4095)
-        return 0;
-    reading = -0.000000000000016 * pow(reading, 4) + 0.000000000118171 * pow(reading, 3) - 0.000000301211691 * pow(reading, 2) + 0.001109019271794 * reading + 0.034143524634089;
-    return (reading + offset) * multiplier;
+    double mV = analogReadMilliVolts(pinAdc);
+    // reading = -0.000000000000016 * pow(reading, 4) + 0.000000000118171 * pow(reading, 3) - 0.000000301211691 * pow(reading, 2) + 0.001109019271794 * reading + 0.034143524634089;
+    return (mV * multiplier) / 1000 + offset;
 }
 
 float ADCBattery::getPercentage()
