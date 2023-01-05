@@ -1,7 +1,7 @@
 #include "mode_calibrate.h"
 
-ModeCalibration::ModeCalibration(WeightSensor &weightSensor, UserInput &buttons, Display &display, Stopwatch &stopwatch, void (*saveScaleFnc)(float))
-    : weightSensor(weightSensor), buttons(buttons), display(display), stopwatch(stopwatch),
+ModeCalibration::ModeCalibration(LoadCell &loadCell, UserInput &buttons, Display &display, Stopwatch &stopwatch, void (*saveScaleFnc)(float))
+    : loadCell(loadCell), buttons(buttons), display(display), stopwatch(stopwatch),
       calibrationStep(CalibrationStep::BEGIN), saveScaleFnc(saveScaleFnc) {}
 
 void ModeCalibration::update()
@@ -16,11 +16,10 @@ void ModeCalibration::update()
         display.text("Starting calibration.\nRemove all items from\nscale.\n\nClick to continue!");
         sumMeasurements = 0;
         numMeasurements = 0;
-        weightSensor.setScale(1);
 
         if (buttons.getEncoderClick() == ClickType::SINGLE)
         {
-            weightSensor.tare();
+            tare = loadCell.read();
             calibrationStep = CalibrationStep::ADD_WEIGHT;
         }
         break;
@@ -33,22 +32,24 @@ void ModeCalibration::update()
         break;
     case CalibrationStep::CALIBRATING:
         display.text("Calibrating...");
-        if (weightSensor.isNewWeight())
+        if (loadCell.isReady())
         {
-            sumMeasurements += static_cast<unsigned long>(weightSensor.getWeight());
+            sumMeasurements += static_cast<unsigned long>(loadCell.read());
             numMeasurements++;
         }
 
         if (numMeasurements >= CALIBRATION_SAMPLE_SIZE)
         {
             average = static_cast<float>(sumMeasurements) / static_cast<float>(numMeasurements);
+            average -= tare;
+            
             scale = static_cast<float>(DEFAULT_CALIBRATION_WEIGHT) / average;
             saveScaleFnc(scale);
             calibrationStep = CalibrationStep::END;
         }
         break;
     case CalibrationStep::END:
-        display.text("Calibration complete.\n\nClick to continue!");
+        display.text("Calibration complete.");
         break;
     }
 }

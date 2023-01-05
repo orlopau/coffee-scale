@@ -29,10 +29,11 @@ void saveScale(float scale)
   Serial.println("Saving scale to EEPROM...");
   EEPROM.put(EEPROM_ADDR_SCALE, scale);
   EEPROM.commit();
+  weightSensor.setScale(scale);
 }
 
 ModeDefault modeDefault(weightSensor, input, display, stopwatch);
-ModeCalibration modeCalibration(weightSensor, input, display, stopwatch, saveScale);
+ModeCalibration modeCalibration(loadcell, input, display, stopwatch, saveScale);
 ModeRecipes modeRecipes(weightSensor, input, display, RECIPES, RECIPE_COUNT);
 Mode *modes[] = {&modeDefault, &modeRecipes, &modeCalibration};
 ModeManager modeManager(modes, 3, display, input, battery);
