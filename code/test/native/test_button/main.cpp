@@ -1,9 +1,9 @@
 #include <unity.h>
 
-#include "millis.h"
 #include "button.h"
+#include "millis.h"
 
-#define DEBOUNCE_DELAY 6
+#define DEBOUNCE_DELAY 50
 #define DOUBLE_CLICK_WAIT_TIME 200
 #define LONG_CLICK_DELAY 1000
 
@@ -21,7 +21,8 @@ void test_debounce()
     TEST_ASSERT_FALSE(button.isPressed());
     // button is pushed for half the debounce delay
     button.update(true);
-    sleep_for(DEBOUNCE_DELAY / 2);
+    TEST_ASSERT_FALSE(button.isPressed());
+    sleep_for(DEBOUNCE_DELAY / 2.0);
     // debounce delay not reached yet
     button.update(true);
     TEST_ASSERT_FALSE(button.isPressed());
@@ -105,14 +106,9 @@ void test_click_is_reset_with_update_released(void)
     TEST_ASSERT_EQUAL(ClickType::NONE, button.getClickType());
 }
 
-void setUp(void)
-{
-    button = Button(DEBOUNCE_DELAY, DOUBLE_CLICK_WAIT_TIME, LONG_CLICK_DELAY);
-}
+void setUp(void) { button = Button(DEBOUNCE_DELAY, DOUBLE_CLICK_WAIT_TIME, LONG_CLICK_DELAY); }
 
-void tearDown(void)
-{
-}
+void tearDown(void) {}
 
 int main(void)
 {
