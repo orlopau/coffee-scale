@@ -67,6 +67,10 @@ void U8GDisplay::centerText(const char *text, const uint8_t size)
     int mid = 0;
     switch (size)
     {
+    case 13:
+        u8g.setFont(u8g_font_7x13);
+        mid = 32 + 6;
+        break;
     case 16:
         u8g.setFont(u8g2_font_logisoso16_tf);
         mid = 32 + 8;

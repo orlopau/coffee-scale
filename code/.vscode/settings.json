@@ -113,6 +113,8 @@
         "u8g2.h": "c",
         "u8g2lib.h": "c",
         "types": "cpp",
-        "geometry": "cpp"
+        "geometry": "cpp",
+        "forward_list": "cpp",
+        "regex": "cpp"
     }
 }

@@ -3,16 +3,17 @@
 #include <Arduino.h>
 #include <EEPROM.h>
 
-#include "constants.h"
-#include "mode.h"
-#include "hx711_loadcell.h"
-#include "u8g_display.h"
-#include "user_input.h"
 #include "adc_battery.h"
+#include "constants.h"
+#include "data/recipes.h"
+#include "hx711_loadcell.h"
+#include "mode.h"
 #include "mode_manager.h"
 #include "modes/mode_calibrate.h"
 #include "modes/mode_recipe.h"
-#include "data/recipes.h"
+#include "u8g_display.h"
+#include "update.h"
+#include "user_input.h"
 
 #define AVERAGING_LOOPS 100
 
@@ -70,7 +71,7 @@ void setup()
   EEPROM.get(EEPROM_ADDR_SCALE, scale);
   if (scale <= 0 || isnan(scale))
   {
-    scale = 1.0f;
+      scale = 1.0f;
   }
 
   Serial.printf("Existing scale: %f\n", scale);
@@ -79,6 +80,13 @@ void setup()
   float delta = 1 / scale;
   weightSensor.setAutoAveraging(delta, 64);
   Serial.printf("Auto averaging delta: %f\n", delta);
+
+  if (digitalRead(PIN_UPDATE_FIRMWARE) == LOW)
+  {
+      Updater::update_firmware(display);
+  }
+
+  Serial.print("Setup finished!\n");
 }
 
 #ifdef PERF

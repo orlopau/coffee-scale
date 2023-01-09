@@ -3,6 +3,8 @@
 #pragma once
 
 // Pin definitions
+#define PIN_BOOT 0
+
 #define PIN_I2C_SDA 22
 #define PIN_I2C_SCL 23
 
@@ -28,5 +30,11 @@
 
 // EEPROM addresses
 #define EEPROM_ADDR_SCALE 0
+
+// BUTTONS
+#define PIN_UPDATE_FIRMWARE PIN_ENC_BTN
+
+// UPDATE
+#define UPDATE_URL "http://192.168.178.20:8000/firmware.bin"
 
 #endif
