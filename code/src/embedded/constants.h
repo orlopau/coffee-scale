@@ -35,6 +35,6 @@
 #define PIN_UPDATE_FIRMWARE PIN_ENC_BTN
 
 // UPDATE
-#define UPDATE_URL "http://192.168.178.20:8000/firmware.bin"
+#define UPDATE_URL "https://github.com/orlopau/coffee-scale/releases/latest/download/firmware.bin"
 
 #endif

@@ -66,13 +66,15 @@ namespace Updater
         delay(2000);
 
         HTTPUpdate httpUpdate;
+        httpUpdate.setFollowRedirects(HTTPC_FORCE_FOLLOW_REDIRECTS);
         httpUpdate.onStart(started);
         httpUpdate.onEnd(finished);
         auto progressFunc = std::bind(progress, std::ref(display), std::placeholders::_1, std::placeholders::_2);
         httpUpdate.onProgress(progressFunc);
         httpUpdate.onError(error);
-
-        WiFiClient client;
+        
+        WiFiClientSecure client;
+        client.setInsecure();
         t_httpUpdate_return code = httpUpdate.update(client, UPDATE_URL);
 
         switch (code)
@@ -91,6 +93,11 @@ namespace Updater
             Serial.println("HTTP_UPDATE_OK");
             display.centerText("Update successful.", 13);
             break;
+        }
+
+        for (;;)
+        {
+            delay(1000);
         }
     }
 }
