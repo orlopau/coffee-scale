@@ -1,4 +1,4 @@
-name: PlatformIO CD
+name: Release Build
 
 on:
   push:
