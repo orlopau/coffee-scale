@@ -1,3 +1,5 @@
+#ifndef NATIVE
+
 #include <AutoConnectCore.h>
 #include <HTTPClient.h>
 #include <HTTPUpdate.h>
@@ -92,3 +94,5 @@ namespace Updater
         }
     }
 }
+
+#endif
