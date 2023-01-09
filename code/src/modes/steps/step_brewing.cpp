@@ -13,6 +13,12 @@ void RecipeBrewing::update()
     uint64_t remainingTimePourMs;
     bool isPause = false;
 
+    // tare scale on rotation
+    if (input.getEncoderDirection() != EncoderDirection::NONE)
+    {
+        weightSensor.tare();
+    }
+
     // autostart brew if enabled
     // extra if to start on same tick
     if (pourStartMillis == 0 && pour->autoStart)
