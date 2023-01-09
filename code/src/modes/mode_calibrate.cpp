@@ -1,4 +1,5 @@
 #include "mode_calibrate.h"
+#include "millis.h"
 
 ModeCalibration::ModeCalibration(LoadCell &loadCell, UserInput &buttons, Display &display, Stopwatch &stopwatch, void (*saveScaleFnc)(float))
     : loadCell(loadCell), buttons(buttons), display(display), stopwatch(stopwatch),
@@ -17,9 +18,14 @@ void ModeCalibration::update()
         sumMeasurements = 0;
         numMeasurements = 0;
 
-        if (buttons.getEncoderClick() == ClickType::SINGLE)
+        if (loadCell.isReady())
         {
             tare = loadCell.read();
+        }
+
+        if (buttons.getEncoderClick() == ClickType::SINGLE)
+        {
+            PRINTF("Tare: %ld\n", tare);
             calibrationStep = CalibrationStep::ADD_WEIGHT;
         }
         break;
@@ -41,9 +47,9 @@ void ModeCalibration::update()
         if (numMeasurements >= CALIBRATION_SAMPLE_SIZE)
         {
             average = static_cast<float>(sumMeasurements) / static_cast<float>(numMeasurements);
-            average -= tare;
-            
-            scale = static_cast<float>(DEFAULT_CALIBRATION_WEIGHT) / average;
+            PRINTF("Average: %f\n", average);
+
+            scale = static_cast<float>(DEFAULT_CALIBRATION_WEIGHT) / (average - tare);
             saveScaleFnc(scale);
             calibrationStep = CalibrationStep::END;
         }

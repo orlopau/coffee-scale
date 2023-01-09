@@ -51,7 +51,7 @@ void setup()
   Serial.begin(115200);
   Serial.println("CoffeeScale v1.0.0");
 
-  EEPROM.begin(1024);
+  EEPROM.begin(2048);
   btStop();
 
   display.begin();
