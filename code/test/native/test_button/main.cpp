@@ -73,14 +73,19 @@ void test_single_click(void)
 
 void test_long_click(void)
 {
-    TEST_ASSERT_EQUAL(ClickType::NONE, button.getClickType());
-    // click button for longer than long click delay
     debounced_press(true);
+    // after the delay, a long click is registered
     sleep_for(LONG_CLICK_DELAY + 10);
-    debounced_press(false);
-
-    // long click
+    button.update(true);
     TEST_ASSERT_EQUAL(ClickType::LONG, button.getClickType());
+
+    // but only for a single tick, even when button is still pressed
+    button.update(true);
+    TEST_ASSERT_EQUAL(ClickType::NONE, button.getClickType());
+
+    // even after further ticks
+    button.update(true);
+    TEST_ASSERT_EQUAL(ClickType::NONE, button.getClickType());
 }
 
 void test_click_is_reset_with_update_pressed(void)

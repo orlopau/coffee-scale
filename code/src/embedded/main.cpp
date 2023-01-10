@@ -17,6 +17,8 @@
 
 #define AVERAGING_LOOPS 100
 
+#define TAG "MAIN"
+
 HX711LoadCell loadcell(PIN_HX711_DAT, PIN_HX711_SCK);
 DefaultWeightSensor weightSensor(loadcell);
 U8GDisplay display(PIN_I2C_SDA, PIN_I2C_SCL, U8G2_R1);
@@ -26,8 +28,8 @@ Stopwatch stopwatch;
 
 void saveScale(float scale)
 {
-  Serial.printf("New scale: %f\n", scale);
-  Serial.println("Saving scale to EEPROM...");
+  ESP_LOGI(TAG, "New scale: %f", scale);
+  ESP_LOGI(TAG, "Saving scale to EEPROM...");
   EEPROM.put(EEPROM_ADDR_SCALE, scale);
   EEPROM.commit();
   weightSensor.setScale(scale);
@@ -49,23 +51,17 @@ void IRAM_ATTR isr_input()
 void setup()
 {
   Serial.begin(115200);
-  Serial.println("CoffeeScale v1.0.0");
+  ESP_LOGI(TAG, "CoffeeScale v1.0.0");
 
   EEPROM.begin(2048);
   btStop();
 
+  //////// DISPLAY ////////
   display.begin();
-  weightSensor.begin();
-
   display.drawOpener();
-  delay(3000);
 
-  weightSensor.update();
-  weightSensor.tare();
-
-  attachInterrupt(PIN_ENC_A, isr_input, CHANGE);
-  attachInterrupt(PIN_ENC_B, isr_input, CHANGE);
-  attachInterrupt(PIN_ENC_BTN, isr_input, CHANGE);
+  //////// WEIGHT SENSOR ////////
+  weightSensor.begin();
 
   float scale;
   EEPROM.get(EEPROM_ADDR_SCALE, scale);
@@ -74,19 +70,37 @@ void setup()
       scale = 1.0f;
   }
 
-  Serial.printf("Existing scale: %f\n", scale);
+  ESP_LOGI(TAG, "Existing scale: %f", scale);
   weightSensor.setScale(scale);
 
   float delta = 1 / scale;
   weightSensor.setAutoAveraging(delta, 64);
-  Serial.printf("Auto averaging delta: %f\n", delta);
+  ESP_LOGI(TAG, "Auto averaging delta: %f", delta);
 
+  // tare after 32 samples
+  ESP_LOGI(TAG, "Taring...");
+  for (int i = 0; i < 32;)
+  {
+      weightSensor.update();
+      if (weightSensor.isNewWeight())
+      {
+          i++;
+      }
+  }
+  weightSensor.tare();
+  ESP_LOGI(TAG, "Tared!");
+
+  //////// UPDATES ////////
   if (digitalRead(PIN_UPDATE_FIRMWARE) == LOW)
   {
       Updater::update_firmware(display);
   }
 
-  Serial.print("Setup finished!\n");
+  //////// INTERRUPTS ////////
+  attachInterrupt(PIN_ENC_A, isr_input, CHANGE);
+  attachInterrupt(PIN_ENC_B, isr_input, CHANGE);
+  attachInterrupt(PIN_ENC_BTN, isr_input, CHANGE);
+  ESP_LOGI(TAG, "Setup finished!");
 }
 
 #ifdef PERF
@@ -104,7 +118,7 @@ void loop()
 #ifdef PERF
   if (loops >= AVERAGING_LOOPS)
   {
-    Serial.printf("Loop time: %lu\n", (millis() - lastTime) / loops);
+    ESP_LOGI(TAG, "Loop time: %lu", (millis() - lastTime) / loops
     loops = 0;
     lastTime = millis();
   }

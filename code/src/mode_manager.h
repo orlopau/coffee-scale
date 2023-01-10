@@ -2,6 +2,8 @@
 #include "user_interface.h"
 #include "battery.h"
 
+#define BATTERY_UPDATE_INTERVAL 10000
+
 class ModeManager
 {
 public:
@@ -17,4 +19,6 @@ private:
     Display &display;
     UserInput &input;
     Battery &battery;
+    float lastVoltage, lastPercentage;
+    long lastBatteryTime;
 };

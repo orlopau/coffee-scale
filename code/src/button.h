@@ -64,9 +64,8 @@ private:
     enum States
     {
         STATE_LOW,
-        RISING_FLANK,
         STATE_HIGH,
-        FALLING_FLANK,
+        STATE_LONGPRESS,
     };
     States state = STATE_LOW;
     unsigned long lastPressTime = 0;
