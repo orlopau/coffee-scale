@@ -22,6 +22,7 @@ public:
     void recipeInsertCoffee(int32_t weightMg, uint32_t requiredWeightMg) override;
     void recipePour(const char *text, int32_t weightToPourMg, uint64_t timeToFinishMs, bool isPause, uint8_t pourIndex, uint8_t pours) override;
     void text(const char *text) override;
+    void drawTextAutoWrap(const char *text, int yTop) override;
     void update(){};
     void clear() override;
     void drawOpener();
@@ -37,7 +38,6 @@ private:
     int drawTitleLine(const char *title);
     void drawHCenterText(const char *text, uint8_t y);
     void drawCenterText(const char *text);
-    int drawLinebreakText(const char *text, uint8_t x, uint8_t y);
     int drawSelectedBar(uint8_t index, uint8_t size);
     bool shouldBlinkedBeVisible();
 };

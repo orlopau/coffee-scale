@@ -40,6 +40,7 @@ public:
     virtual void recipeInsertCoffee(int32_t weightMg, uint32_t requiredWeightMg) = 0;
     virtual void recipePour(const char *text, int32_t weightToPourMg, uint64_t timeToFinishMs, bool isPause, uint8_t pourIndex, uint8_t pours) = 0;
     virtual void text(const char *text) = 0;
+    virtual void drawTextAutoWrap(const char *text, int yTop) = 0;
     virtual void update() = 0;
     virtual void clear() = 0;
 };

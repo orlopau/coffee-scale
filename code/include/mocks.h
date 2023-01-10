@@ -114,6 +114,7 @@ public:
         recipeIsPause = isPause;
     };
     void text(const char *text){};
+    void drawTextAutoWrap(const char *text, int yTop){};
     void clear()
     {
         weight = NAN;

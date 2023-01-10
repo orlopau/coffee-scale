@@ -159,26 +159,6 @@ void U8GDisplay::switcher(const uint8_t index, const uint8_t count, const char *
     u8g.sendBuffer();
 };
 
-int U8GDisplay::drawLinebreakText(const char *text, uint8_t x, uint8_t y)
-{
-    // draw text, move to next line when linebreak is detected
-    char *textCopy = strdup(text);
-    char *pointer = strtok(textCopy, "\n");
-
-    int yy = y;
-    int ascent = u8g.getAscent();
-    int descent = u8g.getDescent();
-    while (pointer != NULL)
-    {
-        yy += (ascent - descent);
-        u8g.drawStr(x, yy, pointer);
-        pointer = strtok(NULL, "\n");
-    }
-
-    delete textCopy;
-    return yy;
-}
-
 void U8GDisplay::recipeSummary(const char *name, const char *description)
 {
     u8g.clearBuffer();
@@ -192,7 +172,7 @@ void U8GDisplay::recipeSummary(const char *name, const char *description)
 
     int yy = drawTitleLine(name);
 
-    drawLinebreakText(description, 0, yy);
+    drawTextAutoWrap(description, yy);
     u8g.sendBuffer();
 }
 
@@ -313,8 +293,11 @@ void U8GDisplay::recipePour(const char *text, int32_t weightToPourMg, uint64_t t
 
     // draw info text
     yy += 2;
-    yy = drawLinebreakText(text, 0, yy);
-    yy += 3;
+    drawTextAutoWrap(text, yy);
+
+    // draw bottom: time and weight
+    u8g.setFont(u8g_font_7x13);
+    yy = u8g.getDisplayHeight() - (u8g.getAscent() - u8g.getDescent()) - 6;
     u8g.drawHLine(0, yy, width);
     yy += 3;
 
@@ -325,7 +308,6 @@ void U8GDisplay::recipePour(const char *text, int32_t weightToPourMg, uint64_t t
     const static int Y_SPACING = 5;
     static char buffer[16];
 
-    u8g.setFont(u8g_font_7x13);
     sprintf(buffer, "%.2fg", -1 * weightToPourMg / 1000.0);
 
     const static int TEXT_X_PADDING = 3;
@@ -364,6 +346,33 @@ void U8GDisplay::text(const char *text)
     delete textCopy;
 
     u8g.sendBuffer();
+}
+
+void U8GDisplay::drawTextAutoWrap(const char *text, int yTop)
+{
+    u8g.setFont(u8g_font_6x10);
+    int width = u8g.getDisplayWidth();
+    int ascent = u8g.getAscent();
+    int descent = u8g.getDescent();
+    int spaceWidth = u8g.getStrWidth(" ");
+
+    char *textCopy = strdup(text);
+    char *pointer = strtok(textCopy, " ");
+
+    int line = (ascent - descent) + yTop;
+    int x = 0;
+    while (pointer != NULL)
+    {
+        if (x + u8g.getStrWidth(pointer) > u8g.getDisplayWidth())
+        {
+            x = 0;
+            line += (ascent - descent);
+        }
+        u8g.drawStr(x, line, pointer);
+        x += u8g.getStrWidth(pointer) + spaceWidth;
+        pointer = strtok(NULL, " ");
+    }
+    delete textCopy;
 }
 
 void U8GDisplay::modeSwitcher(const char *current, const uint8_t index, const uint8_t count, float batV, float batPercentage, bool batCharging)
