@@ -37,4 +37,8 @@
 // UPDATE
 #define UPDATE_URL "https://github.com/orlopau/coffee-scale/releases/latest/download/firmware.bin"
 
+#ifndef FIRMWARE_VERSION
+#define FIRMWARE_VERSION "0.0.0"
+#endif
+
 #endif

@@ -5,6 +5,7 @@
 #include "u8g_display.h"
 #include "formatters.h"
 #include "data/bitmaps.h"
+#include "constants.h"
 
 #define Y_PADDING 4
 
@@ -437,8 +438,8 @@ void U8GDisplay::drawOpener()
     u8g.setFont(u8g_font_7x13);
     ascent = u8g.getAscent();
     const static char *textLineUrl = "orlopau.dev";
-    const static char *textLineVersion = "V1.0.0";
-    textWidth = u8g.getStrWidth("v0.1");
+    const static char *textLineVersion = FIRMWARE_VERSION;
+    textWidth = u8g.getStrWidth(FIRMWARE_VERSION);
 
     yy += ascent + 5;
     textWidth = u8g.getStrWidth(textLineUrl);
