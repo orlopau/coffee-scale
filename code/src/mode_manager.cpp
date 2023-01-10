@@ -22,7 +22,7 @@ void ModeManager::update()
             currentMode = modeCount - 1;
         }
 
-        if (now() > lastBatteryTime + BATTERY_UPDATE_INTERVAL)
+        if (now() > lastBatteryTime + BATTERY_UPDATE_INTERVAL || lastBatteryTime == 0)
         {
             lastBatteryTime = now();
             lastVoltage = battery.getVoltage();
