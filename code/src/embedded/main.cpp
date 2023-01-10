@@ -56,18 +56,12 @@ void setup()
   EEPROM.begin(2048);
   btStop();
 
+  //////// DISPLAY ////////
   display.begin();
-  weightSensor.begin();
-
   display.drawOpener();
-  delay(3000);
 
-  weightSensor.update();
-  weightSensor.tare();
-
-  attachInterrupt(PIN_ENC_A, isr_input, CHANGE);
-  attachInterrupt(PIN_ENC_B, isr_input, CHANGE);
-  attachInterrupt(PIN_ENC_BTN, isr_input, CHANGE);
+  //////// WEIGHT SENSOR ////////
+  weightSensor.begin();
 
   float scale;
   EEPROM.get(EEPROM_ADDR_SCALE, scale);
@@ -83,11 +77,29 @@ void setup()
   weightSensor.setAutoAveraging(delta, 64);
   ESP_LOGI(TAG, "Auto averaging delta: %f", delta);
 
+  // tare after 32 samples
+  ESP_LOGI(TAG, "Taring...");
+  for (int i = 0; i < 32;)
+  {
+      weightSensor.update();
+      if (weightSensor.isNewWeight())
+      {
+          i++;
+      }
+  }
+  weightSensor.tare();
+  ESP_LOGI(TAG, "Tared!");
+
+  //////// UPDATES ////////
   if (digitalRead(PIN_UPDATE_FIRMWARE) == LOW)
   {
       Updater::update_firmware(display);
   }
 
+  //////// INTERRUPTS ////////
+  attachInterrupt(PIN_ENC_A, isr_input, CHANGE);
+  attachInterrupt(PIN_ENC_B, isr_input, CHANGE);
+  attachInterrupt(PIN_ENC_BTN, isr_input, CHANGE);
   ESP_LOGI(TAG, "Setup finished!");
 }
 
