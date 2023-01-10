@@ -2,6 +2,7 @@
 
 #ifdef NATIVE
 #include <cstdio>
+#include <cstdarg>
 inline void log_default(const char *tag, const char *format, ...)
 {
     printf(tag);
