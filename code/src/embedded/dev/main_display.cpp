@@ -6,6 +6,8 @@
 #include "mode.h"
 #include "embedded/u8g_display.h"
 
+#define TAG "MAIN-DISPLAY"
+
 #define AVERAGING_LOOPS 100
 
 U8GDisplay display(PIN_I2C_SDA, PIN_I2C_SCL, U8G2_R1);
@@ -15,7 +17,7 @@ U8GDisplay display(PIN_I2C_SDA, PIN_I2C_SCL, U8G2_R1);
 void setup()
 {
   Serial.begin(115200);
-  Serial.println("CoffeeScale v1.0.0, Testing");
+  ESP_LOGI(TAG, "CoffeeScale v1.0.0, Testing");
 
   display.begin();
 

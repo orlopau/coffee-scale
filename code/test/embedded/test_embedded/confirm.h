@@ -2,9 +2,11 @@
 
 #include <Arduino.h>
 
+#define TAG "CONFIRM"
+
 inline void wait_confirm()
 {
-    Serial.println("Press y to confirm...");
+    ESP_LOGI(TAG, "Press y to confirm...");
     while (true)
     {
         while (Serial.available() == 0)

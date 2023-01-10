@@ -9,27 +9,29 @@
 #include "constants.h"
 #include "user_input.h"
 
+#define TAG "UPDATER"
+
 namespace Updater
 {
     AutoConnect portal;
 
-    void started() { Serial.println("CALLBACK:  HTTP update process started"); }
+    void started() { ESP_LOGI(TAG, "CALLBACK:  HTTP update process started"); }
 
-    void finished() { Serial.println("CALLBACK:  HTTP update process finished"); }
+    void finished() { ESP_LOGI(TAG, "CALLBACK:  HTTP update process finished"); }
 
     void progress(Display &display, int cur, int total)
     {
-        Serial.printf("CALLBACK:  HTTP update process at %d of %d bytes...\n", cur, total);
+        ESP_LOGI(TAG, "CALLBACK:  HTTP update process at %d of %d bytes...", cur, total);
         static char progress[32];
         sprintf(progress, "Updating: %.2f%%", ((float)cur / (float)total) * 100);
         display.centerText(progress, 13);
     }
 
-    void error(int err) { Serial.printf("CALLBACK:  HTTP update fatal error code %d\n", err); }
+    void error(int err) { ESP_LOGI(TAG, "CALLBACK:  HTTP update fatal error code %d\n", err); }
 
     bool onCaptivePortalStart(Display &display, IPAddress &address)
     {
-        Serial.println("Captive portal started");
+        ESP_LOGI(TAG, "Captive portal started");
         static char text[64];
         sprintf(text, "Setup WiFi by\nconnecting to the\nnetwork:\n%s\nand clicking\n\"Configure new AP\".", WiFi.softAPSSID().c_str());
         display.text(text);
@@ -39,7 +41,7 @@ namespace Updater
     void update_firmware(Display &display)
     {
         display.centerText("Updating...", 13);
-        Serial.println("Updating firmware...");
+        ESP_LOGI(TAG, "Updating firmware...");
 
         uint32_t id = 0;
         for (int i = 0; i < 17; i = i + 8)
@@ -59,7 +61,7 @@ namespace Updater
 
         if (portal.begin())
         {
-            Serial.println("WiFi connected");
+            ESP_LOGI(TAG, "WiFi connected");
             display.centerText("WiFi connected.", 13);
         }
 
@@ -80,17 +82,17 @@ namespace Updater
         switch (code)
         {
         case HTTP_UPDATE_FAILED:
-            Serial.printf("HTTP_UPDATE_FAILED Error (%d): %s\n", httpUpdate.getLastError(), httpUpdate.getLastErrorString().c_str());
+            ESP_LOGI(TAG, "HTTP_UPDATE_FAILED Error (%d): %s", httpUpdate.getLastError(), httpUpdate.getLastErrorString().c_str());
             display.centerText("Update failed.", 13);
             break;
 
         case HTTP_UPDATE_NO_UPDATES:
-            Serial.println("HTTP_UPDATE_NO_UPDATES");
+            ESP_LOGI(TAG, "HTTP_UPDATE_NO_UPDATES");
             display.centerText("No updates.", 13);
             break;
 
         case HTTP_UPDATE_OK:
-            Serial.println("HTTP_UPDATE_OK");
+            ESP_LOGI(TAG, "HTTP_UPDATE_OK");
             display.centerText("Update successful.", 13);
             break;
         }
