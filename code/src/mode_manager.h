@@ -2,7 +2,7 @@
 #include "user_interface.h"
 #include "battery.h"
 
-#define BATTERY_UPDATE_INTERVAL 10000
+#define BATTERY_UPDATE_INTERVAL 2000
 
 class ModeManager
 {
