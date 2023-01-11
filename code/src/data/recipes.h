@@ -12,7 +12,7 @@
 #define MINUTES(x) (x * 60 * 1000)
 #define P(x) (static_cast<uint8_t>(x))
 
-const uint8_t RECIPE_COUNT = 4;
+const uint8_t RECIPE_COUNT = 5;
 const Recipe RECIPES[] = {
     {"AeroPress J.H.",
      "Aeropress recipe by James Hofmann. First presented in a video called \"The Ultimate AeroPress Technique\"",
@@ -25,6 +25,18 @@ const Recipe RECIPES[] = {
          {"Gently swirl the brewer.", RATIO(0), 0, SECONDS(30), true, true},
          {"Press the plunger all the way in.", RATIO(0), 0, 0, false, true},
      }},
+    {"French Press J.H", 
+    "\"The Ultimate French Press Technique\" by James Hoffmann.",
+    GRAMS(30), 
+    4,
+         P(AdjustableParameter::COFFEE_WEIGHT) | P(AdjustableParameter::RATIO),
+         {
+            {"Pour water into french press.", RATIO(16.6), SECONDS(15), 0, false, true},
+            {"Let it rest for some time.", RATIO(0), 0, SECONDS(4 * 60), true, true},
+            {"Grab 2 spoons. Stir the crust and remove remaining crust. Then wait.", RATIO(0), 0, SECONDS(5 * 60), true, true},
+            {"Put the plunger in, but leave it on top of the water.", RATIO(0), 0, 0, false, true}
+         }
+    },
     {"V60 Kasuya",
      "V60 recipe by Tetsu Kasuya.",
      GRAMS(20),
