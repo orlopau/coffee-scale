@@ -1,6 +1,7 @@
 #ifndef NATIVE
 
 #include <cstring>
+#include <qrcode.h>
 
 #include "u8g_display.h"
 #include "formatters.h"
@@ -160,7 +161,34 @@ void U8GDisplay::switcher(const uint8_t index, const uint8_t count, const char *
     u8g.sendBuffer();
 };
 
-void U8GDisplay::recipeSummary(const char *name, const char *description)
+#define QR_CODE_VERSION 2
+int U8GDisplay::drawQRCode(const char *bytes, uint8_t posX, uint8_t posY)
+{
+    static QRCode qrcode;
+    static uint8_t *qrCodeBytes = new uint8_t[qrcode_getBufferSize(QR_CODE_VERSION)];
+
+    qrcode_initText(&qrcode, qrCodeBytes, QR_CODE_VERSION, ECC_QUARTILE, bytes);
+
+    // draw box with 2 px overlap
+    const uint8_t border = 2;
+    u8g.drawBox(posX, posY, 2 * qrcode.size + 2 * border, 2 * qrcode.size + 2 * border);
+    u8g.setDrawColor(0);
+    for (uint8_t y = 0; y < qrcode.size; y++)
+    {
+        for (uint8_t x = 0; x < qrcode.size; x++)
+        {
+            if (qrcode_getModule(&qrcode, x, y))
+            {
+                u8g.drawBox(2 * x + posX + border, 2 * y + posY + border, 2, 2);
+            }
+        }
+    }
+    u8g.setDrawColor(1);
+
+    return 2 * qrcode.size + 2 * border;
+}
+
+void U8GDisplay::recipeSummary(const char *name, const char *description, const char *url)
 {
     u8g.clearBuffer();
     u8g.setFont(u8g_font_6x10);
@@ -171,9 +199,22 @@ void U8GDisplay::recipeSummary(const char *name, const char *description)
     int height = u8g.getDisplayHeight();
     int width = u8g.getDisplayWidth();
 
-    int yy = drawTitleLine(name);
+    if (url == nullptr)
+    {
+        int yy = drawTitleLine(name);
+        drawTextAutoWrap(description, yy + 2, 0, width);
+    }
+    else
+    {
+        // u8g.drawBox(0, 0, u8g.getWidth(), u8g.getHeight());
+        // u8g.setDrawColor(0);
+        drawTextAutoWrap(description, 0, 1, width - 54 - 3);
+        // u8g.setDrawColor(1);
 
-    drawTextAutoWrap(description, yy);
+        // qr code size 54
+        drawQRCode(url, width - 54, (height - 54) / 2.0);
+    }
+
     u8g.sendBuffer();
 }
 
@@ -294,7 +335,7 @@ void U8GDisplay::recipePour(const char *text, int32_t weightToPourMg, uint64_t t
 
     // draw info text
     yy += 2;
-    drawTextAutoWrap(text, yy);
+    drawTextAutoWrap(text, yy, 0, width);
 
     // draw bottom: time and weight
     u8g.setFont(u8g_font_7x13);
@@ -349,10 +390,9 @@ void U8GDisplay::text(const char *text)
     u8g.sendBuffer();
 }
 
-void U8GDisplay::drawTextAutoWrap(const char *text, int yTop)
+void U8GDisplay::drawTextAutoWrap(const char *text, int yTop, int xLeft, int maxWidth)
 {
     u8g.setFont(u8g_font_6x10);
-    int width = u8g.getDisplayWidth();
     int ascent = u8g.getAscent();
     int descent = u8g.getDescent();
     int spaceWidth = u8g.getStrWidth(" ");
@@ -361,12 +401,12 @@ void U8GDisplay::drawTextAutoWrap(const char *text, int yTop)
     char *pointer = strtok(textCopy, " ");
 
     int line = (ascent - descent) + yTop;
-    int x = 0;
+    int x = xLeft;
     while (pointer != NULL)
     {
-        if (x + u8g.getStrWidth(pointer) > u8g.getDisplayWidth())
+        if (x + u8g.getStrWidth(pointer) > maxWidth)
         {
-            x = 0;
+            x = xLeft;
             line += (ascent - descent);
         }
         u8g.drawStr(x, line, pointer);

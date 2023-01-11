@@ -41,6 +41,8 @@ struct Recipe
     char name[64];
     /// Additional notes for the recipe.
     char note[256];
+    /// URL to the recipe.
+    char url[21];
     /// The grams of coffee used for the recipe.
     uint32_t coffeeWeightMg;
     /// The number of pours in the recipe.

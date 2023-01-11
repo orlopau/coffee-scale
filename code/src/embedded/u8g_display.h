@@ -16,13 +16,12 @@ public:
     void centerText(const char *text, const uint8_t size) override;
     void modeSwitcher(const char *current, const uint8_t index, const uint8_t count, float batV, float batPercentage, bool batCharging) override;
     void switcher(const uint8_t index, const uint8_t count, const char *options[]) override;
-    void recipeSummary(const char *name, const char *description) override;
+    void recipeSummary(const char *name, const char *description, const char* url = nullptr) override;
     void recipeConfigCoffeeWeight(const char *header, unsigned int weightMg, unsigned int waterWeightMl) override;
     void recipeConfigRatio(const char *header, uint32_t coffee, uint32_t water) override;
     void recipeInsertCoffee(int32_t weightMg, uint32_t requiredWeightMg) override;
     void recipePour(const char *text, int32_t weightToPourMg, uint64_t timeToFinishMs, bool isPause, uint8_t pourIndex, uint8_t pours) override;
     void text(const char *text) override;
-    void drawTextAutoWrap(const char *text, int yTop) override;
     void update(){};
     void clear() override;
     void drawOpener();
@@ -39,6 +38,8 @@ private:
     void drawHCenterText(const char *text, uint8_t y);
     void drawCenterText(const char *text);
     int drawSelectedBar(uint8_t index, uint8_t size);
+    int drawQRCode(const char* bytes, uint8_t x, uint8_t y);
+    void drawTextAutoWrap(const char *text, int yTop, int xLeft, int maxWidth);
     bool shouldBlinkedBeVisible();
 };
 

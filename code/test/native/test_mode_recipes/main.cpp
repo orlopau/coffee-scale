@@ -10,15 +10,15 @@ static MockButtons *buttons;
 static MockDisplay *display;
 
 const Recipe RECIPES[] = {
-    {"name1", "desc1", 3000, 2, static_cast<uint8_t>(AdjustableParameter::COFFEE_WEIGHT) | static_cast<uint8_t>(AdjustableParameter::RATIO), {
+    {"name1", "desc1", "url", 3000, 2, static_cast<uint8_t>(AdjustableParameter::COFFEE_WEIGHT) | static_cast<uint8_t>(AdjustableParameter::RATIO), {
                                                                                                                                                                              {"step1", 2 * RECIPE_RATIO_MUL, 500, 300, true},
                                                                                                                                                                              {"step2", 5 * RECIPE_RATIO_MUL, 0, 300, false},
                                                                                                                                                                          }},
-    {"name2", "desc2", 2000, 2, 0, {
+    {"name2", "desc2", "url", 2000, 2, 0, {
                                                              {"step1", RECIPE_RATIO_MUL, 0, 2 * 60 * 1000, false},
                                                              {"step2", RECIPE_RATIO_MUL, 0, 30 * 1000, false},
                                                          }},
-    {"name3", "desc3", 3000, 2, 0, {
+    {"name3", "desc3", "url", 3000, 2, 0, {
                                                              {"step1", RECIPE_RATIO_MUL, 0, 2 * 60 * 1000, false},
                                                              {"step2", RECIPE_RATIO_MUL, 0, 30 * 1000, false},
                                                          }},

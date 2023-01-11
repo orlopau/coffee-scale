@@ -38,6 +38,7 @@ void test_can_step_forward(void)
     const Recipe singlePourRecipe = {
         "name1",
         "desc1",
+        "",
         3000,
         1,
         0,
@@ -63,6 +64,7 @@ void test_recipe_brewing(void)
 {
     const Recipe recipe = {"name1",
                            "desc1",
+                           "",
                            3000,
                            2,
                            static_cast<uint8_t>(AdjustableParameter::COFFEE_WEIGHT) |
@@ -129,6 +131,7 @@ void test_recipe_auto_advances_step_when_flag_is_set(void)
     const Recipe autoAdvanceRecipe = {
         "name1",
         "desc1",
+        "",
         3000,
         3,
         0,
@@ -159,6 +162,7 @@ void test_recipe_auto_starts_when_flag_is_enbled(void)
     const Recipe autoAdvanceRecipe = {
         "name1",
         "desc1",
+        "",
         3000,
         3,
         0,
@@ -201,6 +205,7 @@ void test_recipe_shows_pause_time_when_auto_start_disabled_and_pour_time_0(void)
     const Recipe autoAdvanceRecipe = {
         "name1",
         "desc1",
+        "",
         3000,
         1,
         0,

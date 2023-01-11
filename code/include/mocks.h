@@ -82,7 +82,7 @@ public:
         switcherIndex = index;
         switcherCount = count;
     };
-    void recipeSummary(const char *name, const char *description)
+    void recipeSummary(const char *name, const char *description, const char* url)
     {
         delete[] recipeName;
         delete[] recipeDescription;
