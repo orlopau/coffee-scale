@@ -2,6 +2,7 @@
 
 #include "mode_recipe.h"
 #include "millis.h"
+#include "data/localization.h"
 
 #include "modes/steps/step_switcher.h"
 #include "modes/steps/step_summary.h"
@@ -69,5 +70,5 @@ uint8_t ModeRecipes::getCurrentStepIndex()
 
 const char *ModeRecipes::getName()
 {
-    return "Recipes";
+    return MODE_NAME_RECIPES;
 }

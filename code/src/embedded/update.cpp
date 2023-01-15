@@ -8,6 +8,7 @@
 
 #include "constants.h"
 #include "user_input.h"
+#include "data/localization.h"
 
 #define TAG "UPDATER"
 
@@ -23,7 +24,7 @@ namespace Updater
     {
         ESP_LOGI(TAG, "CALLBACK:  HTTP update process at %d of %d bytes...", cur, total);
         static char progress[32];
-        sprintf(progress, "Updating: %.2f%%", ((float)cur / (float)total) * 100);
+        sprintf(progress, UPDATER_PROGRESS, ((float)cur / (float)total) * 100);
         display.centerText(progress, 13);
     }
 
@@ -33,14 +34,14 @@ namespace Updater
     {
         ESP_LOGI(TAG, "Captive portal started");
         static char text[64];
-        sprintf(text, "Setup WiFi by\nconnecting to the\nnetwork:\n%s\nand clicking\n\"Configure new AP\".", WiFi.softAPSSID().c_str());
+        sprintf(text, UPDATER_WIFI_CONNECT_MANUAL, WiFi.softAPSSID().c_str());
         display.text(text);
         return true;
     }
 
     void update_firmware(Display &display)
     {
-        display.centerText("Updating...", 13);
+        display.centerText(UPDATER_UPDATING, 13);
         ESP_LOGI(TAG, "Updating firmware...");
 
         uint32_t id = 0;
@@ -62,7 +63,7 @@ namespace Updater
         if (portal.begin())
         {
             ESP_LOGI(TAG, "WiFi connected");
-            display.centerText("WiFi connected.", 13);
+            display.centerText(UPDATER_WIFI_CONNECTED, 13);
         }
 
         delay(2000);
@@ -83,17 +84,17 @@ namespace Updater
         {
         case HTTP_UPDATE_FAILED:
             ESP_LOGI(TAG, "HTTP_UPDATE_FAILED Error (%d): %s", httpUpdate.getLastError(), httpUpdate.getLastErrorString().c_str());
-            display.centerText("Update failed.", 13);
+            display.centerText(UPDATER_FAILED, 13);
             break;
 
         case HTTP_UPDATE_NO_UPDATES:
             ESP_LOGI(TAG, "HTTP_UPDATE_NO_UPDATES");
-            display.centerText("No updates.", 13);
+            display.centerText(UPDATER_NO_UPDATE, 13);
             break;
 
         case HTTP_UPDATE_OK:
             ESP_LOGI(TAG, "HTTP_UPDATE_OK");
-            display.centerText("Update successful.", 13);
+            display.centerText(UPDATER_SUCCESS, 13);
             break;
         }
 

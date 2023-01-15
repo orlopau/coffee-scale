@@ -4,7 +4,7 @@
 /////////////////// GERMAN ///////////////////
 #define R_AEROPRESS_JH_NAME "Aeropress J.H."
 #define R_AEROPRESS_JH_DESC "\"The Ultimate Aeropress Technique\" von James Hoffmann."
-#define R_AEROPRESS_JH_0 "Wasser hinzufügen, Kaffeemehl sollte nass sein. Dann Plunger 1cm einfühhren."
+#define R_AEROPRESS_JH_0 "Wasser hinzufügen, Kaffeemehl sollte nass sein. Dann Plunger 1cm einführen."
 #define R_AEROPRESS_JH_1 "Sanft schwenken um gleichmäßiges Bett zu erzeugen."
 #define R_AEROPRESS_JH_2 "Plunger bis zum Boden drücken."
 
@@ -36,6 +36,24 @@
 #define R_V60_HARIO_0 "Kaffee Blooming. In einer kreisförmigen Bewegung gießen."
 #define R_V60_HARIO_1 "Den Rest des Wassers in einer spiralförmigen Bewegung gießen."
 #define R_V60_HARIO_2 "Warten bis der Kaffee durchgelaufen ist."
+
+#define DISPLAY_RECIPE_SWITCHER_TITLE "Rezept wählen."
+#define DISPLAY_CONFIG_WEIGHT_COFFEE "Kaffee:"
+#define DISPLAY_CONFIG_WEIGHT_WATER "Wasser:"
+#define DISPLAY_CONFIG_RATIO "Kaffee:Wasser"
+#define DISPLAY_INSERT_COFFEE "Kaffee hinzufügen."
+
+#define UPDATER_PROGRESS "Lade: %.2f%%"
+#define UPDATER_UPDATING "Aktualisiere..."
+#define UPDATER_FAILED "Fehlgeschlagen."
+#define UPDATER_SUCCESS "Erfolgreich."
+#define UPDATER_NO_UPDATE "Kein Update verfügbar."
+#define UPDATER_WIFI_CONNECTED "WiFi verbunden."
+#define UPDATER_WIFI_CONNECT_MANUAL "WiFi einrichten:\nMit Netzwerk\n%s\verbinden und\n\"Configure new AP\"\nwählen."
+
+#define MODE_NAME_CALIBRATE "Kalibrierung"
+#define MODE_NAME_RECIPES "Rezepte"
+#define MODE_NAME_SCALE "Waage"
 //////////////////////////////////////////////
 #else
 /////////////////// ENGLISH ///////////////////
@@ -73,5 +91,23 @@
 #define R_V60_HARIO_0 "Bloom the coffee, pouring water in a spiralling motion."
 #define R_V60_HARIO_1 "Pour the rest of the water in a spiralling motion. Click when finished."
 #define R_V60_HARIO_2 "Wait until the coffee has drained."
+
+#define DISPLAY_RECIPE_SWITCHER_TITLE "Select a recipe."
+#define DISPLAY_CONFIG_WEIGHT_COFFEE "Coffee:"
+#define DISPLAY_CONFIG_WEIGHT_WATER "Water:"
+#define DISPLAY_CONFIG_RATIO "Brew ratio:"
+#define DISPLAY_INSERT_COFFEE "Insert coffee."
+
+#define UPDATER_PROGRESS "Updating: %.2f%%"
+#define UPDATER_UPDATING "Updating..."
+#define UPDATER_FAILED "Update failed."
+#define UPDATER_SUCCESS "Update successful."
+#define UPDATER_NO_UPDATE "No update available."
+#define UPDATER_WIFI_CONNECTED "WiFi connected."
+#define UPDATER_WIFI_CONNECT_MANUAL "Setup WiFi by\nconnecting to the\nnetwork:\n%s\nand clicking\n\"Configure new AP\"."
+
+#define MODE_NAME_CALIBRATE "Calibration"
+#define MODE_NAME_RECIPES "Recipes"
+#define MODE_NAME_SCALE "Scale"
 //////////////////////////////////////////////
 #endif

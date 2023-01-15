@@ -1,5 +1,6 @@
 #include "mode_calibrate.h"
 #include "logger.h"
+#include "data/localization.h"
 
 #define TAG "MODE-CAL"
 
@@ -69,5 +70,5 @@ bool ModeCalibration::canSwitchMode()
 
 const char *ModeCalibration::getName()
 {
-    return "Calibration";
+    return MODE_NAME_CALIBRATE;
 }
