@@ -35,7 +35,7 @@
 #define PIN_UPDATE_FIRMWARE PIN_ENC_BTN
 
 // UPDATE
-#define UPDATE_URL "https://github.com/orlopau/coffee-scale/releases/latest/download/firmware.bin"
+#define UPDATE_URL "https://github.com/orlopau/coffee-scale/releases/latest/download/firmware%s.bin"
 
 #ifndef FIRMWARE_VERSION
 #define FIRMWARE_VERSION "0.0.0"

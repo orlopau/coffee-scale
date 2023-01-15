@@ -90,16 +90,17 @@ void setup()
   weightSensor.tare();
   ESP_LOGI(TAG, "Tared!");
 
-  //////// UPDATES ////////
-  if (digitalRead(PIN_UPDATE_FIRMWARE) == LOW)
-  {
-      Updater::update_firmware(display);
-  }
-
   //////// INTERRUPTS ////////
   attachInterrupt(PIN_ENC_A, isr_input, CHANGE);
   attachInterrupt(PIN_ENC_B, isr_input, CHANGE);
   attachInterrupt(PIN_ENC_BTN, isr_input, CHANGE);
+
+  //////// UPDATES ////////
+  if (digitalRead(PIN_UPDATE_FIRMWARE) == LOW)
+  {
+      Updater::update_firmware(display, input);
+  }
+
   ESP_LOGI(TAG, "Setup finished!");
 }
 

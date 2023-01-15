@@ -108,11 +108,11 @@ int U8GDisplay::drawTitleLine(const char *title)
     return yy;
 }
 
-void U8GDisplay::switcher(const uint8_t index, const uint8_t count, const char *options[])
+void U8GDisplay::switcher(const char* title, const uint8_t index, const uint8_t count, const char *options[])
 {
     u8g.clearBuffer();
 
-    int yy = drawTitleLine(DISPLAY_RECIPE_SWITCHER_TITLE);
+    int yy = drawTitleLine(title);
     yy += 2;
 
     u8g.setFont(FONT_SMALL);

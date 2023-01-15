@@ -39,7 +39,7 @@ namespace Updater
         return true;
     }
 
-    void update_firmware(Display &display)
+    void update_firmware(Display &display, UserInput &input)
     {
         display.centerText(UPDATER_UPDATING, 13);
         ESP_LOGI(TAG, "Updating firmware...");
@@ -66,7 +66,27 @@ namespace Updater
             display.centerText(UPDATER_WIFI_CONNECTED, 13);
         }
 
-        delay(2000);
+        delay(1000);
+
+        // choose firmware type
+        int selectedQualifier = 0;
+        const uint8_t numQualifiers = 2;
+        const char *names[] = {"Deutsch", "English"};
+        const char *qualifiers[] = {"_de", "_en"};
+        while (input.getEncoderClick() != ClickType::SINGLE)
+        {
+            selectedQualifier += static_cast<int>(input.getEncoderDirection());
+            if (selectedQualifier < 0)
+            {
+                selectedQualifier = 0;
+            }
+            else if (selectedQualifier >= numQualifiers)
+            {
+                selectedQualifier = numQualifiers - 1;
+            }
+            display.switcher("Choose Language", selectedQualifier, numQualifiers, names);
+            input.update();
+        }
 
         HTTPUpdate httpUpdate;
         httpUpdate.setFollowRedirects(HTTPC_FORCE_FOLLOW_REDIRECTS);
@@ -78,7 +98,11 @@ namespace Updater
         
         WiFiClientSecure client;
         client.setInsecure();
-        t_httpUpdate_return code = httpUpdate.update(client, UPDATE_URL);
+
+        char url[128];
+        snprintf(url, 128, UPDATE_URL, qualifiers[selectedQualifier]);
+        ESP_LOGI(TAG, "Update URL: %s", url);
+        t_httpUpdate_return code = httpUpdate.update(client, url);
 
         switch (code)
         {
