@@ -34,12 +34,19 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install --upgrade platformio
-    - name: Build firmware
-      run: pio run -e esp32dev
+    - name: Build firmware EN
+      run: | 
+        COMPILE_LANG=en pio run -e esp32dev
+        mv ./code/.pio/build/esp32dev/firmware.bin ./firmware_en.bin
+    - name: Build firmware DE
+      run: |
+        COMPILE_LANG=de pio run -e esp32dev
+        mv ./code/.pio/build/esp32dev/firmware.bin ./firmware_de.bin
     - name: Upload image to release
       uses: svenstaro/upload-release-action@v2
       with:
         repo_token: ${{ secrets.GITHUB_TOKEN }}
-        file: ./code/.pio/build/esp32dev/firmware.bin
-        tag: ${{ github.ref }}
+        file_glob: true
         overwrite: true
+        file: ./firmware*.bin
+        tag: ${{ github.ref }}
