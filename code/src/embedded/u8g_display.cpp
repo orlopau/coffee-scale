@@ -7,6 +7,7 @@
 #include "formatters.h"
 #include "data/bitmaps.h"
 #include "constants.h"
+#include "data/localization.h"
 
 #define Y_PADDING 4
 
@@ -54,7 +55,7 @@ void U8GDisplay::promptText(const char *prompt, const char *text)
 
 void U8GDisplay::drawHCenterText(const char *text, uint8_t y)
 {
-    u8g.drawStr(u8g.getDisplayWidth() / 2.0 - u8g.getStrWidth(text) / 2.0, y, text);
+    u8g.drawUTF8(u8g.getDisplayWidth() / 2.0 - u8g.getUTF8Width(text) / 2.0, y, text);
 }
 
 void U8GDisplay::drawCenterText(const char *text)
@@ -101,16 +102,14 @@ int U8GDisplay::drawTitleLine(const char *title)
     int yy = ascent - descent;
 
     // draw title line
-    u8g.drawStr(width / 2.0 - u8g.getStrWidth(title) / 2.0, yy, title);
+    u8g.drawUTF8(width / 2.0 - u8g.getUTF8Width(title) / 2.0, yy, title);
     yy += Y_PADDING;
     u8g.drawHLine(0, yy, width);
     return yy;
 }
 
-void U8GDisplay::switcher(const uint8_t index, const uint8_t count, const char *options[])
+void U8GDisplay::switcher(const char* title, const uint8_t index, const uint8_t count, const char *options[])
 {
-    static const char *title = "Select recipe.";
-
     u8g.clearBuffer();
 
     int yy = drawTitleLine(title);
@@ -153,7 +152,7 @@ void U8GDisplay::switcher(const uint8_t index, const uint8_t count, const char *
             u8g.setDrawColor(0);
         }
 
-        u8g.drawStr(2, yy + ascent + 1, options[optionIndex]);
+        u8g.drawUTF8(2, yy + ascent + 1, options[optionIndex]);
         u8g.setDrawColor(1);
         yy += optionHeight;
     }
@@ -236,7 +235,7 @@ void U8GDisplay::recipeConfigCoffeeWeight(const char *header, unsigned int weigh
     // draw coffee string
     u8g.setFontPosCenter();
     u8g.setFont(FONT_SMALL_MEDIUM);
-    static const char *coffee = "Coffee:";
+    static const char *coffee = DISPLAY_CONFIG_WEIGHT_COFFEE;
     u8g.drawStr(u8g.getDisplayWidth() / 2.0 - u8g.getStrWidth(coffee) - X_OFFSET, yy + (remainingHeight / 4.0), coffee);
     if (shouldBlinkedBeVisible())
     {
@@ -247,7 +246,7 @@ void U8GDisplay::recipeConfigCoffeeWeight(const char *header, unsigned int weigh
 
     // draw water string
     u8g.setFont(FONT_SMALL_MEDIUM);
-    static const char *water = "Water:";
+    static const char *water = DISPLAY_CONFIG_WEIGHT_WATER;
     u8g.drawStr(u8g.getDisplayWidth() / 2.0 - u8g.getStrWidth(water) - X_OFFSET, yy + (remainingHeight / 4.0) * 3, water);
     sprintf(buffer, "%dml", waterWeightMl);
     u8g.setFont(FONT_MEDIUM);
@@ -265,7 +264,7 @@ void U8GDisplay::recipeConfigRatio(const char *header, uint32_t coffee, uint32_t
 
     u8g.setFont(FONT_MEDIUM);
     yy += u8g.getAscent();
-    drawHCenterText("Brew Ratio:", yy);
+    drawHCenterText(DISPLAY_CONFIG_RATIO, yy);
     yy += Y_PADDING;
 
     u8g.setFont(FONT_LARGE);
@@ -312,7 +311,7 @@ void U8GDisplay::recipeInsertCoffee(int32_t weightMg, uint32_t requiredWeightMg)
     u8g.clearBuffer();
     u8g.setFont(u8g_font_7x13);
 
-    drawHCenterText("Insert coffee.", u8g.getAscent() + 5);
+    drawHCenterText(DISPLAY_INSERT_COFFEE, u8g.getAscent() + 5);
 
     u8g.setFont(u8g_font_9x18);
     static char buffer[16];
@@ -404,13 +403,13 @@ void U8GDisplay::drawTextAutoWrap(const char *text, int yTop, int xLeft, int max
     int x = xLeft;
     while (pointer != NULL)
     {
-        if (x + u8g.getStrWidth(pointer) > maxWidth)
+        if (x + u8g.getUTF8Width(pointer) > maxWidth)
         {
             x = xLeft;
             line += (ascent - descent);
         }
-        u8g.drawStr(x, line, pointer);
-        x += u8g.getStrWidth(pointer) + spaceWidth;
+        u8g.drawUTF8(x, line, pointer);
+        x += u8g.getUTF8Width(pointer) + spaceWidth;
         pointer = strtok(NULL, " ");
     }
     delete textCopy;
@@ -446,8 +445,8 @@ void U8GDisplay::modeSwitcher(const char *current, const uint8_t index, const ui
         u8g.setFont(u8g_font_6x10);
         static char buffer[16];
         sprintf(buffer, "%.2fV", batV);
-        int textWidth = u8g.getStrWidth(buffer);
-        u8g.drawStr(u8g.getDisplayWidth() - textWidth - PADDING, u8g.getDisplayHeight() - PADDING, buffer);
+        int textWidth = u8g.getUTF8Width(buffer);
+        u8g.drawUTF8(u8g.getDisplayWidth() - textWidth - PADDING, u8g.getDisplayHeight() - PADDING, buffer);
     }
 
     u8g.sendBuffer();

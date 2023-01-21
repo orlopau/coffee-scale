@@ -77,7 +77,7 @@ public:
     {
         lastModeText = strdup(current);
     };
-    void switcher(const uint8_t index, const uint8_t count, const char *options[]) override
+    void switcher(const char* title, const uint8_t index, const uint8_t count, const char *options[]) override
     {
         switcherIndex = index;
         switcherCount = count;

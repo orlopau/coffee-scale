@@ -1,4 +1,5 @@
 #include "step_switcher.h"
+#include "data/localization.h"
 
 RecipeSwitcherStep::~RecipeSwitcherStep()
 {
@@ -32,7 +33,7 @@ void RecipeSwitcherStep::update()
         recipeIndex += change;
     }
 
-    display.switcher(recipeIndex, recipeCount, recipeSwitcherEntries);
+    display.switcher(DISPLAY_RECIPE_SWITCHER_TITLE, recipeIndex, recipeCount, recipeSwitcherEntries);
 }
 
 void RecipeSwitcherStep::exit()

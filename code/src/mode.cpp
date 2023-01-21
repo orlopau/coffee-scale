@@ -3,6 +3,7 @@
 #include "user_interface.h"
 #include "formatters.h"
 #include "millis.h"
+#include "data/localization.h"
 
 void ModeDefault::update()
 {
@@ -26,5 +27,5 @@ bool ModeDefault::canSwitchMode()
 
 const char* ModeDefault::getName()
 {
-    return "Scale";
+    return MODE_NAME_SCALE;
 }
