@@ -37,16 +37,18 @@ jobs:
     - name: Build firmware EN
       run: | 
         COMPILE_LANG=en pio run -e esp32dev
-        mv ./code/.pio/build/esp32dev/firmware.bin ./firmware_en.bin
+        tree -L 4 -a
+        cp ./.pio/build/esp32dev/firmware.bin ./firmware_en.bin
+        cp ./.pio/build/esp32dev/firmware.bin ./firmware.bin
     - name: Build firmware DE
       run: |
         COMPILE_LANG=de pio run -e esp32dev
-        mv ./code/.pio/build/esp32dev/firmware.bin ./firmware_de.bin
+        cp ./.pio/build/esp32dev/firmware.bin ./firmware_de.bin
     - name: Upload image to release
       uses: svenstaro/upload-release-action@v2
       with:
         repo_token: ${{ secrets.GITHUB_TOKEN }}
         file_glob: true
         overwrite: true
-        file: ./firmware*.bin
+        file: ./code/firmware*.bin
         tag: ${{ github.ref }}
