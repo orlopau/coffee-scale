@@ -73,6 +73,8 @@ float DefaultWeightSensor::getWeight()
     return (getRawWeight() - offset) * scale;
 }
 
+float DefaultWeightSensor::getLastWeight() { return (ringBuffer->getRelative(0) - offset) * scale; }
+
 bool DefaultWeightSensor::isNewWeight()
 {
     return newWeight;

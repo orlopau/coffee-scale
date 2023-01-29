@@ -54,6 +54,7 @@
 #define MODE_NAME_CALIBRATE "Kalibrierung"
 #define MODE_NAME_RECIPES "Rezepte"
 #define MODE_NAME_SCALE "Waage"
+#define MODE_NAME_ESPRESSO "Espresso"
 //////////////////////////////////////////////
 #else
 /////////////////// ENGLISH ///////////////////
@@ -109,5 +110,6 @@
 #define MODE_NAME_CALIBRATE "Calibration"
 #define MODE_NAME_RECIPES "Recipes"
 #define MODE_NAME_SCALE "Scale"
+#define MODE_NAME_ESPRESSO "Espresso"
 //////////////////////////////////////////////
 #endif

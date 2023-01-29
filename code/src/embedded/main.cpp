@@ -10,6 +10,7 @@
 #include "mode.h"
 #include "mode_manager.h"
 #include "modes/mode_scale.h"
+#include "modes/mode_espresso.h"
 #include "modes/mode_calibrate.h"
 #include "modes/mode_recipe.h"
 #include "u8g_display.h"
@@ -37,10 +38,11 @@ void saveScale(float scale)
 }
 
 ModeScale modeDefault(weightSensor, input, display, stopwatch);
+ModeEspresso modeEspresso(weightSensor, input, display, stopwatch);
 ModeCalibration modeCalibration(loadcell, input, display, stopwatch, saveScale);
 ModeRecipes modeRecipes(weightSensor, input, display, RECIPES, RECIPE_COUNT);
-Mode *modes[] = {&modeDefault, &modeRecipes, &modeCalibration};
-ModeManager modeManager(modes, 3, display, input, battery);
+Mode *modes[] = {&modeDefault, &modeRecipes, &modeEspresso, &modeCalibration};
+ModeManager modeManager(modes, 4, display, input, battery);
 
 EncoderDirection encoderDirection;
 

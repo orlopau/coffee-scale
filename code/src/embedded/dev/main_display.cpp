@@ -12,7 +12,8 @@
 
 U8GDisplay display(PIN_I2C_SDA, PIN_I2C_SCL, U8G2_R1);
 
-#define SWITCHER
+// #define SWITCHER
+#define ESPRESSO
 
 void setup()
 {
@@ -37,6 +38,10 @@ void setup()
       delay(500);
     }
   }
+  #endif
+
+  #ifdef ESPRESSO
+  display.espressoShot(4000, 26000, 5000, 18000);
   #endif
 }
 

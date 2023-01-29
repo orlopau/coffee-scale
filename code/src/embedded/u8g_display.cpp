@@ -492,4 +492,57 @@ void U8GDisplay::drawOpener()
     u8g.sendBuffer();
 }
 
+void U8GDisplay::espressoShot(uint32_t currentTimeMs, uint32_t timeToFinishMs, int32_t currentWeightMg, uint32_t targetWeightMg,
+                              bool waiting)
+{
+    u8g.clearBuffer();
+    int width = u8g.getDisplayWidth();
+    int height = u8g.getDisplayHeight();
+
+    u8g.setFont(u8g2_font_logisoso18_tf);
+    int ascent = u8g.getAscent();
+
+    int barHeight = 5;
+    int barWidth = width;
+
+    int yy = 4;
+    int xx = 2;
+
+    // draw time to finish
+    float timeToFinishS = timeToFinishMs / 1000.0;
+    float currentTimeS = currentTimeMs / 1000.0;
+    static char buffer[16];
+    if (waiting)
+    {
+        sprintf(buffer, "%.1fs", currentTimeS);
+    }
+    else
+    {
+        sprintf(buffer, "%.1fs|%.1fs", -timeToFinishS, currentTimeS);
+    }
+    int textWidth = u8g.getUTF8Width(buffer);
+    u8g.drawUTF8(width / 2.0 - textWidth / 2.0, yy + ascent, buffer);
+
+    // change font
+    u8g.setFont(u8g2_font_logisoso16_tf);
+    ascent = u8g.getAscent();
+    yy = 2 + ascent;
+
+    // draw current weight in g
+    float currentWeightG = currentWeightMg / 1000.0;
+    float targetWeightG = targetWeightMg / 1000.0;
+    sprintf(buffer, "%.1fg/%.1fg", currentWeightG, targetWeightG);
+    textWidth = u8g.getUTF8Width(buffer);
+    u8g.drawUTF8(width / 2.0 - textWidth / 2.0, height - barHeight - 8, buffer);
+
+    // draw full width weight progress bar on bottom
+    int barY = height - barHeight;
+    int barX = 0;
+    int barProgress = (currentWeightG / targetWeightG) * barWidth;
+    u8g.drawFrame(barX, barY, barWidth, barHeight);
+    u8g.drawBox(barX, barY, barProgress, barHeight);
+
+    u8g.sendBuffer();
+}
+
 #endif

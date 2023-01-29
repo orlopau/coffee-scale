@@ -22,6 +22,7 @@ public:
     bool isNewWeight() override { return newWeight; }
     void tare() override { weight = 0; }
     void setScale(float scale) override {}
+    float getLastWeight() override { return weight; }
     float weight = 0;
     bool newWeight = false;
 };
@@ -113,6 +114,13 @@ public:
         recipeTimeToFinishMs = timeToFinish;
         recipeIsPause = isPause;
     };
+    void espressoShot(uint32_t currentTimeMs, uint32_t timeToFinishMs, int32_t currentWeightMg, uint32_t targetWeightMg, bool waiting) override
+    {
+        espressoCurrentTimeMs = currentTimeMs;
+        espressoTimeToFinishMs = timeToFinishMs;
+        espressoCurrentWeightMg = currentWeightMg;
+        espressoTargetWeightMg = targetWeightMg;
+    };
     void text(const char *text){};
     void drawTextAutoWrap(const char *text, int yTop){};
     void clear()
@@ -145,4 +153,9 @@ public:
     uint32_t recipeWeightToPourMg = 0;
     uint64_t recipeTimeToFinishMs = 0;
     bool recipeIsPause = false;
+
+    uint32_t espressoCurrentTimeMs = 0;
+    uint32_t espressoTimeToFinishMs = 0;
+    int32_t espressoCurrentWeightMg = 0;
+    uint32_t espressoTargetWeightMg = 0;
 };

@@ -39,6 +39,7 @@ public:
     virtual void recipeConfigRatio(const char *header, uint32_t coffee, uint32_t water) = 0;
     virtual void recipeInsertCoffee(int32_t weightMg, uint32_t requiredWeightMg) = 0;
     virtual void recipePour(const char *text, int32_t weightToPourMg, uint64_t timeToFinishMs, bool isPause, uint8_t pourIndex, uint8_t pours) = 0;
+    virtual void espressoShot(uint32_t currentTimeMs, uint32_t timeToFinishMs, int32_t currentWeightMg, uint32_t targetWeightMg, bool waiting) = 0;
     virtual void text(const char *text) = 0;
     virtual void update() = 0;
     virtual void clear() = 0;

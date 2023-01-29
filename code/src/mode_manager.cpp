@@ -34,6 +34,7 @@ void ModeManager::update()
         if (input.getEncoderClick() == ClickType::SINGLE)
         {
             inModeChange = false;
+            modes[currentMode]->enter();
         }
     }
     else

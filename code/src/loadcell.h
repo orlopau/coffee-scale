@@ -18,7 +18,18 @@ public:
     virtual ~WeightSensor(){};
     virtual void begin(){};
     virtual void update(){};
+    /**
+     * @brief Gets the scaled weight in grams. Could be averaged depending on the set auto averaging mode.
+     * 
+     * @return weight in grams
+     */
     virtual float getWeight() = 0;
+    /**
+     * @brief Gets the latest scaled weight in grams. This is not averaged.
+     * 
+     * @return weight in grams
+     */
+    virtual float getLastWeight() = 0;
     virtual bool isNewWeight() = 0;
     virtual void tare() = 0;
     virtual void setScale(float scale) = 0;
@@ -43,6 +54,7 @@ public:
     void begin() override;
     void update() override;
     float getWeight() override;
+    float getLastWeight() override;
     bool isNewWeight() override;
     void tare() override;
     void setScale(float scale) override;

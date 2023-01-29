@@ -21,6 +21,7 @@ public:
     void recipeConfigRatio(const char *header, uint32_t coffee, uint32_t water) override;
     void recipeInsertCoffee(int32_t weightMg, uint32_t requiredWeightMg) override;
     void recipePour(const char *text, int32_t weightToPourMg, uint64_t timeToFinishMs, bool isPause, uint8_t pourIndex, uint8_t pours) override;
+    void espressoShot(uint32_t currentTimeMs, uint32_t timeToFinishMs, int32_t currentWeightMg, uint32_t targetWeightMg, bool waiting) override;
     void text(const char *text) override;
     void update(){};
     void clear() override;
