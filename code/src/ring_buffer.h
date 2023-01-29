@@ -60,6 +60,11 @@ public:
     {
         return bufferSize;
     };
+    void clear()
+    {
+        head = 0;
+        full = false;
+    };
 
 private:
     T *buffer;
