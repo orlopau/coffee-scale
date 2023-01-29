@@ -9,6 +9,7 @@
 #include "hx711_loadcell.h"
 #include "mode.h"
 #include "mode_manager.h"
+#include "modes/mode_scale.h"
 #include "modes/mode_calibrate.h"
 #include "modes/mode_recipe.h"
 #include "u8g_display.h"
@@ -35,7 +36,7 @@ void saveScale(float scale)
   weightSensor.setScale(scale);
 }
 
-ModeDefault modeDefault(weightSensor, input, display, stopwatch);
+ModeScale modeDefault(weightSensor, input, display, stopwatch);
 ModeCalibration modeCalibration(loadcell, input, display, stopwatch, saveScale);
 ModeRecipes modeRecipes(weightSensor, input, display, RECIPES, RECIPE_COUNT);
 Mode *modes[] = {&modeDefault, &modeRecipes, &modeCalibration};

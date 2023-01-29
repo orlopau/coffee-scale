@@ -1,5 +1,5 @@
 #include <unity.h>
-#include "mode.h"
+#include "modes/mode_scale.h"
 #include "mocks.h"
 #include "stopwatch.h"
 
@@ -11,7 +11,7 @@ static MockWeightSensor *weightSensor;
 static MockButtons *buttons;
 static MockDisplay *display;
 
-ModeDefault *modeDefault;
+ModeScale *modeScale;
 
 void setUp(void)
 {
@@ -19,7 +19,7 @@ void setUp(void)
     weightSensor = new MockWeightSensor();
     buttons = new MockButtons();
     display = new MockDisplay();
-    modeDefault = new ModeDefault(*weightSensor, *buttons, *display, *stopwatch);
+    modeScale = new ModeScale(*weightSensor, *buttons, *display, *stopwatch);
 }
 
 void tearDown(void)
@@ -27,7 +27,7 @@ void tearDown(void)
     delete stopwatch;
     delete buttons;
     delete display;
-    delete modeDefault;
+    delete modeScale;
     delete weightSensor;
 }
 
@@ -35,15 +35,15 @@ void test_stopwatch_start_when_click(void)
 {
     TEST_ASSERT_FALSE(stopwatch->isRunning());
     buttons->encoderClick = ClickType::SINGLE;
-    modeDefault->update();
+    modeScale->update();
     TEST_ASSERT_TRUE(stopwatch->isRunning());
 }
 
 void test_stopwatch_stop_when_click_again(void)
 {
     buttons->encoderClick = ClickType::SINGLE;
-    modeDefault->update();
-    modeDefault->update();
+    modeScale->update();
+    modeScale->update();
     TEST_ASSERT_FALSE(stopwatch->isRunning());
 }
 
@@ -52,7 +52,7 @@ void test_loadcell_tare_when_encoder_rotated(void)
     weightSensor->weight = 1;
 
     buttons->encoderDirection = EncoderDirection::CW;
-    modeDefault->update();
+    modeScale->update();
     TEST_ASSERT_EQUAL(0, weightSensor->getWeight());
 }
 
@@ -60,7 +60,7 @@ void test_display_shows_weight(void)
 {
     weightSensor->weight = 1;
 
-    modeDefault->update();
+    modeScale->update();
     TEST_ASSERT_EQUAL(1.0, display->weight);
 }
 
@@ -68,7 +68,7 @@ void test_display_shows_time(void)
 {
     stopwatch->start();
     std::this_thread::sleep_for(std::chrono::milliseconds(2));
-    modeDefault->update();
+    modeScale->update();
     TEST_ASSERT_GREATER_OR_EQUAL(2, display->time);
 }
 

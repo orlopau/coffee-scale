@@ -1,11 +1,9 @@
-#include "mode.h"
+#include "modes/mode_scale.h"
 #include "loadcell.h"
 #include "user_interface.h"
-#include "formatters.h"
-#include "millis.h"
 #include "data/localization.h"
 
-void ModeDefault::update()
+void ModeScale::update()
 {
     display.display(weightSensor.getWeight(), stopwatch.getTime());
 
@@ -20,12 +18,12 @@ void ModeDefault::update()
     }
 }
 
-bool ModeDefault::canSwitchMode()
+bool ModeScale::canSwitchMode()
 {
     return true;
 }
 
-const char* ModeDefault::getName()
+const char* ModeScale::getName()
 {
     return MODE_NAME_SCALE;
 }
