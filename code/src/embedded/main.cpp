@@ -54,7 +54,7 @@ void IRAM_ATTR isr_input()
 void setup()
 {
   Serial.begin(115200);
-  ESP_LOGI(TAG, "CoffeeScale v1.0.0");
+  ESP_LOGI(TAG, "CoffeeScale starting up...");
 
   EEPROM.begin(2048);
   btStop();
