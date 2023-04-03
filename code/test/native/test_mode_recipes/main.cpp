@@ -10,18 +10,36 @@ static MockButtons *buttons;
 static MockDisplay *display;
 
 const Recipe RECIPES[] = {
-    {"name1", "desc1", "url", 3000, 2, static_cast<uint8_t>(AdjustableParameter::COFFEE_WEIGHT) | static_cast<uint8_t>(AdjustableParameter::RATIO), {
-                                                                                                                                                                             {"step1", 2 * RECIPE_RATIO_MUL, 500, 300, true},
-                                                                                                                                                                             {"step2", 5 * RECIPE_RATIO_MUL, 0, 300, false},
-                                                                                                                                                                         }},
-    {"name2", "desc2", "url", 2000, 2, 0, {
-                                                             {"step1", RECIPE_RATIO_MUL, 0, 2 * 60 * 1000, false},
-                                                             {"step2", RECIPE_RATIO_MUL, 0, 30 * 1000, false},
-                                                         }},
-    {"name3", "desc3", "url", 3000, 2, 0, {
-                                                             {"step1", RECIPE_RATIO_MUL, 0, 2 * 60 * 1000, false},
-                                                             {"step2", RECIPE_RATIO_MUL, 0, 30 * 1000, false},
-                                                         }},
+    {"name1",
+     "desc1",
+     "url",
+     3000,
+     2,
+     static_cast<uint8_t>(AdjustableParameter::COFFEE_WEIGHT) | static_cast<uint8_t>(AdjustableParameter::RATIO),
+     {
+         {"step1", 2 * RECIPE_RATIO_MUL, 500, 300, true},
+         {"step2", 5 * RECIPE_RATIO_MUL, 0, 300, false},
+     }},
+    {"name2",
+     "desc2",
+     "url",
+     2000,
+     2,
+     0,
+     {
+         {"step1", RECIPE_RATIO_MUL, 0, 2 * 60 * 1000, false},
+         {"step2", RECIPE_RATIO_MUL, 0, 30 * 1000, false},
+     }},
+    {"name3",
+     "desc3",
+     "url",
+     3000,
+     2,
+     0,
+     {
+         {"step1", RECIPE_RATIO_MUL, 0, 2 * 60 * 1000, false},
+         {"step2", RECIPE_RATIO_MUL, 0, 30 * 1000, false},
+     }},
 };
 
 ModeRecipes *modeRecipes;
@@ -99,9 +117,47 @@ void test_steps_forward_and_back(void)
     TEST_ASSERT_EQUAL(0, modeRecipes->getCurrentStepIndex());
 }
 
+void nextStep()
+{
+    buttons->encoderClick = ClickType::SINGLE;
+    modeRecipes->update();
+}
+
+void test_issue_25(void)
+{
+    // verify that when changing a parameter and then going back the parameter is correctly reset
+    TEST_ASSERT_EQUAL(0, modeRecipes->getCurrentStepIndex());
+    nextStep();
+    TEST_ASSERT_EQUAL(1, modeRecipes->getCurrentStepIndex());
+    nextStep();
+    TEST_ASSERT_EQUAL(2, modeRecipes->getCurrentStepIndex());
+
+    // ratio config step
+    // adjust ratio
+    buttons->encoderTicks = 10;
+    modeRecipes->update();
+
+    // next step
+    nextStep();
+    TEST_ASSERT_EQUAL(3, modeRecipes->getCurrentStepIndex());
+
+    // go back
+    buttons->encoderClick = ClickType::LONG;
+    modeRecipes->update();
+    TEST_ASSERT_EQUAL(2, modeRecipes->getCurrentStepIndex());
+
+    // go forward again
+    nextStep();
+    TEST_ASSERT_EQUAL(3, modeRecipes->getCurrentStepIndex());
+
+    // check that ratio is reset to default 21ml
+    TEST_ASSERT_EQUAL(21, display->weightConfigWaterWeightMl);
+}
+
 int main(void)
 {
     UNITY_BEGIN();
     RUN_TEST(test_steps_forward_and_back);
+    RUN_TEST(test_issue_25);
     UNITY_END();
 }

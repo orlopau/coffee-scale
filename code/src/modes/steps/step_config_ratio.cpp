@@ -29,7 +29,15 @@ void RecipeConfigRatioStep::update()
     display.recipeConfigRatio(state.configRecipe.name, 1 * RECIPE_RATIO_MUL, newRatio);
 }
 
-void RecipeConfigRatioStep::enter() { input.resetEncoderTicks(); }
+void RecipeConfigRatioStep::enter()
+{
+    // reset ratio to default
+    input.resetEncoderTicks();
+    for (uint8_t i = 0; i < state.configRecipe.poursCount; i++)
+    {
+        state.configRecipe.pours[i].ratio = state.originalRecipe->pours[i].ratio;
+    }
+}
 
 void RecipeConfigRatioStep::exit()
 {
