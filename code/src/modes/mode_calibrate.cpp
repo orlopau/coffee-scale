@@ -58,7 +58,9 @@ void ModeCalibration::update()
         }
         break;
     case CalibrationStep::END:
-        display.text("Calibration complete.");
+        static char buffer[48];
+        sprintf(buffer, "Calibration complete.\nScale: %.4f", scale);
+        display.text(buffer);
         break;
     }
 }
