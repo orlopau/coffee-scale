@@ -77,7 +77,7 @@ void setup()
   weightSensor.setScale(scale);
 
   float delta = 1 / scale;
-  weightSensor.setAutoAveraging(delta, 64);
+  weightSensor.setAutoAveraging(abs(delta), 64);
   ESP_LOGI(TAG, "Auto averaging delta: %f", delta);
 
   // tare after 32 samples
