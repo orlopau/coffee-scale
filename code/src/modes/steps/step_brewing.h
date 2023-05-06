@@ -21,4 +21,6 @@ private:
 
     unsigned long pourStartMillis = 0;
     bool pourDoneFlag;
+
+    void nextPour();
 };

@@ -37,6 +37,8 @@ void RecipeBrewing::update()
         if (input.getEncoderClick() == ClickType::SINGLE)
         {
             pourStartMillis = now();
+            // consume, else we will advance to next pour in a later if
+            input.consumeEncoderClick();
         }
     }
     // Brew is in progress.
@@ -61,13 +63,17 @@ void RecipeBrewing::update()
             input.buzzerTone(200);
         }
 
-        // if there is another pour, start it when encoder is clicked or auto advance is enabled
-        if ((input.getEncoderClick() == ClickType::SINGLE || pour->autoAdvance) && recipePourIndex + 1 < state.configRecipe.poursCount)
+        // if there is another pour, start when auto advance is on
+        if (pour->autoAdvance)
         {
-            recipePourIndex++;
-            pourStartMillis = 0;
-            pourDoneFlag = false;
+            nextPour();
         }
+    }
+
+    // if brew has started, clicking should advance to next pour
+    if (pourStartMillis != 0 && input.getEncoderClick() == ClickType::SINGLE)
+    {
+        nextPour();
     }
 
     // calculate remaining weight, by adding the weight of all pours including the current one
@@ -81,6 +87,16 @@ void RecipeBrewing::update()
 
     const int32_t remainingWeightMg = totalPourWeightMg - (weightSensor.getWeight() * 1000);
     display.recipePour(pour->note, remainingWeightMg, remainingTimePourMs, isPause, recipePourIndex, state.configRecipe.poursCount);
+}
+
+void RecipeBrewing::nextPour()
+{
+    if (recipePourIndex + 1 < state.configRecipe.poursCount)
+    {
+        recipePourIndex++;
+        pourStartMillis = 0;
+        pourDoneFlag = false;
+    }
 }
 
 void RecipeBrewing::enter()
