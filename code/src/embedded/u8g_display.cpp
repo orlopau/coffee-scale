@@ -16,6 +16,8 @@
 #define FONT_MEDIUM u8g2_font_profont17_tf
 #define FONT_LARGE u8g2_font_logisoso20_tf
 
+static const char *TAG = "U8GDISP";
+
 U8GDisplay::U8GDisplay(const uint8_t pin_sda, const uint8_t pin_scl, const u8g2_cb_t *rotation)
     : u8g(rotation, U8X8_PIN_NONE, pin_scl, pin_sda)
 {
@@ -25,6 +27,25 @@ void U8GDisplay::begin()
 {
     u8g.setBusClock(1000000);
     u8g.begin();
+}
+
+void U8GDisplay::update()
+{
+    u8g.sendBuffer();
+#if ARDUHAL_LOG_LEVEL >= ARDUHAL_LOG_LEVEL_VERBOSE
+    frameCounter++;
+    // every 120 frames log the fps
+    if (frameCounter >= 120)
+    {
+        unsigned long time = millis();
+
+        uint8_t fps = (1000.0 / (time - lastFpsLogTime)) * frameCounter;
+        ESP_LOGD(TAG, "FPS: %d", fps);
+
+        lastFpsLogTime = time;
+        frameCounter = 0;
+    }
+#endif
 }
 
 void U8GDisplay::clear()
@@ -41,7 +62,6 @@ void U8GDisplay::display(float weight, unsigned long time)
     u8g.drawStr(0, 30, weightText);
     u8g.setFont(u8g2_font_logisoso22_tf);
     u8g.drawStr(0, 64, timeText);
-    u8g.sendBuffer();
 }
 
 void U8GDisplay::promptText(const char *prompt, const char *text)
@@ -50,7 +70,6 @@ void U8GDisplay::promptText(const char *prompt, const char *text)
     u8g.setFont(u8g_font_6x10);
     u8g.drawStr(0, 10, prompt);
     u8g.drawStr(0, 20, text);
-    u8g.sendBuffer();
 }
 
 void U8GDisplay::drawHCenterText(const char *text, uint8_t y)
@@ -89,7 +108,6 @@ void U8GDisplay::centerText(const char *text, const uint8_t size)
     }
 
     drawHCenterText(text, mid);
-    u8g.sendBuffer();
 }
 
 int U8GDisplay::drawTitleLine(const char *title)
@@ -156,8 +174,6 @@ void U8GDisplay::switcher(const char* title, const uint8_t index, const uint8_t 
         u8g.setDrawColor(1);
         yy += optionHeight;
     }
-
-    u8g.sendBuffer();
 };
 
 #define QR_CODE_VERSION 2
@@ -213,8 +229,6 @@ void U8GDisplay::recipeSummary(const char *name, const char *description, const 
         // qr code size 54
         drawQRCode(url, width - 54, (height - 54) / 2.0);
     }
-
-    u8g.sendBuffer();
 }
 
 bool U8GDisplay::shouldBlinkedBeVisible()
@@ -253,7 +267,6 @@ void U8GDisplay::recipeConfigCoffeeWeight(const char *header, unsigned int weigh
     u8g.drawStr(u8g.getWidth() / 2.0, yy + (remainingHeight / 4.0) * 3, buffer);
 
     u8g.setFontPosBaseline();
-    u8g.sendBuffer();
 }
 
 void U8GDisplay::recipeConfigRatio(const char *header, uint32_t coffee, uint32_t water)
@@ -284,8 +297,6 @@ void U8GDisplay::recipeConfigRatio(const char *header, uint32_t coffee, uint32_t
         sprintf(buffer, "%.1f", water / 10.0);
         u8g.drawStr(3 * u8g.getDisplayWidth() / 4.0 - u8g.getStrWidth(buffer) / 2.0, yy, buffer);
     }
-
-    u8g.sendBuffer();
 }
 
 int U8GDisplay::drawSelectedBar(uint8_t index, uint8_t size)
@@ -317,8 +328,6 @@ void U8GDisplay::recipeInsertCoffee(int32_t weightMg, uint32_t requiredWeightMg)
     static char buffer[16];
     sprintf(buffer, "%.2fg/%.1fg", weightMg / 1000.0, requiredWeightMg / 1000.0);
     drawCenterText(buffer);
-
-    u8g.sendBuffer();
 }
 
 void U8GDisplay::recipePour(const char *text, int32_t weightToPourMg, uint64_t timeToFinishMs, bool isPause, uint8_t pourIndex, uint8_t pours)
@@ -364,8 +373,6 @@ void U8GDisplay::recipePour(const char *text, int32_t weightToPourMg, uint64_t t
     }
     int textWidth = u8g.getStrWidth(buffer);
     u8g.drawStr(width - textWidth - TEXT_X_PADDING, center + ascent / 2.0, buffer);
-
-    u8g.sendBuffer();
 }
 
 void U8GDisplay::text(const char *text)
@@ -385,8 +392,6 @@ void U8GDisplay::text(const char *text)
         pointer = strtok(NULL, "\n");
     }
     delete textCopy;
-
-    u8g.sendBuffer();
 }
 
 void U8GDisplay::drawTextAutoWrap(const char *text, int yTop, int xLeft, int maxWidth)
@@ -448,8 +453,6 @@ void U8GDisplay::modeSwitcher(const char *current, const uint8_t index, const ui
         int textWidth = u8g.getUTF8Width(buffer);
         u8g.drawUTF8(u8g.getDisplayWidth() - textWidth - PADDING, u8g.getDisplayHeight() - PADDING, buffer);
     }
-
-    u8g.sendBuffer();
 }
 
 void U8GDisplay::drawOpener()
@@ -488,8 +491,6 @@ void U8GDisplay::drawOpener()
     ascent = u8g.getAscent();
     textWidth = u8g.getStrWidth(textLineVersion);
     u8g.drawStr(remainingCenter - textWidth / 2.0, height - 2, textLineVersion);
-
-    u8g.sendBuffer();
 }
 
 void U8GDisplay::espressoShot(uint32_t currentTimeMs, uint32_t timeToFinishMs, int32_t currentWeightMg, uint32_t targetWeightMg,
@@ -541,8 +542,6 @@ void U8GDisplay::espressoShot(uint32_t currentTimeMs, uint32_t timeToFinishMs, i
     int barProgress = (currentWeightG / targetWeightG) * barWidth;
     u8g.drawFrame(barX, barY, barWidth, barHeight);
     u8g.drawBox(barX, barY, barProgress, barHeight);
-
-    u8g.sendBuffer();
 }
 
 #endif

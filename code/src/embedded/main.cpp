@@ -9,10 +9,10 @@
 #include "hx711_loadcell.h"
 #include "mode.h"
 #include "mode_manager.h"
-#include "modes/mode_scale.h"
-#include "modes/mode_espresso.h"
 #include "modes/mode_calibrate.h"
+#include "modes/mode_espresso.h"
 #include "modes/mode_recipe.h"
+#include "modes/mode_scale.h"
 #include "u8g_display.h"
 #include "update.h"
 #include "user_input.h"
@@ -30,11 +30,11 @@ Stopwatch stopwatch;
 
 void saveScale(float scale)
 {
-  ESP_LOGI(TAG, "New scale: %f", scale);
-  ESP_LOGI(TAG, "Saving scale to EEPROM...");
-  EEPROM.put(EEPROM_ADDR_SCALE, scale);
-  EEPROM.commit();
-  weightSensor.setScale(scale);
+    ESP_LOGI(TAG, "New scale: %f", scale);
+    ESP_LOGI(TAG, "Saving scale to EEPROM...");
+    EEPROM.put(EEPROM_ADDR_SCALE, scale);
+    EEPROM.commit();
+    weightSensor.setScale(scale);
 }
 
 ModeScale modeDefault(weightSensor, input, display, stopwatch);
@@ -46,88 +46,91 @@ ModeManager modeManager(modes, 4, display, input, battery);
 
 EncoderDirection encoderDirection;
 
-void IRAM_ATTR isr_input()
+void IRAM_ATTR isr_input() { input.update(); }
+
+void IRAM_ATTR isr_loadcell()
 {
-  input.update();
+    weightSensor.update();
+}
+
+void input_loop(void *params)
+{
+    ESP_LOGI(TAG, "Started input loop.");
+    for (;;)
+    {
+        weightSensor.update();
+        input.update();
+        modeManager.update();
+        display.update();
+    }
 }
 
 void setup()
 {
-  Serial.begin(115200);
-  ESP_LOGI(TAG, "CoffeeScale starting up...");
+    Serial.begin(115200);
+    ESP_LOGI(TAG, "CoffeeScale starting up...");
 
-  EEPROM.begin(2048);
-  btStop();
+    EEPROM.begin(2048);
+    btStop();
 
-  //////// DISPLAY ////////
-  display.begin();
-  display.drawOpener();
+    //////// DISPLAY ////////
+    display.begin();
+    display.drawOpener();
+    display.update();
 
-  //////// WEIGHT SENSOR ////////
-  weightSensor.begin();
+    //////// WEIGHT SENSOR ////////
+    weightSensor.begin();
 
-  float scale;
-  EEPROM.get(EEPROM_ADDR_SCALE, scale);
-  if (isnan(scale))
-  {
-      scale = 1.0f;
-  }
+    float scale;
+    EEPROM.get(EEPROM_ADDR_SCALE, scale);
+    if (isnan(scale))
+    {
+        scale = 1.0f;
+    }
 
-  ESP_LOGI(TAG, "Existing scale: %f", scale);
-  weightSensor.setScale(scale);
+    ESP_LOGI(TAG, "Existing scale: %f", scale);
+    weightSensor.setScale(scale);
 
-  float delta = 1 / scale;
-  weightSensor.setAutoAveraging(abs(delta), 64);
-  ESP_LOGI(TAG, "Auto averaging delta: %f", delta);
+    float delta = 1 / scale;
+    weightSensor.setAutoAveraging(abs(delta), 64);
+    ESP_LOGI(TAG, "Auto averaging delta: %f", delta);
 
-  // tare after 32 samples
-  ESP_LOGI(TAG, "Taring...");
-  for (int i = 0; i < 32;)
-  {
-      weightSensor.update();
-      if (weightSensor.isNewWeight())
-      {
-          i++;
-      }
-  }
-  weightSensor.tare();
-  ESP_LOGI(TAG, "Tared!");
+    ESP_LOGI(TAG, "Taring...");
+    for (int i = 0; i < 16;)
+    {
+        weightSensor.update();
+        if (weightSensor.isNewWeight())
+        {
+            i++;
+        }
+    }
+    weightSensor.tare();
+    ESP_LOGI(TAG, "Tared!");
 
-  //////// INTERRUPTS ////////
-  attachInterrupt(PIN_ENC_A, isr_input, CHANGE);
-  attachInterrupt(PIN_ENC_B, isr_input, CHANGE);
-  attachInterrupt(PIN_ENC_BTN, isr_input, CHANGE);
+    //////// INTERRUPTS ////////
+    attachInterrupt(PIN_ENC_A, isr_input, CHANGE);
+    attachInterrupt(PIN_ENC_B, isr_input, CHANGE);
+    attachInterrupt(PIN_ENC_BTN, isr_input, CHANGE);
 
-  //////// UPDATES ////////
-  if (digitalRead(PIN_UPDATE_FIRMWARE) == LOW)
-  {
-      Updater::update_firmware(display, input);
-  }
+    //////// UPDATES ////////
+    if (digitalRead(PIN_UPDATE_FIRMWARE) == LOW)
+    {
+        Updater::update_firmware(display, input);
+    }
 
-  ESP_LOGI(TAG, "Setup finished!");
+    //////// SCHEDULE TAKS ////////
+    int code = xTaskCreatePinnedToCore(input_loop, "INPUT", 64 * 1024, NULL, 10, NULL, ARDUINO_RUNNING_CORE);
+    if (code != pdPASS)
+    {
+        ESP_LOGE(TAG, "Task couldnt be created: %d", code);
+    }
+
+    ESP_LOGI(TAG, "Setup finished!");
 }
-
-#ifdef PERF
-unsigned int loops = 0;
-unsigned long lastTime = millis();
-#endif
 
 void loop()
 {
-  input.update();
-  weightSensor.update();
-  display.update();
-  modeManager.update();
-
-#ifdef PERF
-  if (loops >= AVERAGING_LOOPS)
-  {
-    ESP_LOGI(TAG, "Loop time: %lu", (millis() - lastTime) / loops
-    loops = 0;
-    lastTime = millis();
-  }
-  loops++;
-#endif
+    // NOP
 }
 
 #endif

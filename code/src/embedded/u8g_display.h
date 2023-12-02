@@ -23,7 +23,7 @@ public:
     void recipePour(const char *text, int32_t weightToPourMg, uint64_t timeToFinishMs, bool isPause, uint8_t pourIndex, uint8_t pours) override;
     void espressoShot(uint32_t currentTimeMs, uint32_t timeToFinishMs, int32_t currentWeightMg, uint32_t targetWeightMg, bool waiting) override;
     void text(const char *text) override;
-    void update(){};
+    void update() override;
     void clear() override;
     void drawOpener();
 
@@ -42,6 +42,10 @@ private:
     int drawQRCode(const char* bytes, uint8_t x, uint8_t y);
     void drawTextAutoWrap(const char *text, int yTop, int xLeft, int maxWidth);
     bool shouldBlinkedBeVisible();
+    #if ARDUHAL_LOG_LEVEL >= ARDUHAL_LOG_LEVEL_VERBOSE
+    unsigned long lastFpsLogTime = 0;
+    unsigned long frameCounter = 0;
+    #endif
 };
 
 #endif

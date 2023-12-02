@@ -116,5 +116,6 @@
         "geometry": "cpp",
         "forward_list": "cpp",
         "regex": "cpp"
-    }
+    },
+    "cmake.configureOnOpen": false
 }
