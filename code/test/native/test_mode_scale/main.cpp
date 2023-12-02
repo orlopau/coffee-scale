@@ -1,7 +1,7 @@
 #include <unity.h>
 #include "modes/mode_scale.h"
 #include "mocks.h"
-#include "stopwatch.h"
+#include "util/stopwatch.h"
 
 #include <chrono>
 #include <thread>

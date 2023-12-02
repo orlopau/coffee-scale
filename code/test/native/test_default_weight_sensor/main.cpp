@@ -1,6 +1,6 @@
 #include <unity.h>
 
-#include "millis.h"
+#include "util/millis.h"
 #include "button.h"
 #include "loadcell.h"
 

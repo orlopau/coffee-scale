@@ -4,7 +4,7 @@
 #include <qrcode.h>
 
 #include "u8g_display.h"
-#include "formatters.h"
+#include "util/formatters.h"
 #include "data/bitmaps.h"
 #include "constants.h"
 #include "data/localization.h"

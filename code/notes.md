@@ -11,3 +11,9 @@ https://www.aliexpress.com/item/4000456148198.html?spm=a2g0o.cart.0.0.4b184ae4xz
 
 tips:
 D32, D24, D16, D12, KF, ILS
+
+
+
+## Structure
+
+Use MVC to decouple the view layer.

@@ -1,5 +1,5 @@
 #include "unity.h"
-#include "stopwatch.h"
+#include "util/stopwatch.h"
 
 #include <chrono>
 #include <thread>

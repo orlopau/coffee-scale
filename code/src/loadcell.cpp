@@ -1,7 +1,7 @@
 #include <cmath>
 
 #include "loadcell.h"
-#include "millis.h"
+#include "util/millis.h"
 
 DefaultWeightSensor::~DefaultWeightSensor()
 {

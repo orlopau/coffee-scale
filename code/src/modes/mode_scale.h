@@ -3,7 +3,7 @@
 #include "mode.h"
 #include "loadcell.h"
 #include "user_interface.h"
-#include "stopwatch.h"
+#include "util/stopwatch.h"
 
 class ModeScale : public Mode
 {

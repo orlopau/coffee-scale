@@ -1,5 +1,5 @@
 #include "step_brewing.h"
-#include "millis.h"
+#include "util/millis.h"
 
 RecipeBrewing::RecipeBrewing(RecipeStepState &state, Display &display, UserInput &input, WeightSensor &weightSensor)
     : state(state), display(display), input(input), weightSensor(weightSensor)

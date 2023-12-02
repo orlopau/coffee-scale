@@ -1,4 +1,4 @@
-#include "millis.h"
+#include "util/millis.h"
 #include "mocks.h"
 #include "modes/steps/step_switcher.h"
 #include <unity.h>

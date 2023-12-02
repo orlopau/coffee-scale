@@ -1,7 +1,7 @@
 #pragma once
 
 #include "stdint.h"
-#include "ring_buffer.h"
+#include "util/ring_buffer.h"
 
 class LoadCell
 {
@@ -62,8 +62,6 @@ public:
     long getRawWeight();
 
 private:
-    void updateAveraging(long lastWeight, long newWeight);
-
     LoadCell &loadCell;
     float weight = 0;
     float scale = 1;

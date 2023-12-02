@@ -1,8 +1,8 @@
 #include <unity.h>
 #include "mocks.h"
-#include "stopwatch.h"
+#include "util/stopwatch.h"
 #include "modes/mode_recipe.h"
-#include "millis.h"
+#include "util/millis.h"
 
 static Stopwatch *stopwatch;
 static MockWeightSensor *weightSensor;

@@ -1,4 +1,4 @@
-#include "ring_buffer.h"
+#include "util/ring_buffer.h"
 #include <unity.h>
 
 /*

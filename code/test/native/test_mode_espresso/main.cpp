@@ -1,6 +1,6 @@
 #include "mocks.h"
 #include "modes/mode_espresso.h"
-#include "stopwatch.h"
+#include "util/stopwatch.h"
 #include <unity.h>
 
 #include <chrono>

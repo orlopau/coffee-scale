@@ -2,7 +2,7 @@
 
 #include "battery.h"
 #include "loadcell.h"
-#include "millis.h"
+#include "util/millis.h"
 #include "user_interface.h"
 #include <math.h>
 #include <string.h>

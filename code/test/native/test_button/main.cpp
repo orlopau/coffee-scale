@@ -1,7 +1,7 @@
 #include <unity.h>
 
 #include "button.h"
-#include "millis.h"
+#include "util/millis.h"
 
 #define DEBOUNCE_DELAY 50
 #define DOUBLE_CLICK_WAIT_TIME 200

@@ -2,7 +2,7 @@
 
 #include "unity.h"
 #include "mode_manager.h"
-#include "millis.h"
+#include "util/millis.h"
 #include "mocks.h"
 
 class MockMode : public Mode

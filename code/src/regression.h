@@ -2,7 +2,7 @@
 #include <math.h>
 #include <climits>
 
-#include "ring_buffer.h"
+#include "util/ring_buffer.h"
 
 namespace Regression
 {

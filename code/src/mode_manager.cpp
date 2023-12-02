@@ -1,5 +1,5 @@
 #include "mode_manager.h"
-#include "millis.h"
+#include "util/millis.h"
 
 ModeManager::ModeManager(Mode *modes[], const int modeCount, Display &display, UserInput &input, Battery &battery)
     : modes(modes), modeCount(modeCount), currentMode(0), inModeChange(false), display(display), input(input), battery(battery),

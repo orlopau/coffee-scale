@@ -1,7 +1,7 @@
 #include <cstring>
 
 #include "mode_recipe.h"
-#include "millis.h"
+#include "util/millis.h"
 #include "data/localization.h"
 
 #include "modes/steps/step_switcher.h"

@@ -2,7 +2,7 @@
 
 #include "loadcell.h"
 #include "mode.h"
-#include "stopwatch.h"
+#include "util/stopwatch.h"
 #include "user_interface.h"
 #include "regression.h"
 
