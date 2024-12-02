@@ -55,6 +55,7 @@
 #define MODE_NAME_RECIPES "Rezepte"
 #define MODE_NAME_SCALE "Waage"
 #define MODE_NAME_ESPRESSO "Espresso"
+#define MODE_NAME_SETTINGS "Einstellungen"
 //////////////////////////////////////////////
 #else
 /////////////////// ENGLISH ///////////////////
@@ -111,5 +112,6 @@
 #define MODE_NAME_RECIPES "Recipes"
 #define MODE_NAME_SCALE "Scale"
 #define MODE_NAME_ESPRESSO "Espresso"
+#define MODE_NAME_SETTINGS "Settings"
 //////////////////////////////////////////////
 #endif
