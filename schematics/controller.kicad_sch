@@ -9434,7 +9434,7 @@
 			(uuid "ad44731b-ae72-4a57-9c74-b2aa21756281")
 		)
 		(instances
-			(project ""
+			(project "controller"
 				(path "/9e3381e1-622c-48be-a766-f16d62ff7bb1"
 					(reference "#PWR033")
 					(unit 1)
@@ -9494,6 +9494,15 @@
 				(hide yes)
 			)
 		)
+		(property "LCSC" "C22975"
+			(at 72.39 204.47 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "530d08f4-7613-4c03-8cf9-a83dba9a6451")
 		)
@@ -9501,7 +9510,7 @@
 			(uuid "22f10d69-47ae-4419-974f-3a254e3b0145")
 		)
 		(instances
-			(project ""
+			(project "controller"
 				(path "/9e3381e1-622c-48be-a766-f16d62ff7bb1"
 					(reference "R8")
 					(unit 1)
@@ -9567,7 +9576,7 @@
 			(uuid "efa00e70-2edb-4050-84c4-a155b5aaa35d")
 		)
 		(instances
-			(project ""
+			(project "controller"
 				(path "/9e3381e1-622c-48be-a766-f16d62ff7bb1"
 					(reference "#PWR0102")
 					(unit 1)
@@ -9628,6 +9637,15 @@
 				(hide yes)
 			)
 		)
+		(property "LCSC" "C14663"
+			(at 163.83 57.1563 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "21f820ba-4628-4f93-89e4-08de831eefe4")
 		)
@@ -9635,7 +9653,7 @@
 			(uuid "007e09ce-bde6-493e-b3b1-487e5242678e")
 		)
 		(instances
-			(project ""
+			(project "controller"
 				(path "/9e3381e1-622c-48be-a766-f16d62ff7bb1"
 					(reference "C1")
 					(unit 1)
@@ -9695,6 +9713,15 @@
 				(hide yes)
 			)
 		)
+		(property "LCSC" "C13585"
+			(at 281.94 91.44 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "57e12d7f-7804-4c4b-b1d0-03d2e35d0de8")
 		)
@@ -9702,7 +9729,7 @@
 			(uuid "a3aca2ee-53ed-40e6-babc-a9ae06ccc63d")
 		)
 		(instances
-			(project ""
+			(project "controller"
 				(path "/9e3381e1-622c-48be-a766-f16d62ff7bb1"
 					(reference "C8")
 					(unit 1)
@@ -9768,7 +9795,7 @@
 			(uuid "b1ca3eef-c079-4017-b9ff-46ebac6791d3")
 		)
 		(instances
-			(project ""
+			(project "controller"
 				(path "/9e3381e1-622c-48be-a766-f16d62ff7bb1"
 					(reference "#PWR021")
 					(unit 1)
@@ -9828,6 +9855,15 @@
 				(hide yes)
 			)
 		)
+		(property "LCSC" "C14663"
+			(at 266.7 133.35 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "4b1e7534-ac8f-4457-a544-d15593978d3c")
 		)
@@ -9835,7 +9871,7 @@
 			(uuid "09496b87-c8e1-4abb-8840-66fdb6ac7a2b")
 		)
 		(instances
-			(project ""
+			(project "controller"
 				(path "/9e3381e1-622c-48be-a766-f16d62ff7bb1"
 					(reference "C7")
 					(unit 1)
@@ -9911,7 +9947,7 @@
 			(uuid "595bab38-657f-41d1-9af5-c9e388200684")
 		)
 		(instances
-			(project ""
+			(project "controller"
 				(path "/9e3381e1-622c-48be-a766-f16d62ff7bb1"
 					(reference "J2")
 					(unit 1)
@@ -9971,6 +10007,15 @@
 				(hide yes)
 			)
 		)
+		(property "LCSC" "C14663"
+			(at 294.64 91.44 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "9a6e09af-3b66-4f37-9709-7fd42684b503")
 		)
@@ -9978,7 +10023,7 @@
 			(uuid "df13e2d7-9cee-44fb-8842-7ed0fd5045a4")
 		)
 		(instances
-			(project ""
+			(project "controller"
 				(path "/9e3381e1-622c-48be-a766-f16d62ff7bb1"
 					(reference "C9")
 					(unit 1)
@@ -10109,7 +10154,7 @@
 			(uuid "5317c455-b1bf-4129-95fd-67df0afc0792")
 		)
 		(instances
-			(project ""
+			(project "controller"
 				(path "/9e3381e1-622c-48be-a766-f16d62ff7bb1"
 					(reference "#PWR024")
 					(unit 1)
@@ -10175,7 +10220,7 @@
 			(uuid "3fef873d-cb1c-48f9-a6b1-8af59cd33c9d")
 		)
 		(instances
-			(project ""
+			(project "controller"
 				(path "/9e3381e1-622c-48be-a766-f16d62ff7bb1"
 					(reference "#PWR0104")
 					(unit 1)
@@ -10238,6 +10283,15 @@
 				(hide yes)
 			)
 		)
+		(property "LCSC" "C125086"
+			(at 102.87 175.5774 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "88ce93a5-7e35-49c1-bc7b-d273c522d20a")
 		)
@@ -10245,7 +10299,7 @@
 			(uuid "b805373d-a624-4211-b8c3-ec6d8393cc42")
 		)
 		(instances
-			(project ""
+			(project "controller"
 				(path "/9e3381e1-622c-48be-a766-f16d62ff7bb1"
 					(reference "D1")
 					(unit 1)
@@ -10300,6 +10354,15 @@
 		)
 		(property "Description" "RF Module, ESP32-D0WDQ6 SoC, Wi-Fi 802.11b/g/n, Bluetooth, BLE, 32-bit, 2.7-3.6V, onboard antenna, SMD"
 			(at 102.87 104.14 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC" "C473012"
+			(at 113.03 69.85 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10425,7 +10488,7 @@
 			(uuid "ae86fb80-e845-4f01-b029-ca78fc5824a5")
 		)
 		(instances
-			(project ""
+			(project "controller"
 				(path "/9e3381e1-622c-48be-a766-f16d62ff7bb1"
 					(reference "U1")
 					(unit 1)
@@ -10490,7 +10553,7 @@
 			(uuid "3ab2480a-9dfa-4058-b455-d1329cea82bd")
 		)
 		(instances
-			(project ""
+			(project "controller"
 				(path "/9e3381e1-622c-48be-a766-f16d62ff7bb1"
 					(reference "#FLG0103")
 					(unit 1)
@@ -10556,7 +10619,7 @@
 			(uuid "27b72262-6d9e-4908-b2dc-a3e7c853e1a3")
 		)
 		(instances
-			(project ""
+			(project "controller"
 				(path "/9e3381e1-622c-48be-a766-f16d62ff7bb1"
 					(reference "#PWR08")
 					(unit 1)
@@ -10625,7 +10688,7 @@
 			(uuid "0efb29fe-02ff-44e0-9a9c-3d39681f02a1")
 		)
 		(instances
-			(project ""
+			(project "controller"
 				(path "/9e3381e1-622c-48be-a766-f16d62ff7bb1"
 					(reference "J4")
 					(unit 1)
@@ -10691,7 +10754,7 @@
 			(uuid "98a35087-31d9-42fd-826c-db310f64fddc")
 		)
 		(instances
-			(project ""
+			(project "controller"
 				(path "/9e3381e1-622c-48be-a766-f16d62ff7bb1"
 					(reference "#PWR023")
 					(unit 1)
@@ -10753,6 +10816,15 @@
 				(hide yes)
 			)
 		)
+		(property "LCSC" "C1779"
+			(at 63.5 177.8 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "c235a1b9-7dc3-4181-a372-36fe3332aafb")
 		)
@@ -10760,7 +10832,7 @@
 			(uuid "5cdee070-4ce4-4d54-b43f-37e7b7a051eb")
 		)
 		(instances
-			(project ""
+			(project "controller"
 				(path "/9e3381e1-622c-48be-a766-f16d62ff7bb1"
 					(reference "C10")
 					(unit 1)
@@ -10830,7 +10902,7 @@
 			(uuid "5da30c9d-36c9-4410-8588-9decc0f061b5")
 		)
 		(instances
-			(project ""
+			(project "controller"
 				(path "/9e3381e1-622c-48be-a766-f16d62ff7bb1"
 					(reference "J3")
 					(unit 1)
@@ -10895,7 +10967,7 @@
 			(uuid "8560720b-66e2-429d-94c1-6c39293c10e9")
 		)
 		(instances
-			(project ""
+			(project "controller"
 				(path "/9e3381e1-622c-48be-a766-f16d62ff7bb1"
 					(reference "#PWR030")
 					(unit 1)
@@ -10958,6 +11030,15 @@
 				(hide yes)
 			)
 		)
+		(property "LCSC" "C22808"
+			(at 101.6 182.8799 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "dd461f5d-e8e4-41d7-8bda-a461ce5ba8ef")
 		)
@@ -10965,7 +11046,7 @@
 			(uuid "ee9138bf-ff12-4f50-8814-35ae9b19f803")
 		)
 		(instances
-			(project ""
+			(project "controller"
 				(path "/9e3381e1-622c-48be-a766-f16d62ff7bb1"
 					(reference "R9")
 					(unit 1)
@@ -11019,6 +11100,15 @@
 		)
 		(property "Description" "N-MOSFET transistor, gate/source/drain"
 			(at 292.1 198.12 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC" "C5364308"
+			(at 292.1 205.74 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11100,6 +11190,15 @@
 				(hide yes)
 			)
 		)
+		(property "LCSC" "C424093"
+			(at 80.01 190.5 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "b0325de7-6022-4214-a457-44ee2e2664cf")
 		)
@@ -11116,7 +11215,7 @@
 			(uuid "26222872-d1a3-40e0-a8c2-a9de5cee120e")
 		)
 		(instances
-			(project ""
+			(project "controller"
 				(path "/9e3381e1-622c-48be-a766-f16d62ff7bb1"
 					(reference "U3")
 					(unit 1)
@@ -11142,7 +11241,7 @@
 				(justify right)
 			)
 		)
-		(property "Value" "D_Schottky"
+		(property "Value" "1N5819"
 			(at 142.24 200.66 0)
 			(effects
 				(font
@@ -11185,7 +11284,7 @@
 			(uuid "d0427c35-173e-42b9-bbe3-a0ecd3768568")
 		)
 		(instances
-			(project ""
+			(project "controller"
 				(path "/9e3381e1-622c-48be-a766-f16d62ff7bb1"
 					(reference "D2")
 					(unit 1)
@@ -11247,6 +11346,15 @@
 				(hide yes)
 			)
 		)
+		(property "LCSC" "C13585"
+			(at 242.57 124.46 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "11f52b5d-9ab8-454c-8592-6ba9f0d0c662")
 		)
@@ -11254,7 +11362,7 @@
 			(uuid "ee38ab76-3d7e-4c56-8313-de0b40fb66a1")
 		)
 		(instances
-			(project ""
+			(project "controller"
 				(path "/9e3381e1-622c-48be-a766-f16d62ff7bb1"
 					(reference "C5")
 					(unit 1)
@@ -11309,6 +11417,15 @@
 		)
 		(property "Description" "Unpolarized capacitor, small symbol"
 			(at 261.62 191.77 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC" "C14663"
+			(at 256.286 190.754 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11393,7 +11510,7 @@
 			(uuid "b0b6cf14-5003-49da-bc8e-1034bf4abd6b")
 		)
 		(instances
-			(project ""
+			(project "controller"
 				(path "/9e3381e1-622c-48be-a766-f16d62ff7bb1"
 					(reference "D3")
 					(unit 1)
@@ -11459,7 +11576,7 @@
 			(uuid "8912b932-ad78-4d46-9c24-2121dd352c14")
 		)
 		(instances
-			(project ""
+			(project "controller"
 				(path "/9e3381e1-622c-48be-a766-f16d62ff7bb1"
 					(reference "#PWR038")
 					(unit 1)
@@ -11523,7 +11640,7 @@
 			)
 		)
 		(instances
-			(project ""
+			(project "controller"
 				(path "/9e3381e1-622c-48be-a766-f16d62ff7bb1"
 					(reference "H2")
 					(unit 1)
@@ -11583,6 +11700,15 @@
 				(hide yes)
 			)
 		)
+		(property "LCSC" "C22775"
+			(at 229.87 152.4 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "6ee45c03-45ea-4508-ae96-ea5579be1b1c")
 		)
@@ -11590,7 +11716,7 @@
 			(uuid "d54ef3a9-7c3b-4e7f-aa10-f7de7bb92b5e")
 		)
 		(instances
-			(project ""
+			(project "controller"
 				(path "/9e3381e1-622c-48be-a766-f16d62ff7bb1"
 					(reference "R5")
 					(unit 1)
@@ -11655,7 +11781,7 @@
 			(uuid "c16d857b-1c95-4de3-83fe-5c0e1b0ba3a0")
 		)
 		(instances
-			(project ""
+			(project "controller"
 				(path "/9e3381e1-622c-48be-a766-f16d62ff7bb1"
 					(reference "#PWR022")
 					(unit 1)
@@ -11721,7 +11847,7 @@
 			(uuid "bee157ec-56f8-4a70-a1ae-98561b58debd")
 		)
 		(instances
-			(project ""
+			(project "controller"
 				(path "/9e3381e1-622c-48be-a766-f16d62ff7bb1"
 					(reference "#PWR026")
 					(unit 1)
@@ -11787,7 +11913,7 @@
 			(uuid "a1d39912-e6db-4d8a-b2e7-076d5700d01e")
 		)
 		(instances
-			(project ""
+			(project "controller"
 				(path "/9e3381e1-622c-48be-a766-f16d62ff7bb1"
 					(reference "#PWR0105")
 					(unit 1)
@@ -11852,7 +11978,7 @@
 			(uuid "392f065e-a588-47bb-b14e-29777417e8f8")
 		)
 		(instances
-			(project ""
+			(project "controller"
 				(path "/9e3381e1-622c-48be-a766-f16d62ff7bb1"
 					(reference "#FLG0101")
 					(unit 1)
@@ -11918,7 +12044,7 @@
 			(uuid "e2d61730-2a7c-48cc-8537-e3c80eb0988d")
 		)
 		(instances
-			(project ""
+			(project "controller"
 				(path "/9e3381e1-622c-48be-a766-f16d62ff7bb1"
 					(reference "#PWR02")
 					(unit 1)
@@ -11984,7 +12110,7 @@
 			(uuid "919ac76e-3aad-47ec-9f74-b3f3d2436a31")
 		)
 		(instances
-			(project ""
+			(project "controller"
 				(path "/9e3381e1-622c-48be-a766-f16d62ff7bb1"
 					(reference "#PWR014")
 					(unit 1)
@@ -12045,6 +12171,15 @@
 				(hide yes)
 			)
 		)
+		(property "LCSC" "C13585"
+			(at 173.99 57.1563 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "d4882abe-92a7-493b-9dd3-0eaf914c0cc1")
 		)
@@ -12052,7 +12187,7 @@
 			(uuid "2b8af40b-4772-4201-841d-b6fc870b2847")
 		)
 		(instances
-			(project ""
+			(project "controller"
 				(path "/9e3381e1-622c-48be-a766-f16d62ff7bb1"
 					(reference "C2")
 					(unit 1)
@@ -12115,6 +12250,15 @@
 				(hide yes)
 			)
 		)
+		(property "LCSC" "C2593"
+			(at 160.02 180.34 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "9e353965-6dd8-44ab-8d97-1dcc68b6f639")
 		)
@@ -12125,7 +12269,7 @@
 			(uuid "244bd34e-a1ae-4d6c-b1d8-620e1d22624f")
 		)
 		(instances
-			(project ""
+			(project "controller"
 				(path "/9e3381e1-622c-48be-a766-f16d62ff7bb1"
 					(reference "Q2")
 					(unit 1)
@@ -12191,7 +12335,7 @@
 			(uuid "9f2ceb7f-7be2-489b-83d4-9cd78dbf944a")
 		)
 		(instances
-			(project ""
+			(project "controller"
 				(path "/9e3381e1-622c-48be-a766-f16d62ff7bb1"
 					(reference "#PWR010")
 					(unit 1)
@@ -12323,7 +12467,7 @@
 			(uuid "b31070b1-57e0-44e5-b859-c190eb145dda")
 		)
 		(instances
-			(project ""
+			(project "controller"
 				(path "/9e3381e1-622c-48be-a766-f16d62ff7bb1"
 					(reference "#PWR031")
 					(unit 1)
@@ -12391,7 +12535,7 @@
 			(uuid "1e8da807-a4c0-4352-aee5-3c69f9afc0b5")
 		)
 		(instances
-			(project ""
+			(project "controller"
 				(path "/9e3381e1-622c-48be-a766-f16d62ff7bb1"
 					(reference "J5")
 					(unit 1)
@@ -12458,7 +12602,7 @@
 			(uuid "e79b2666-90df-4c34-9ced-e55ed9d34219")
 		)
 		(instances
-			(project ""
+			(project "controller"
 				(path "/9e3381e1-622c-48be-a766-f16d62ff7bb1"
 					(reference "#PWR037")
 					(unit 1)
@@ -12524,7 +12668,7 @@
 			(uuid "8c760332-0800-42ae-b1c0-83d32577c43f")
 		)
 		(instances
-			(project ""
+			(project "controller"
 				(path "/9e3381e1-622c-48be-a766-f16d62ff7bb1"
 					(reference "#PWR05")
 					(unit 1)
@@ -12584,6 +12728,15 @@
 				(hide yes)
 			)
 		)
+		(property "LCSC" "C6705483"
+			(at 278.13 113.03 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "732b5626-e9ee-4577-882b-e8caeb16c4e9")
 		)
@@ -12633,7 +12786,7 @@
 			(uuid "db19855b-5164-4f51-b89b-32c1dda8c277")
 		)
 		(instances
-			(project ""
+			(project "controller"
 				(path "/9e3381e1-622c-48be-a766-f16d62ff7bb1"
 					(reference "U2")
 					(unit 1)
@@ -12701,7 +12854,7 @@
 			(uuid "f429632b-1306-4c5e-b4d4-9ffeb2f31660")
 		)
 		(instances
-			(project ""
+			(project "controller"
 				(path "/9e3381e1-622c-48be-a766-f16d62ff7bb1"
 					(reference "SW4")
 					(unit 1)
@@ -12767,7 +12920,7 @@
 			(uuid "609e09e9-d3a6-4ade-9732-8f0ecfc4b44c")
 		)
 		(instances
-			(project ""
+			(project "controller"
 				(path "/9e3381e1-622c-48be-a766-f16d62ff7bb1"
 					(reference "#PWR012")
 					(unit 1)
@@ -12834,7 +12987,7 @@
 			(uuid "262e4ffb-8411-4d00-84ff-5ef30622206e")
 		)
 		(instances
-			(project ""
+			(project "controller"
 				(path "/9e3381e1-622c-48be-a766-f16d62ff7bb1"
 					(reference "#PWR017")
 					(unit 1)
@@ -12896,6 +13049,15 @@
 				(hide yes)
 			)
 		)
+		(property "LCSC" "C25804"
+			(at 250.19 124.46 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "a52f03e9-44c4-461e-8055-fa3fc9622a3d")
 		)
@@ -12903,7 +13065,7 @@
 			(uuid "19ef0fca-02dd-41ab-b50b-8f5886600bbd")
 		)
 		(instances
-			(project ""
+			(project "controller"
 				(path "/9e3381e1-622c-48be-a766-f16d62ff7bb1"
 					(reference "R6")
 					(unit 1)
@@ -12969,7 +13131,7 @@
 			(uuid "187fbbbd-d941-41d2-a783-4a8b96d709bb")
 		)
 		(instances
-			(project ""
+			(project "controller"
 				(path "/9e3381e1-622c-48be-a766-f16d62ff7bb1"
 					(reference "#PWR0106")
 					(unit 1)
@@ -13030,6 +13192,15 @@
 				(hide yes)
 			)
 		)
+		(property "LCSC" "C13585"
+			(at 184.15 57.1563 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "435c930f-86e5-490d-8078-2f35bfa82bd1")
 		)
@@ -13037,7 +13208,7 @@
 			(uuid "f6f179f9-9f77-4ee9-9764-04b4350e28f6")
 		)
 		(instances
-			(project ""
+			(project "controller"
 				(path "/9e3381e1-622c-48be-a766-f16d62ff7bb1"
 					(reference "C3")
 					(unit 1)
@@ -13102,7 +13273,7 @@
 			(uuid "9c5bf184-278f-49f1-aa91-047c0199fd04")
 		)
 		(instances
-			(project ""
+			(project "controller"
 				(path "/9e3381e1-622c-48be-a766-f16d62ff7bb1"
 					(reference "#PWR0103")
 					(unit 1)
@@ -13168,7 +13339,7 @@
 			(uuid "6829ea6f-0701-4616-a2b1-c8983aa7dfe7")
 		)
 		(instances
-			(project ""
+			(project "controller"
 				(path "/9e3381e1-622c-48be-a766-f16d62ff7bb1"
 					(reference "#PWR06")
 					(unit 1)
@@ -13236,7 +13407,7 @@
 			(uuid "2a38c472-e795-4d89-8d83-7a27d1ff9f62")
 		)
 		(instances
-			(project ""
+			(project "controller"
 				(path "/9e3381e1-622c-48be-a766-f16d62ff7bb1"
 					(reference "SW2")
 					(unit 1)
@@ -13302,7 +13473,7 @@
 			(uuid "c27ba650-46ad-404a-b7b2-9a69723db71a")
 		)
 		(instances
-			(project ""
+			(project "controller"
 				(path "/9e3381e1-622c-48be-a766-f16d62ff7bb1"
 					(reference "#PWR015")
 					(unit 1)
@@ -13385,7 +13556,7 @@
 			(uuid "a0fa8f02-35e4-4246-8e26-73e969442a5a")
 		)
 		(instances
-			(project ""
+			(project "controller"
 				(path "/9e3381e1-622c-48be-a766-f16d62ff7bb1"
 					(reference "P1")
 					(unit 1)
@@ -13451,7 +13622,7 @@
 			(uuid "dea09d63-9cb0-412a-a0b6-67a5bdb58bf1")
 		)
 		(instances
-			(project ""
+			(project "controller"
 				(path "/9e3381e1-622c-48be-a766-f16d62ff7bb1"
 					(reference "#PWR019")
 					(unit 1)
@@ -13513,6 +13684,15 @@
 				(hide yes)
 			)
 		)
+		(property "LCSC" "C25819"
+			(at 135.89 187.96 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "ddee1673-5144-42d3-a865-c25386d275ad")
 		)
@@ -13520,7 +13700,7 @@
 			(uuid "41da1db3-c0eb-4995-8b21-235a2294cb9f")
 		)
 		(instances
-			(project ""
+			(project "controller"
 				(path "/9e3381e1-622c-48be-a766-f16d62ff7bb1"
 					(reference "R10")
 					(unit 1)
@@ -13585,7 +13765,7 @@
 			(uuid "3ec541c2-6fd5-4046-b68d-f48525d8e1c5")
 		)
 		(instances
-			(project ""
+			(project "controller"
 				(path "/9e3381e1-622c-48be-a766-f16d62ff7bb1"
 					(reference "#FLG0104")
 					(unit 1)
@@ -13711,6 +13891,15 @@
 				(hide yes)
 			)
 		)
+		(property "LCSC" "C28323"
+			(at 233.68 201.93 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "a231531c-2662-43ab-a73b-846b2586a45a")
 		)
@@ -13718,7 +13907,7 @@
 			(uuid "d99911bf-d9d1-4612-b4bb-099bbbef8bc7")
 		)
 		(instances
-			(project ""
+			(project "controller"
 				(path "/9e3381e1-622c-48be-a766-f16d62ff7bb1"
 					(reference "C13")
 					(unit 1)
@@ -13781,6 +13970,15 @@
 				(hide yes)
 			)
 		)
+		(property "LCSC" "C1779"
+			(at 110.49 199.3962 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "378d42d9-471b-4a50-b95f-75f2abd2802d")
 		)
@@ -13788,7 +13986,7 @@
 			(uuid "435e96b8-4c75-4d16-81d4-ee2d5d965759")
 		)
 		(instances
-			(project ""
+			(project "controller"
 				(path "/9e3381e1-622c-48be-a766-f16d62ff7bb1"
 					(reference "C11")
 					(unit 1)
@@ -13855,7 +14053,7 @@
 			(uuid "1d61836e-42c9-43ca-b7ff-1ee2da37339e")
 		)
 		(instances
-			(project ""
+			(project "controller"
 				(path "/9e3381e1-622c-48be-a766-f16d62ff7bb1"
 					(reference "#PWR018")
 					(unit 1)
@@ -13917,6 +14115,15 @@
 				(hide yes)
 			)
 		)
+		(property "LCSC" "C25819"
+			(at 80.01 240.0299 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "5e3c205f-83a1-49d1-941b-77e7e4a74566")
 		)
@@ -13924,7 +14131,7 @@
 			(uuid "34df0802-9dc0-4c61-8b43-9aa332d82304")
 		)
 		(instances
-			(project ""
+			(project "controller"
 				(path "/9e3381e1-622c-48be-a766-f16d62ff7bb1"
 					(reference "R11")
 					(unit 1)
@@ -13990,7 +14197,7 @@
 			(uuid "bc3c3ca6-21f6-4025-95ec-6b9b3f894a57")
 		)
 		(instances
-			(project ""
+			(project "controller"
 				(path "/9e3381e1-622c-48be-a766-f16d62ff7bb1"
 					(reference "#PWR07")
 					(unit 1)
@@ -14066,7 +14273,7 @@
 			(uuid "96ce8b62-1a19-4a03-a482-2d9be4d48775")
 		)
 		(instances
-			(project ""
+			(project "controller"
 				(path "/9e3381e1-622c-48be-a766-f16d62ff7bb1"
 					(reference "SW3")
 					(unit 1)
@@ -14132,7 +14339,7 @@
 			(uuid "24596db5-64bd-43ce-adf6-2f0f8a8cc635")
 		)
 		(instances
-			(project ""
+			(project "controller"
 				(path "/9e3381e1-622c-48be-a766-f16d62ff7bb1"
 					(reference "#PWR035")
 					(unit 1)
@@ -14200,7 +14407,7 @@
 			(uuid "99be299e-5cc2-446c-a89c-16d1fd4412ba")
 		)
 		(instances
-			(project ""
+			(project "controller"
 				(path "/9e3381e1-622c-48be-a766-f16d62ff7bb1"
 					(reference "SW1")
 					(unit 1)
@@ -14262,6 +14469,15 @@
 				(hide yes)
 			)
 		)
+		(property "LCSC" "C14663"
+			(at 229.87 124.46 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "7b0ae338-57f3-43f9-a6ad-4a13b2be262a")
 		)
@@ -14269,7 +14485,7 @@
 			(uuid "0569525f-22e0-48dc-b279-9d3a1853a230")
 		)
 		(instances
-			(project ""
+			(project "controller"
 				(path "/9e3381e1-622c-48be-a766-f16d62ff7bb1"
 					(reference "C4")
 					(unit 1)
@@ -14329,6 +14545,15 @@
 				(hide yes)
 			)
 		)
+		(property "LCSC" "C23186"
+			(at 138.43 247.65 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "6ebcfcac-c651-408d-879c-dff7e67e2c1b")
 		)
@@ -14336,7 +14561,7 @@
 			(uuid "8889ee6a-0262-408a-896d-3b1a2974f957")
 		)
 		(instances
-			(project ""
+			(project "controller"
 				(path "/9e3381e1-622c-48be-a766-f16d62ff7bb1"
 					(reference "R14")
 					(unit 1)
@@ -14396,6 +14621,15 @@
 				(hide yes)
 			)
 		)
+		(property "LCSC" "C22775"
+			(at 229.87 147.32 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "ef83cdea-3ff5-4fd0-838e-85e8c0ad79dc")
 		)
@@ -14403,7 +14637,7 @@
 			(uuid "1b55c1e9-ee5c-4a15-9e9c-12f5f53c5357")
 		)
 		(instances
-			(project ""
+			(project "controller"
 				(path "/9e3381e1-622c-48be-a766-f16d62ff7bb1"
 					(reference "R4")
 					(unit 1)
@@ -14469,7 +14703,7 @@
 			(uuid "09a42783-e59d-441c-82ee-dac24d5aa89d")
 		)
 		(instances
-			(project ""
+			(project "controller"
 				(path "/9e3381e1-622c-48be-a766-f16d62ff7bb1"
 					(reference "#PWR016")
 					(unit 1)
@@ -14535,7 +14769,7 @@
 			(uuid "f7b95469-0518-4e6c-b9c8-9eb387cb9db5")
 		)
 		(instances
-			(project ""
+			(project "controller"
 				(path "/9e3381e1-622c-48be-a766-f16d62ff7bb1"
 					(reference "#PWR013")
 					(unit 1)
@@ -14666,6 +14900,15 @@
 				(hide yes)
 			)
 		)
+		(property "LCSC" "C78864"
+			(at 256.54 105.4099 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "8d21be65-03d1-4a6f-90ed-1dd4165d06d6")
 		)
@@ -14676,7 +14919,7 @@
 			(uuid "a854a555-eeb8-4cc8-9ea0-929726a67615")
 		)
 		(instances
-			(project ""
+			(project "controller"
 				(path "/9e3381e1-622c-48be-a766-f16d62ff7bb1"
 					(reference "Q1")
 					(unit 1)
@@ -14738,6 +14981,15 @@
 				(hide yes)
 			)
 		)
+		(property "LCSC" "C25981"
+			(at 250.19 132.08 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "7c1d849f-3a1c-4793-8957-30352923a697")
 		)
@@ -14745,7 +14997,7 @@
 			(uuid "6307bc55-7083-4aa1-a828-29bad4b087d0")
 		)
 		(instances
-			(project ""
+			(project "controller"
 				(path "/9e3381e1-622c-48be-a766-f16d62ff7bb1"
 					(reference "R7")
 					(unit 1)
@@ -14808,6 +15060,15 @@
 				(hide yes)
 			)
 		)
+		(property "LCSC" "C25804"
+			(at 124.46 67.3099 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "2ef40f73-4f2d-469e-9367-fd9ab2b13d4d")
 		)
@@ -14815,7 +15076,7 @@
 			(uuid "b22f790a-f931-41bf-b87a-841f7516c7c5")
 		)
 		(instances
-			(project ""
+			(project "controller"
 				(path "/9e3381e1-622c-48be-a766-f16d62ff7bb1"
 					(reference "R2")
 					(unit 1)
@@ -14871,6 +15132,15 @@
 		)
 		(property "Description" "Resistor"
 			(at 312.42 193.04 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC" "C21190"
+			(at 314.96 191.7699 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -14947,6 +15217,15 @@
 				(hide yes)
 			)
 		)
+		(property "LCSC" "C25819"
+			(at 80.01 251.4599 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "d0d87a42-0441-426e-9444-92f7195f3895")
 		)
@@ -14954,7 +15233,7 @@
 			(uuid "41745038-9617-4ddb-847d-65bc5c870551")
 		)
 		(instances
-			(project ""
+			(project "controller"
 				(path "/9e3381e1-622c-48be-a766-f16d62ff7bb1"
 					(reference "R12")
 					(unit 1)
@@ -15017,6 +15296,15 @@
 				(hide yes)
 			)
 		)
+		(property "LCSC" "C25804"
+			(at 82.55 67.3099 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "9a976081-6997-48b7-8196-fb33d384864d")
 		)
@@ -15024,7 +15312,7 @@
 			(uuid "26290398-a397-43f8-a50c-18f8288ac24d")
 		)
 		(instances
-			(project ""
+			(project "controller"
 				(path "/9e3381e1-622c-48be-a766-f16d62ff7bb1"
 					(reference "R1")
 					(unit 1)
@@ -15101,7 +15389,7 @@
 			(uuid "54124aa5-dfa1-4f4b-833a-8c7d3d164849")
 		)
 		(instances
-			(project ""
+			(project "controller"
 				(path "/9e3381e1-622c-48be-a766-f16d62ff7bb1"
 					(reference "J1")
 					(unit 1)
@@ -15167,7 +15455,7 @@
 			(uuid "399a23cd-41cb-4a80-a786-2f9a77dbdec0")
 		)
 		(instances
-			(project ""
+			(project "controller"
 				(path "/9e3381e1-622c-48be-a766-f16d62ff7bb1"
 					(reference "#PWR034")
 					(unit 1)
@@ -15228,6 +15516,15 @@
 				(hide yes)
 			)
 		)
+		(property "LCSC" "C51118"
+			(at 223.52 187.96 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "610ddc38-0a70-4684-ae4a-9bb312764a37")
 		)
@@ -15244,7 +15541,7 @@
 			(uuid "f7f5693e-2def-4103-b838-818b32f22268")
 		)
 		(instances
-			(project ""
+			(project "controller"
 				(path "/9e3381e1-622c-48be-a766-f16d62ff7bb1"
 					(reference "U4")
 					(unit 1)
@@ -15310,7 +15607,7 @@
 			(uuid "207ba8f2-620a-432c-9fa6-e5cc6e372f78")
 		)
 		(instances
-			(project ""
+			(project "controller"
 				(path "/9e3381e1-622c-48be-a766-f16d62ff7bb1"
 					(reference "#PWR0107")
 					(unit 1)
@@ -15376,7 +15673,7 @@
 			(uuid "6f5adc97-9861-4ba7-8653-d1ec80cec47c")
 		)
 		(instances
-			(project ""
+			(project "controller"
 				(path "/9e3381e1-622c-48be-a766-f16d62ff7bb1"
 					(reference "#PWR03")
 					(unit 1)
@@ -15439,6 +15736,15 @@
 				(hide yes)
 			)
 		)
+		(property "LCSC" "C14663"
+			(at 92.71 251.4662 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "cb6986db-2a64-4249-a551-c9f8291004b3")
 		)
@@ -15446,7 +15752,7 @@
 			(uuid "4c1f3942-045a-4a0f-9300-5aae61a13d02")
 		)
 		(instances
-			(project ""
+			(project "controller"
 				(path "/9e3381e1-622c-48be-a766-f16d62ff7bb1"
 					(reference "C14")
 					(unit 1)
@@ -15513,7 +15819,7 @@
 			(uuid "5c0a9423-70ab-4a80-b368-190137ea33c4")
 		)
 		(instances
-			(project ""
+			(project "controller"
 				(path "/9e3381e1-622c-48be-a766-f16d62ff7bb1"
 					(reference "#PWR01")
 					(unit 1)
@@ -15579,7 +15885,7 @@
 			(uuid "98e18dd2-576c-46d4-ba71-5a5675f50656")
 		)
 		(instances
-			(project ""
+			(project "controller"
 				(path "/9e3381e1-622c-48be-a766-f16d62ff7bb1"
 					(reference "#PWR029")
 					(unit 1)
@@ -15633,6 +15939,15 @@
 		)
 		(property "Description" ""
 			(at 279.4 189.23 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC" "C18164398"
+			(at 279.4 180.34 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -15722,6 +16037,15 @@
 				(hide yes)
 			)
 		)
+		(property "LCSC" "C22775"
+			(at 270.51 179.0699 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "dc7cc358-4b13-46b9-b8a8-7808d0b7e589")
 		)
@@ -15795,7 +16119,7 @@
 			(uuid "1095df82-8f5e-4b8a-9f81-f952952ef033")
 		)
 		(instances
-			(project ""
+			(project "controller"
 				(path "/9e3381e1-622c-48be-a766-f16d62ff7bb1"
 					(reference "#PWR025")
 					(unit 1)
@@ -15861,7 +16185,7 @@
 			(uuid "c598e60e-ad0e-4e3f-82f8-fe00617ef81b")
 		)
 		(instances
-			(project ""
+			(project "controller"
 				(path "/9e3381e1-622c-48be-a766-f16d62ff7bb1"
 					(reference "#PWR036")
 					(unit 1)
@@ -15928,7 +16252,7 @@
 			(uuid "8d172932-ae85-49a9-8829-9631187355c2")
 		)
 		(instances
-			(project ""
+			(project "controller"
 				(path "/9e3381e1-622c-48be-a766-f16d62ff7bb1"
 					(reference "#PWR020")
 					(unit 1)
@@ -15994,7 +16318,7 @@
 			(uuid "81917362-d19d-4d6f-b891-f9ac1e4fa741")
 		)
 		(instances
-			(project ""
+			(project "controller"
 				(path "/9e3381e1-622c-48be-a766-f16d62ff7bb1"
 					(reference "#PWR032")
 					(unit 1)
@@ -16060,7 +16384,7 @@
 			(uuid "7572c47f-2dc7-4968-949c-4e2bdb5f0bf4")
 		)
 		(instances
-			(project ""
+			(project "controller"
 				(path "/9e3381e1-622c-48be-a766-f16d62ff7bb1"
 					(reference "#PWR041")
 					(unit 1)
@@ -16126,7 +16450,7 @@
 			(uuid "2e25acd1-df5a-4749-ae67-ea769222d49b")
 		)
 		(instances
-			(project ""
+			(project "controller"
 				(path "/9e3381e1-622c-48be-a766-f16d62ff7bb1"
 					(reference "#PWR04")
 					(unit 1)
@@ -16181,6 +16505,15 @@
 		)
 		(property "Description" "N-MOSFET transistor, gate/source/drain"
 			(at 303.53 198.12 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC" "C5364308"
+			(at 303.53 205.74 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -16258,6 +16591,15 @@
 				(hide yes)
 			)
 		)
+		(property "LCSC" "C28323"
+			(at 201.93 201.93 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "44e5d143-985b-473f-8e11-488b349a479c")
 		)
@@ -16265,7 +16607,7 @@
 			(uuid "13775a20-081a-406a-9182-d5f167fb9eb3")
 		)
 		(instances
-			(project ""
+			(project "controller"
 				(path "/9e3381e1-622c-48be-a766-f16d62ff7bb1"
 					(reference "C12")
 					(unit 1)
@@ -16396,7 +16738,7 @@
 			(uuid "7ad68264-06b9-45cc-9bc9-1c02019e042d")
 		)
 		(instances
-			(project ""
+			(project "controller"
 				(path "/9e3381e1-622c-48be-a766-f16d62ff7bb1"
 					(reference "#PWR09")
 					(unit 1)
@@ -16462,7 +16804,7 @@
 			(uuid "076e9674-4796-404a-8b5e-9a5d942e44e4")
 		)
 		(instances
-			(project ""
+			(project "controller"
 				(path "/9e3381e1-622c-48be-a766-f16d62ff7bb1"
 					(reference "#PWR011")
 					(unit 1)
@@ -16528,7 +16870,7 @@
 			(uuid "2bf21f83-b0e1-423d-bc53-3956a45c5064")
 		)
 		(instances
-			(project ""
+			(project "controller"
 				(path "/9e3381e1-622c-48be-a766-f16d62ff7bb1"
 					(reference "#PWR027")
 					(unit 1)
@@ -16591,6 +16933,15 @@
 				(hide yes)
 			)
 		)
+		(property "LCSC" "C14663"
+			(at 264.16 146.0562 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "1d707398-1c17-40c6-8985-6bbc7fdd1613")
 		)
@@ -16598,7 +16949,7 @@
 			(uuid "0200da19-4280-42a6-aa26-31f5a22927de")
 		)
 		(instances
-			(project ""
+			(project "controller"
 				(path "/9e3381e1-622c-48be-a766-f16d62ff7bb1"
 					(reference "C6")
 					(unit 1)
@@ -16662,7 +17013,7 @@
 			)
 		)
 		(instances
-			(project ""
+			(project "controller"
 				(path "/9e3381e1-622c-48be-a766-f16d62ff7bb1"
 					(reference "H1")
 					(unit 1)
@@ -16722,6 +17073,15 @@
 				(hide yes)
 			)
 		)
+		(property "LCSC" "C23186"
+			(at 138.43 238.76 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "8c67a04f-9398-444a-936d-22585583bc1e")
 		)
@@ -16729,7 +17089,7 @@
 			(uuid "ede7cd4c-122d-4eaf-976d-e5a1af2d3991")
 		)
 		(instances
-			(project ""
+			(project "controller"
 				(path "/9e3381e1-622c-48be-a766-f16d62ff7bb1"
 					(reference "R13")
 					(unit 1)
@@ -16799,7 +17159,7 @@
 			(uuid "4c3989ce-3644-4e91-9012-90a8b0cd316c")
 		)
 		(instances
-			(project ""
+			(project "controller"
 				(path "/9e3381e1-622c-48be-a766-f16d62ff7bb1"
 					(reference "BZ1")
 					(unit 1)
@@ -16865,7 +17225,7 @@
 			(uuid "409ad3f7-f22e-4154-9bf1-91ec7cc8a411")
 		)
 		(instances
-			(project ""
+			(project "controller"
 				(path "/9e3381e1-622c-48be-a766-f16d62ff7bb1"
 					(reference "#PWR028")
 					(unit 1)
