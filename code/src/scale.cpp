@@ -1,28 +1,29 @@
 #include <cmath>
 
-#include "loadcell.h"
+#include "scale.h"
 #include "millis.h"
+#include "loadcell.h"
 
 DefaultWeightSensor::~DefaultWeightSensor()
 {
     delete ringBuffer;
 }
 
-DefaultWeightSensor::DefaultWeightSensor(LoadCell &loadCell)
-    : loadCell(loadCell), ringBuffer(new RingBuffer<long>(1)) {}
+DefaultWeightSensor::DefaultWeightSensor()
+    : ringBuffer(new RingBuffer<long>(1)) {}
 
 void DefaultWeightSensor::begin()
 {
-    loadCell.begin();
+    LoadCell::begin();
 }
 
 void DefaultWeightSensor::update()
 {
     newWeight = false;
 
-    if (loadCell.isReady())
+    if (LoadCell::isReady())
     {
-        ringBuffer->push(loadCell.read());
+        ringBuffer->push(LoadCell::read());
         newWeight = true;
 
         float passedSeconds = (now() - lastWeightTime) / 1000.0;

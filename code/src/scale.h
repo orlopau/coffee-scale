@@ -3,15 +3,6 @@
 #include "stdint.h"
 #include "ring_buffer.h"
 
-class LoadCell
-{
-public:
-    virtual ~LoadCell() {}
-    virtual void begin() = 0;
-    virtual long read() = 0;
-    virtual bool isReady() = 0;
-};
-
 class WeightSensor
 {
 public:
@@ -50,7 +41,7 @@ class DefaultWeightSensor : public WeightSensor
 {
 public:
     ~DefaultWeightSensor() override;
-    DefaultWeightSensor(LoadCell &loadCell);
+    DefaultWeightSensor();
     void begin() override;
     void update() override;
     float getWeight() override;
@@ -64,7 +55,6 @@ public:
 private:
     void updateAveraging(long lastWeight, long newWeight);
 
-    LoadCell &loadCell;
     float weight = 0;
     float scale = 1;
     long offset = 0;

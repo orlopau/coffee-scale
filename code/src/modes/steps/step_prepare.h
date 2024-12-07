@@ -2,7 +2,7 @@
 
 #include "step.h"
 #include "user_interface.h"
-#include "loadcell.h"
+#include "scale.h"
 
 class RecipePrepare : public RecipeStep
 {

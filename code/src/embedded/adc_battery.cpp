@@ -1,42 +1,68 @@
 #ifndef NATIVE
 
-#include "adc_battery.h"
 #include "Arduino.h"
+#include "battery.h"
+#include "constants.h"
 
-ADCBattery::ADCBattery(unsigned int pinAdc, unsigned int pinState, float multiplier, float offset, float min, float max)
-    : pinAdc(pinAdc), pinState(pinState), multiplier(multiplier), offset(offset), min(min), max(max)
+namespace Battery
 {
-    pinMode(pinState, INPUT_PULLUP);
-    pinMode(pinAdc, INPUT);
-}
+    static constexpr float multiplier = 2 * 0.996116504854369;
+    static constexpr float offset = 0;
+    static constexpr float min = 3;
+    static constexpr float max = 4.2;
 
-float ADCBattery::getVoltage()
-{
-    double mV = analogReadMilliVolts(pinAdc);
-    // reading = -0.000000000000016 * pow(reading, 4) + 0.000000000118171 * pow(reading, 3) - 0.000000301211691 * pow(reading, 2) + 0.001109019271794 * reading + 0.034143524634089;
-    return (mV * multiplier) / 1000 + offset;
-}
+    static bool isInit = false;
 
-float ADCBattery::getPercentage()
-{
-    float voltage = getVoltage();
-    if (voltage > max)
+    void init()
     {
-        return 100;
+        pinMode(PIN_BAT_CHARGE_STATUS, INPUT_PULLUP);
+        pinMode(PIN_BAT_ADC, INPUT);
+        isInit = true;
     }
-    else if (voltage < min)
-    {
-        return 0;
-    }
-    else
-    {
-        return ((voltage - min) / (max - min)) * 100;
-    }
-}
 
-bool ADCBattery::isCharging()
-{
-    return digitalRead(pinState) == LOW;
+    float getVoltage()
+    {
+        if (!isInit)
+        {
+            return -1.0f;
+        }
+        double mV = analogReadMilliVolts(PIN_BAT_ADC);
+        // reading = -0.000000000000016 * pow(reading, 4) + 0.000000000118171 * pow(reading, 3) - 0.000000301211691 * pow(reading, 2) +
+        // 0.001109019271794 * reading + 0.034143524634089;
+        return (mV * multiplier) / 1000 + offset;
+    }
+
+    float getPercentage()
+    {
+        if (!isInit)
+        {
+            return -1.0f;
+        }
+
+        float voltage = getVoltage();
+        if (voltage > max)
+        {
+            return 100;
+        }
+        else if (voltage < min)
+        {
+            return 0;
+        }
+        else
+        {
+            return ((voltage - min) / (max - min)) * 100;
+        }
+    }
+
+    bool isCharging()
+    {
+        if (!isInit)
+        {
+            return false;
+        }
+
+        return digitalRead(PIN_BAT_CHARGE_STATUS) == LOW;
+    }
 }
 
 #endif

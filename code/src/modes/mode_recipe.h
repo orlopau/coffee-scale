@@ -3,7 +3,7 @@
 #include "mode.h"
 #include "recipe.h"
 #include "modes/steps/step.h"
-#include "loadcell.h"
+#include "scale.h"
 #include "user_interface.h"
 
 class ModeRecipes : public Mode

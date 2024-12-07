@@ -1,5 +1,5 @@
 #include "modes/mode_scale.h"
-#include "loadcell.h"
+#include "scale.h"
 #include "user_interface.h"
 #include "data/localization.h"
 

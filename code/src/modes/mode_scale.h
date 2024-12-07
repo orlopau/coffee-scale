@@ -1,7 +1,7 @@
 #pragma once
 
 #include "mode.h"
-#include "loadcell.h"
+#include "scale.h"
 #include "user_interface.h"
 #include "stopwatch.h"
 

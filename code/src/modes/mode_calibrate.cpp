@@ -1,11 +1,12 @@
 #include "mode_calibrate.h"
 #include "logger.h"
 #include "data/localization.h"
+#include "loadcell.h"
 
 #define TAG "MODE-CAL"
 
-ModeCalibration::ModeCalibration(LoadCell &loadCell, UserInput &buttons, Display &display, Stopwatch &stopwatch, void (*saveScaleFnc)(float))
-    : loadCell(loadCell), buttons(buttons), display(display), stopwatch(stopwatch),
+ModeCalibration::ModeCalibration(UserInput &buttons, Display &display, Stopwatch &stopwatch, void (*saveScaleFnc)(float))
+    : buttons(buttons), display(display), stopwatch(stopwatch),
       calibrationStep(CalibrationStep::BEGIN), saveScaleFnc(saveScaleFnc) {}
 
 void ModeCalibration::update()
@@ -21,9 +22,9 @@ void ModeCalibration::update()
         sumMeasurements = 0;
         numMeasurements = 0;
 
-        if (loadCell.isReady())
+        if (LoadCell::isReady())
         {
-            tare = loadCell.read();
+            tare = LoadCell::read();
         }
 
         if (buttons.getEncoderClick() == ClickType::SINGLE)
@@ -41,9 +42,9 @@ void ModeCalibration::update()
         break;
     case CalibrationStep::CALIBRATING:
         display.text("Calibrating...");
-        if (loadCell.isReady())
+        if (LoadCell::isReady())
         {
-            sumMeasurements += static_cast<unsigned long>(loadCell.read());
+            sumMeasurements += static_cast<unsigned long>(LoadCell::read());
             numMeasurements++;
         }
 

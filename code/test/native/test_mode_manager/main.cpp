@@ -27,7 +27,6 @@ public:
     bool switchable = true;
 };
 
-MockBattery *battery;
 MockDisplay *display;
 MockButtons *input;
 ModeManager *modeManager;
@@ -36,7 +35,6 @@ MockMode *mockModes[3];
 
 void setUp(void)
 {
-    battery = new MockBattery();
     display = new MockDisplay();
     input = new MockButtons();
     modes[0] = new MockMode("Mock Mode 1");
@@ -45,12 +43,11 @@ void setUp(void)
     mockModes[0] = (MockMode *)modes[0];
     mockModes[1] = (MockMode *)modes[1];
     mockModes[2] = (MockMode *)modes[2];
-    modeManager = new ModeManager(modes, 3, *display, *input, *battery);
+    modeManager = new ModeManager(modes, 3, *display, *input);
 }
 
 void tearDown(void)
 {
-    delete battery;
     delete display;
     delete input;
     delete modeManager;

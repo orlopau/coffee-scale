@@ -1,19 +1,11 @@
 #pragma once
 
 #include "battery.h"
-#include "loadcell.h"
+#include "scale.h"
 #include "millis.h"
 #include "user_interface.h"
 #include <math.h>
 #include <string.h>
-
-class MockBattery : public Battery
-{
-public:
-    float getVoltage() { return 4.2; };
-    float getPercentage() { return 100; };
-    bool isCharging() { return false; };
-};
 
 class MockWeightSensor : public WeightSensor
 {

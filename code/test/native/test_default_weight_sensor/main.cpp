@@ -2,53 +2,35 @@
 
 #include "millis.h"
 #include "button.h"
-#include "loadcell.h"
-
-class MockLoadCell : public LoadCell
-{
-public:
-    void begin() override{};
-    long read() override
-    {
-        return value;
-    }
-    bool isReady() override
-    {
-        return ready;
-    }
-    long value = 0;
-    bool ready = true;
-};
+#include "scale.h"
+#include "mock/mock_loadcell.h"
 
 DefaultWeightSensor *weightSensor;
-MockLoadCell *loadCell;
 
 void setUp(void)
 {
-    loadCell = new MockLoadCell();
-    weightSensor = new DefaultWeightSensor(*loadCell);
+    weightSensor = new DefaultWeightSensor();
 }
 
 void tearDown(void)
 {
-    delete loadCell;
     delete weightSensor;
 }
 
 void test_get_weight(void)
 {
-    loadCell->value = 100;
-    loadCell->ready = true;
+    LoadCell::value = 100;
+    LoadCell::ready = true;
     weightSensor->update();
     TEST_ASSERT_EQUAL_FLOAT(100, weightSensor->getWeight());
 }
 
 void test_new_weight(void)
 {
-    loadCell->value = 100;
-    loadCell->ready = true;
+    LoadCell::value = 100;
+    LoadCell::ready = true;
     weightSensor->update();
-    loadCell->ready = false;
+    LoadCell::ready = false;
 
     TEST_ASSERT_TRUE(weightSensor->isNewWeight());
     TEST_ASSERT_EQUAL_FLOAT(100, weightSensor->getWeight());
@@ -60,10 +42,10 @@ void test_new_weight(void)
 
 void setWeight(long weight)
 {
-    loadCell->value = weight;
-    loadCell->ready = true;
+    LoadCell::value = weight;
+    LoadCell::ready = true;
     weightSensor->update();
-    loadCell->ready = false;
+    LoadCell::ready = false;
 }
 
 void test_weight_averaging(void)

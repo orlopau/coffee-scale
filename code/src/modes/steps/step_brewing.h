@@ -1,6 +1,6 @@
 #pragma once
 
-#include "loadcell.h"
+#include "scale.h"
 #include "step.h"
 #include "user_interface.h"
 

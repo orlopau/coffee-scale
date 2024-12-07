@@ -1,8 +1,9 @@
 #include "mode_manager.h"
 #include "millis.h"
+#include "battery.h"
 
-ModeManager::ModeManager(Mode *modes[], const int modeCount, Display &display, UserInput &input, Battery &battery)
-    : modes(modes), modeCount(modeCount), currentMode(0), inModeChange(false), display(display), input(input), battery(battery),
+ModeManager::ModeManager(Mode *modes[], const int modeCount, Display &display, UserInput &input)
+    : modes(modes), modeCount(modeCount), currentMode(0), inModeChange(false), display(display), input(input),
       lastBatteryTime(0)
 {
 }
@@ -25,11 +26,11 @@ void ModeManager::update()
         if (now() > lastBatteryTime + BATTERY_UPDATE_INTERVAL || lastBatteryTime == 0)
         {
             lastBatteryTime = now();
-            lastVoltage = battery.getVoltage();
-            lastPercentage = battery.getPercentage();
+            lastVoltage = Battery::getVoltage();
+            lastPercentage = Battery::getPercentage();
         }
 
-        display.modeSwitcher(modes[currentMode]->getName(), currentMode, modeCount, lastVoltage, lastPercentage, battery.isCharging());
+        display.modeSwitcher(modes[currentMode]->getName(), currentMode, modeCount, lastVoltage, lastPercentage, Battery::isCharging());
 
         if (input.getEncoderClick() == ClickType::SINGLE)
         {
