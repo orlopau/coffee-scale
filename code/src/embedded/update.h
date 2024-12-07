@@ -4,7 +4,7 @@
 
 namespace Updater
 {
-    void update_firmware(Display &display, UserInput &input);
+    void update_firmware(Display &display);
 }
 
 #endif

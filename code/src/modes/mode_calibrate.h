@@ -1,7 +1,7 @@
 #pragma once
 
 #include "scale.h"
-#include "user_interface.h"
+#include "display.h"
 #include "stopwatch.h"
 #include "mode.h"
 
@@ -11,7 +11,7 @@
 class ModeCalibration : public Mode
 {
 public:
-    ModeCalibration(UserInput &buttons, Display &display, Stopwatch &stopwatch, void (*saveScaleFnc)(float));
+    ModeCalibration(Display &display, Stopwatch &stopwatch, void (*saveScaleFnc)(float));
     ~ModeCalibration(){};
     void update();
     const char* getName();
@@ -26,7 +26,6 @@ private:
         END
     };
 
-    UserInput &buttons;
     Display &display;
     Stopwatch &stopwatch;
     void (*saveScaleFnc)(float);

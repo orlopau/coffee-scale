@@ -116,5 +116,8 @@
         "geometry": "cpp",
         "forward_list": "cpp",
         "regex": "cpp"
-    }
+    },
+    "java.project.sourcePaths": [
+        "test/native"
+    ]
 }

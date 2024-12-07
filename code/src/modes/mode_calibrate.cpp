@@ -2,11 +2,12 @@
 #include "logger.h"
 #include "data/localization.h"
 #include "loadcell.h"
+#include "interface.h"
 
 #define TAG "MODE-CAL"
 
-ModeCalibration::ModeCalibration(UserInput &buttons, Display &display, Stopwatch &stopwatch, void (*saveScaleFnc)(float))
-    : buttons(buttons), display(display), stopwatch(stopwatch),
+ModeCalibration::ModeCalibration(Display &display, Stopwatch &stopwatch, void (*saveScaleFnc)(float))
+    : display(display), stopwatch(stopwatch),
       calibrationStep(CalibrationStep::BEGIN), saveScaleFnc(saveScaleFnc) {}
 
 void ModeCalibration::update()
@@ -27,7 +28,7 @@ void ModeCalibration::update()
             tare = LoadCell::read();
         }
 
-        if (buttons.getEncoderClick() == ClickType::SINGLE)
+        if (Interface::getEncoderClick() == ClickType::SINGLE)
         {
             LOGI(TAG, "Tare: %ld\n", tare);
             calibrationStep = CalibrationStep::ADD_WEIGHT;
@@ -35,7 +36,7 @@ void ModeCalibration::update()
         break;
     case CalibrationStep::ADD_WEIGHT:
         display.text("Add weight to scale.\n\nClick to continue!");
-        if (buttons.getEncoderClick() == ClickType::SINGLE)
+        if (Interface::getEncoderClick() == ClickType::SINGLE)
         {
             calibrationStep = CalibrationStep::CALIBRATING;
         }

@@ -1,13 +1,14 @@
 #include "step_switcher.h"
 #include "data/localization.h"
+#include "interface.h"
 
 RecipeSwitcherStep::~RecipeSwitcherStep()
 {
     delete[] recipeSwitcherEntries;
 }
 
-RecipeSwitcherStep::RecipeSwitcherStep(RecipeStepState &state, Display &display, UserInput &input, const Recipe recipes[], const uint8_t recipeCount)
-    : state(state), display(display), input(input), recipes(recipes), recipeCount(recipeCount), recipeIndex(0)
+RecipeSwitcherStep::RecipeSwitcherStep(RecipeStepState &state, Display &display, const Recipe recipes[], const uint8_t recipeCount)
+    : state(state), display(display), recipes(recipes), recipeCount(recipeCount), recipeIndex(0)
 {
     recipeSwitcherEntries = new const char *[recipeCount];
     for (uint8_t i = 0; i < recipeCount; i++)
@@ -18,7 +19,7 @@ RecipeSwitcherStep::RecipeSwitcherStep(RecipeStepState &state, Display &display,
 
 void RecipeSwitcherStep::update()
 {
-    int16_t change = static_cast<int16_t>(input.getEncoderDirection());
+    int16_t change = static_cast<int16_t>(Interface::getEncoderDirection());
 
     if (recipeIndex + change >= recipeCount)
     {

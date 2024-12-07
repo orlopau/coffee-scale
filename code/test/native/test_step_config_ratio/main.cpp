@@ -1,24 +1,22 @@
 #include "millis.h"
 #include "mocks.h"
+#include "mock/mock_interface.h"
 #include "modes/steps/step_config_ratio.h"
 #include <unity.h>
 
-MockButtons *buttons;
 MockDisplay *display;
 RecipeConfigRatioStep *configRatio;
 RecipeStepState recipeStepState;
 
 void setUp(void)
 {
-    buttons = new MockButtons();
     display = new MockDisplay();
-    configRatio = new RecipeConfigRatioStep(recipeStepState, *display, *buttons);
+    configRatio = new RecipeConfigRatioStep(recipeStepState, *display);
     configRatio->enter();
 }
 
 void tearDown(void)
 {
-    delete buttons;
     delete display;
     delete configRatio;
 }
@@ -49,25 +47,25 @@ void test_adjust_ratio_via_encoder()
     TEST_ASSERT_EQUAL(50, display->ratioWater);
 
     // by turning encoder, ratio can be adjusted in steps of 0.1
-    buttons->encoderTicks = 1;
+    Interface::encoderTicks = 1;
     configRatio->update();
     TEST_ASSERT_EQUAL(51, display->ratioWater);
-    buttons->encoderTicks = -1;
+    Interface::encoderTicks = -1;
     configRatio->update();
     TEST_ASSERT_EQUAL(49, display->ratioWater);
 
     // ratio can not be reduced below 1:1
-    buttons->encoderTicks = -10000;
+    Interface::encoderTicks = -10000;
     configRatio->update();
     TEST_ASSERT_EQUAL(10, display->ratioWater);
 
     // maxium ratio is limited by 64
-    buttons->encoderTicks = 10000;
+    Interface::encoderTicks = 10000;
     configRatio->update();
     TEST_ASSERT_EQUAL(640 + 50, display->ratioWater);
 
     // return to normal ratio
-    buttons->encoderTicks = 0;
+    Interface::encoderTicks = 0;
     configRatio->update();
     TEST_ASSERT_EQUAL(50, display->ratioWater);
 }
@@ -87,7 +85,7 @@ void test_adjusting_ratio_affects_pour_ratios()
     configRatio->update();
 
     // increase ratio by 5, changing the ratio from 5 to 10 -> 2x
-    buttons->encoderTicks = 50;
+    Interface::encoderTicks = 50;
     configRatio->update();
 
     // when config is finished, ratio should be adjusted

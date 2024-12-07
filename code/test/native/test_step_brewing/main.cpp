@@ -1,10 +1,10 @@
 #include "millis.h"
 #include "mocks.h"
+#include "mock/mock_interface.h"
 #include "modes/steps/step_brewing.h"
 #include <unity.h>
 
 static MockWeightSensor *weightSensor;
-static MockButtons *buttons;
 static MockDisplay *display;
 static RecipeBrewing *recipeBrewing;
 RecipeStepState recipeStepState;
@@ -12,17 +12,15 @@ RecipeStepState recipeStepState;
 void setUp(void)
 {
     weightSensor = new MockWeightSensor();
-    buttons = new MockButtons();
     display = new MockDisplay();
 
-    recipeBrewing = new RecipeBrewing(recipeStepState, *display, *buttons, *weightSensor);
+    recipeBrewing = new RecipeBrewing(recipeStepState, *display, *weightSensor);
     recipeBrewing->enter();
 }
 
 void tearDown(void)
 {
     delete weightSensor;
-    delete buttons;
     delete display;
     delete recipeBrewing;
 }
@@ -106,9 +104,9 @@ void test_recipe_brewing(void)
     TEST_ASSERT_EQUAL(0, display->recipeTimeToFinishMs);
 
     // next step reached by single click
-    buttons->encoderClick = ClickType::SINGLE;
+    Interface::encoderClick = ClickType::SINGLE;
     recipeBrewing->update();
-    buttons->encoderClick = ClickType::NONE;
+    Interface::encoderClick = ClickType::NONE;
     recipeBrewing->update();
 
     // verify that second step has started
@@ -190,9 +188,9 @@ void test_recipe_auto_starts_when_flag_is_enbled(void)
     TEST_ASSERT_EQUAL(50, display->recipeTimeToFinishMs);
 
     // only after clicking encoder we should see the next step
-    buttons->encoderClick = ClickType::SINGLE;
+    Interface::encoderClick = ClickType::SINGLE;
     recipeBrewing->update();
-    buttons->encoderClick = ClickType::NONE;
+    Interface::encoderClick = ClickType::NONE;
 
     // verify that step has started after clicking
     sleep_for(10);
@@ -239,9 +237,9 @@ void test_advance_to_next_pour_via_click(void)
     recipeBrewing->update();
 
     // click encoder to start
-    buttons->encoderClick = ClickType::SINGLE;
+    Interface::encoderClick = ClickType::SINGLE;
     recipeBrewing->update();
-    buttons->encoderClick = ClickType::NONE;
+    Interface::encoderClick = ClickType::NONE;
 
     // wait 50ms for completion
     sleep_for(51);
@@ -251,9 +249,9 @@ void test_advance_to_next_pour_via_click(void)
     TEST_ASSERT_EQUAL(0, recipeBrewing->recipePourIndex);
 
     // click encoder to advance to next step
-    buttons->encoderClick = ClickType::SINGLE;
+    Interface::encoderClick = ClickType::SINGLE;
     recipeBrewing->update();
-    buttons->encoderClick = ClickType::NONE;
+    Interface::encoderClick = ClickType::NONE;
 
     // verify that second step has started
     TEST_ASSERT_EQUAL(1, recipeBrewing->recipePourIndex);
@@ -280,17 +278,17 @@ void test_force_advance_to_next_pour_via_click(void)
     recipeBrewing->update();
 
     // click encoder to start
-    buttons->encoderClick = ClickType::SINGLE;
+    Interface::encoderClick = ClickType::SINGLE;
     recipeBrewing->update();
-    buttons->encoderClick = ClickType::NONE;
+    Interface::encoderClick = ClickType::NONE;
 
     TEST_ASSERT_EQUAL(0, recipeBrewing->recipePourIndex);
     recipeBrewing->update();
 
     // click again to force next step
-    buttons->encoderClick = ClickType::SINGLE;
+    Interface::encoderClick = ClickType::SINGLE;
     recipeBrewing->update();
-    buttons->encoderClick = ClickType::NONE;
+    Interface::encoderClick = ClickType::NONE;
 
     TEST_ASSERT_EQUAL(1, recipeBrewing->recipePourIndex);
 }

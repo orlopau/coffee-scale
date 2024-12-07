@@ -1,12 +1,13 @@
 #include "step_prepare.h"
+#include "interface.h"
 
-RecipePrepare::RecipePrepare(RecipeStepState &state, Display &display, UserInput &input, WeightSensor &weightSensor)
-    : state(state), input(input), display(display), weightSensor(weightSensor) {}
+RecipePrepare::RecipePrepare(RecipeStepState &state, Display &display, WeightSensor &weightSensor)
+    : state(state), display(display), weightSensor(weightSensor) {}
 
 void RecipePrepare::update()
 {
     // tare on encoder rotate
-    if (input.getEncoderDirection() != EncoderDirection::NONE)
+    if (Interface::getEncoderDirection() != Interface::EncoderDirection::NONE)
     {
         weightSensor.tare();
     }

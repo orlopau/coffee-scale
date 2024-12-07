@@ -3,7 +3,6 @@
 #include "modes/steps/step_prepare.h"
 #include <unity.h>
 
-MockButtons *buttons;
 MockDisplay *display;
 MockWeightSensor *weightSensor;
 RecipePrepare *prepare;
@@ -11,17 +10,15 @@ RecipeStepState recipeStepState;
 
 void setUp(void)
 {
-    buttons = new MockButtons();
     display = new MockDisplay();
     weightSensor = new MockWeightSensor();
-    prepare = new RecipePrepare(recipeStepState, *display, *buttons, *weightSensor);
+    prepare = new RecipePrepare(recipeStepState, *display, *weightSensor);
     prepare->enter();
 }
 
 void tearDown(void)
 {
     delete weightSensor;
-    delete buttons;
     delete display;
     delete prepare;
 }

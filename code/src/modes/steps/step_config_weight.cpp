@@ -1,7 +1,8 @@
 #include "step_config_weight.h"
+#include "interface.h"
 
-RecipeConfigWeightStep::RecipeConfigWeightStep(RecipeStepState &state, Display &display, UserInput &input)
-    : state(state), display(display), input(input){};
+RecipeConfigWeightStep::RecipeConfigWeightStep(RecipeStepState &state, Display &display)
+    : state(state), display(display){};
 
 void RecipeConfigWeightStep::update()
 {
@@ -11,21 +12,21 @@ void RecipeConfigWeightStep::update()
     upperBoundTicks = 128;
 
     // enforce bounds
-    if (input.getEncoderTicks() > upperBoundTicks)
+    if (Interface::getEncoderTicks() > upperBoundTicks)
     {
-        input.setEncoderTicks(upperBoundTicks);
+        Interface::setEncoderTicks(upperBoundTicks);
     }
-    else if (input.getEncoderTicks() < lowerBoundTicks)
+    else if (Interface::getEncoderTicks() < lowerBoundTicks)
     {
-        input.setEncoderTicks(lowerBoundTicks);
+        Interface::setEncoderTicks(lowerBoundTicks);
     }
 
     // update values and display
     state.configRecipe.coffeeWeightMg =
-        state.originalRecipe->coffeeWeightMg + input.getEncoderTicks() * WEIGHT_ADJUST_MULTIPLIER;
+        state.originalRecipe->coffeeWeightMg + Interface::getEncoderTicks() * WEIGHT_ADJUST_MULTIPLIER;
     display.recipeConfigCoffeeWeight(state.configRecipe.name, state.configRecipe.coffeeWeightMg,
                                      state.configRecipe.coffeeWeightMg *
                                          ((float)recipeGetTotalRatio(state.configRecipe) / (float)RECIPE_RATIO_MUL) / 1000);
 }
 
-void RecipeConfigWeightStep::enter() { input.resetEncoderTicks(); }
+void RecipeConfigWeightStep::enter() { Interface::resetEncoderTicks(); }

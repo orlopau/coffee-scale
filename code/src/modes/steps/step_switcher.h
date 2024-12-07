@@ -1,13 +1,13 @@
 #pragma once
 
 #include "step.h"
-#include "user_interface.h"
+#include "display.h"
 
 class RecipeSwitcherStep : public RecipeStep
 {
 public:
     ~RecipeSwitcherStep();
-    RecipeSwitcherStep(RecipeStepState &state, Display &display, UserInput &input, const Recipe recipes[],
+    RecipeSwitcherStep(RecipeStepState &state, Display &display, const Recipe recipes[],
                        const uint8_t recipeCount);
     void update() override;
     void exit() override;
@@ -16,7 +16,6 @@ public:
 private:
     RecipeStepState &state;
     Display &display;
-    UserInput &input;
 
     const Recipe *recipes;
     const char **recipeSwitcherEntries;

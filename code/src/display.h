@@ -3,27 +3,6 @@
 #include <math.h>
 #include "button.h"
 
-enum class EncoderDirection
-{
-    NONE = 0,
-    CW = 1,
-    CCW = -1,
-};
-
-class UserInput
-{
-public:
-    virtual ~UserInput() {}
-    virtual void update() = 0;
-    virtual EncoderDirection getEncoderDirection() = 0;
-    virtual long getEncoderTicks() = 0;
-    virtual void resetEncoderTicks() = 0;
-    virtual void setEncoderTicks(long ticks) = 0;
-    virtual ClickType getEncoderClick() = 0;
-    virtual ClickType consumeEncoderClick() = 0;
-    virtual void buzzerTone(uint16_t durationMs){};
-};
-
 class Display
 {
 public:

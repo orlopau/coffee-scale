@@ -3,7 +3,7 @@
 #include "battery.h"
 #include "scale.h"
 #include "millis.h"
-#include "user_interface.h"
+#include "display.h"
 #include <math.h>
 #include <string.h>
 
@@ -17,28 +17,6 @@ public:
     float getLastWeight() override { return weight; }
     float weight = 0;
     bool newWeight = false;
-};
-
-class MockButtons : public UserInput
-{
-public:
-    void update() {}
-    long getEncoderTicks() { return encoderTicks; };
-    void resetEncoderTicks() { encoderTicks = 0; };
-    ClickType consumeEncoderClick()
-    {
-        ClickType click = encoderClick;
-        encoderClick = ClickType::NONE;
-        return click;
-    }
-    ClickType getEncoderClick() { return encoderClick; };
-    EncoderDirection getEncoderDirection() { return encoderDirection; };
-    void setEncoderTicks(long ticks) { encoderTicks = ticks; };
-    ClickType getBootClick() { return bootClick; };
-    ClickType encoderClick = ClickType::NONE;
-    ClickType bootClick = ClickType::NONE;
-    int encoderTicks = 0;
-    EncoderDirection encoderDirection = EncoderDirection::NONE;
 };
 
 class MockDisplay : public Display

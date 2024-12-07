@@ -1,8 +1,9 @@
 #include "step_brewing.h"
 #include "millis.h"
+#include "interface.h"
 
-RecipeBrewing::RecipeBrewing(RecipeStepState &state, Display &display, UserInput &input, WeightSensor &weightSensor)
-    : state(state), display(display), input(input), weightSensor(weightSensor)
+RecipeBrewing::RecipeBrewing(RecipeStepState &state, Display &display, WeightSensor &weightSensor)
+    : state(state), display(display), weightSensor(weightSensor)
 {
 }
 
@@ -14,7 +15,7 @@ void RecipeBrewing::update()
     bool isPause = false;
 
     // tare scale on rotation
-    if (input.getEncoderDirection() != EncoderDirection::NONE)
+    if (Interface::getEncoderDirection() != Interface::EncoderDirection::NONE)
     {
         weightSensor.tare();
     }
@@ -34,11 +35,11 @@ void RecipeBrewing::update()
         remainingTimePourMs = pour->timePour != 0 ? pour->timePour : pour->timePause;
 
         // if encoder is clicked, start brew
-        if (input.getEncoderClick() == ClickType::SINGLE)
+        if (Interface::getEncoderClick() == ClickType::SINGLE)
         {
             pourStartMillis = now();
             // consume, else we will advance to next pour in a later if
-            input.consumeEncoderClick();
+            Interface::consumeEncoderClick();
         }
     }
     // Brew is in progress.
@@ -60,7 +61,7 @@ void RecipeBrewing::update()
         if (!pourDoneFlag)
         {
             pourDoneFlag = true;
-            input.buzzerTone(200);
+            Interface::buzzerTone(200);
         }
 
         // if there is another pour, start when auto advance is on
@@ -71,7 +72,7 @@ void RecipeBrewing::update()
     }
 
     // if brew has started, clicking should advance to next pour
-    if (pourStartMillis != 0 && input.getEncoderClick() == ClickType::SINGLE)
+    if (pourStartMillis != 0 && Interface::getEncoderClick() == ClickType::SINGLE)
     {
         nextPour();
     }

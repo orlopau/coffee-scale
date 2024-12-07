@@ -4,6 +4,7 @@
 #include "mode_manager.h"
 #include "millis.h"
 #include "mocks.h"
+#include "mock/mock_interface.h"
 
 class MockMode : public Mode
 {
@@ -28,28 +29,26 @@ public:
 };
 
 MockDisplay *display;
-MockButtons *input;
 ModeManager *modeManager;
 Mode *modes[3];
 MockMode *mockModes[3];
 
 void setUp(void)
 {
+    Interface::reset();
     display = new MockDisplay();
-    input = new MockButtons();
     modes[0] = new MockMode("Mock Mode 1");
     modes[1] = new MockMode("Mock Mode 2");
     modes[2] = new MockMode("Mock Mode 3");
     mockModes[0] = (MockMode *)modes[0];
     mockModes[1] = (MockMode *)modes[1];
     mockModes[2] = (MockMode *)modes[2];
-    modeManager = new ModeManager(modes, 3, *display, *input);
+    modeManager = new ModeManager(modes, 3, *display);
 }
 
 void tearDown(void)
 {
     delete display;
-    delete input;
     delete modeManager;
     delete modes[0];
     delete modes[1];
@@ -58,9 +57,9 @@ void tearDown(void)
 
 void enterSelection()
 {
-    input->encoderClick = ClickType::LONG;
+    Interface::encoderClick = ClickType::LONG;
     modeManager->update();
-    input->encoderClick = ClickType::NONE;
+    Interface::encoderClick = ClickType::NONE;
     modeManager->update();
 }
 
@@ -81,11 +80,11 @@ void test_mode_manager_shows_next_and_previous_mode_after_rotation(void)
     enterSelection();
     TEST_ASSERT_EQUAL_STRING("Mock Mode 1", display->lastModeText);
 
-    input->encoderDirection = EncoderDirection::CW;
+    Interface::encoderDirection = Interface::EncoderDirection::CW;
     modeManager->update();
     TEST_ASSERT_EQUAL_STRING("Mock Mode 2", display->lastModeText);
 
-    input->encoderDirection = EncoderDirection::CCW;
+    Interface::encoderDirection = Interface::EncoderDirection::CCW;
     modeManager->update();
     TEST_ASSERT_EQUAL_STRING("Mock Mode 1", display->lastModeText);
 }
@@ -95,7 +94,7 @@ void test_mode_manager_modes_lower_bound(void)
     enterSelection();
     TEST_ASSERT_EQUAL_STRING("Mock Mode 1", display->lastModeText);
 
-    input->encoderDirection = EncoderDirection::CCW;
+    Interface::encoderDirection = Interface::EncoderDirection::CCW;
     modeManager->update();
     TEST_ASSERT_EQUAL_STRING("Mock Mode 1", display->lastModeText);
 }
@@ -105,15 +104,15 @@ void test_mode_manager_modes_upper_bound(void)
     enterSelection();
     TEST_ASSERT_EQUAL_STRING("Mock Mode 1", display->lastModeText);
 
-    input->encoderDirection = EncoderDirection::CW;
+    Interface::encoderDirection = Interface::EncoderDirection::CW;
     modeManager->update();
     TEST_ASSERT_EQUAL_STRING("Mock Mode 2", display->lastModeText);
 
-    input->encoderDirection = EncoderDirection::CW;
+    Interface::encoderDirection = Interface::EncoderDirection::CW;
     modeManager->update();
     TEST_ASSERT_EQUAL_STRING("Mock Mode 3", display->lastModeText);
 
-    input->encoderDirection = EncoderDirection::CW;
+    Interface::encoderDirection = Interface::EncoderDirection::CW;
     modeManager->update();
     TEST_ASSERT_EQUAL_STRING("Mock Mode 3", display->lastModeText);
 }
@@ -138,14 +137,14 @@ void test_mode_manager_selects_mode_with_single_click(void)
     enterSelection();
     TEST_ASSERT_EQUAL_STRING("Mock Mode 1", display->lastModeText);
 
-    input->encoderDirection = EncoderDirection::CW;
+    Interface::encoderDirection = Interface::EncoderDirection::CW;
     modeManager->update();
-    input->encoderDirection = EncoderDirection::NONE;
+    Interface::encoderDirection = Interface::EncoderDirection::NONE;
     TEST_ASSERT_EQUAL_STRING("Mock Mode 2", display->lastModeText);
 
-    input->encoderClick = ClickType::SINGLE;
+    Interface::encoderClick = ClickType::SINGLE;
     modeManager->update();
-    input->encoderClick = ClickType::NONE;
+    Interface::encoderClick = ClickType::NONE;
     modeManager->update();
     TEST_ASSERT_TRUE(mockModes[1]->updateCalled);
 }
@@ -163,12 +162,12 @@ void test_mode_manager_updates_next_mode_only_at_next_tick(void)
     enterSelection();
     TEST_ASSERT_EQUAL_STRING("Mock Mode 1", display->lastModeText);
 
-    input->encoderDirection = EncoderDirection::CW;
+    Interface::encoderDirection = Interface::EncoderDirection::CW;
     modeManager->update();
-    input->encoderDirection = EncoderDirection::NONE;
+    Interface::encoderDirection = Interface::EncoderDirection::NONE;
     TEST_ASSERT_EQUAL_STRING("Mock Mode 2", display->lastModeText);
 
-    input->encoderClick = ClickType::SINGLE;
+    Interface::encoderClick = ClickType::SINGLE;
     modeManager->update();
     TEST_ASSERT_FALSE(mockModes[1]->updateCalled);
     modeManager->update();

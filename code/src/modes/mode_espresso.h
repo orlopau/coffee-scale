@@ -3,7 +3,7 @@
 #include "scale.h"
 #include "mode.h"
 #include "stopwatch.h"
-#include "user_interface.h"
+#include "display.h"
 #include "regression.h"
 
 #define ENCODER_MG_PER_TICK 100
@@ -18,8 +18,8 @@
 class ModeEspresso : public Mode
 {
 public:
-    ModeEspresso(WeightSensor &weightSensor, UserInput &buttons, Display &display, Stopwatch &stopwatch)
-        : weightSensor(weightSensor), buttons(buttons), display(display), stopwatch(stopwatch),
+    ModeEspresso(WeightSensor &weightSensor, Display &display, Stopwatch &stopwatch)
+        : weightSensor(weightSensor), display(display), stopwatch(stopwatch),
           targetWeightMg(36 * 1000), approximator(REGRESSION_BUFFER_SIZE), lastEstimatedTime(0){};
     ~ModeEspresso(){};
     void update() override;
@@ -29,7 +29,6 @@ public:
 
 private:
     WeightSensor &weightSensor;
-    UserInput &buttons;
     Display &display;
     Stopwatch &stopwatch;
 

@@ -1,18 +1,18 @@
 #include "modes/mode_scale.h"
 #include "scale.h"
-#include "user_interface.h"
 #include "data/localization.h"
+#include "interface.h"
 
 void ModeScale::update()
 {
     display.display(weightSensor.getWeight(), stopwatch.getTime());
 
-    if (buttons.getEncoderDirection() != EncoderDirection::NONE)
+    if (Interface::getEncoderDirection() != Interface::EncoderDirection::NONE)
     {
         weightSensor.tare();
     }
 
-    if (buttons.getEncoderClick() == ClickType::SINGLE)
+    if (Interface::getEncoderClick() == ClickType::SINGLE)
     {
         stopwatch.toggle();
     }

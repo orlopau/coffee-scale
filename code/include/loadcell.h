@@ -1,3 +1,5 @@
+#pragma once
+
 namespace LoadCell
 {
     void begin();

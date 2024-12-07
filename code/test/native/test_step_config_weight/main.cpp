@@ -1,24 +1,22 @@
 #include "millis.h"
 #include "mocks.h"
+#include "mock/mock_interface.h"
 #include "modes/steps/step_config_weight.h"
 #include <unity.h>
 
-MockButtons *buttons;
 MockDisplay *display;
 RecipeConfigWeightStep *configWeight;
 RecipeStepState recipeStepState;
 
 void setUp(void)
 {
-    buttons = new MockButtons();
     display = new MockDisplay();
-    configWeight = new RecipeConfigWeightStep(recipeStepState, *display, *buttons);
+    configWeight = new RecipeConfigWeightStep(recipeStepState, *display);
     configWeight->enter();
 }
 
 void tearDown(void)
 {
-    delete buttons;
     delete display;
     delete configWeight;
 }
@@ -50,14 +48,14 @@ void test_adjust_weight_via_encoder()
 
     // encoder ticks adjust coffee weight
     // turning encoder left should decrease
-    buttons->encoderTicks = -1;
+    Interface::encoderTicks = -1;
     configWeight->update();
     TEST_ASSERT_EQUAL(2000, display->weightConfigWeightMg);
     TEST_ASSERT_EQUAL(2000, recipeStepState.configRecipe.coffeeWeightMg);
     TEST_ASSERT_EQUAL(10, display->weightConfigWaterWeightMl);
 
     // cant reduce to 0 or below
-    buttons->encoderTicks = -3;
+    Interface::encoderTicks = -3;
     configWeight->update();
     TEST_ASSERT_EQUAL(1000, display->weightConfigWeightMg);
     TEST_ASSERT_EQUAL(1000, recipeStepState.configRecipe.coffeeWeightMg);

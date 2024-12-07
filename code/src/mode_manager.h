@@ -1,12 +1,12 @@
 #include "mode.h"
-#include "user_interface.h"
+#include "display.h"
 
 #define BATTERY_UPDATE_INTERVAL 2000
 
 class ModeManager
 {
 public:
-    ModeManager(Mode *modes[], const int modeCount, Display &display, UserInput &input);
+    ModeManager(Mode *modes[], const int modeCount, Display &display);
     ~ModeManager(){};
     void update();
 
@@ -16,7 +16,6 @@ private:
     bool inModeChange;
     Mode **modes;
     Display &display;
-    UserInput &input;
     float lastVoltage, lastPercentage;
     long lastBatteryTime;
 };

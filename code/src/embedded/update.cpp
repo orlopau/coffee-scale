@@ -7,7 +7,8 @@
 #include <WiFi.h>
 
 #include "constants.h"
-#include "user_input.h"
+#include "display.h"
+#include "interface.h"
 #include "data/localization.h"
 
 #define TAG "UPDATER"
@@ -39,7 +40,7 @@ namespace Updater
         return true;
     }
 
-    void update_firmware(Display &display, UserInput &input)
+    void update_firmware(Display &display)
     {
         display.centerText(UPDATER_UPDATING, 13);
         ESP_LOGI(TAG, "Updating firmware...");
@@ -73,9 +74,9 @@ namespace Updater
         const uint8_t numQualifiers = 2;
         const char *names[] = {"Deutsch", "English"};
         const char *qualifiers[] = {"_de", "_en"};
-        while (input.getEncoderClick() != ClickType::SINGLE)
+        while (Interface::getEncoderClick() != ClickType::SINGLE)
         {
-            selectedQualifier += static_cast<int>(input.getEncoderDirection());
+            selectedQualifier += static_cast<int>(Interface::getEncoderDirection());
             if (selectedQualifier < 0)
             {
                 selectedQualifier = 0;
@@ -85,7 +86,7 @@ namespace Updater
                 selectedQualifier = numQualifiers - 1;
             }
             display.switcher("Choose Language", selectedQualifier, numQualifiers, names);
-            input.update();
+            Interface::update();
         }
 
         HTTPUpdate httpUpdate;

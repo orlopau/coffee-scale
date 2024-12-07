@@ -1,6 +1,7 @@
 #include <unity.h>
 #include "modes/mode_scale.h"
 #include "mocks.h"
+#include "mock/mock_interface.h"
 #include "stopwatch.h"
 
 #include <chrono>
@@ -8,7 +9,6 @@
 
 static Stopwatch *stopwatch;
 static MockWeightSensor *weightSensor;
-static MockButtons *buttons;
 static MockDisplay *display;
 
 ModeScale *modeScale;
@@ -17,15 +17,13 @@ void setUp(void)
 {
     stopwatch = new Stopwatch();
     weightSensor = new MockWeightSensor();
-    buttons = new MockButtons();
     display = new MockDisplay();
-    modeScale = new ModeScale(*weightSensor, *buttons, *display, *stopwatch);
+    modeScale = new ModeScale(*weightSensor, *display, *stopwatch);
 }
 
 void tearDown(void)
 {
     delete stopwatch;
-    delete buttons;
     delete display;
     delete modeScale;
     delete weightSensor;
@@ -34,14 +32,14 @@ void tearDown(void)
 void test_stopwatch_start_when_click(void)
 {
     TEST_ASSERT_FALSE(stopwatch->isRunning());
-    buttons->encoderClick = ClickType::SINGLE;
+    Interface::encoderClick = ClickType::SINGLE;
     modeScale->update();
     TEST_ASSERT_TRUE(stopwatch->isRunning());
 }
 
 void test_stopwatch_stop_when_click_again(void)
 {
-    buttons->encoderClick = ClickType::SINGLE;
+    Interface::encoderClick = ClickType::SINGLE;
     modeScale->update();
     modeScale->update();
     TEST_ASSERT_FALSE(stopwatch->isRunning());
@@ -51,7 +49,7 @@ void test_loadcell_tare_when_encoder_rotated(void)
 {
     weightSensor->weight = 1;
 
-    buttons->encoderDirection = EncoderDirection::CW;
+    Interface::encoderDirection = Interface::EncoderDirection::CW;
     modeScale->update();
     TEST_ASSERT_EQUAL(0, weightSensor->getWeight());
 }

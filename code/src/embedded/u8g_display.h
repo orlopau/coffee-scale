@@ -4,7 +4,7 @@
 
 #include <U8g2lib.h>
 
-#include "user_interface.h"
+#include "display.h"
 
 class U8GDisplay : public Display
 {

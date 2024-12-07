@@ -3,6 +3,7 @@
 #include "mode_recipe.h"
 #include "millis.h"
 #include "data/localization.h"
+#include "interface.h"
 
 #include "modes/steps/step_switcher.h"
 #include "modes/steps/step_summary.h"
@@ -12,16 +13,16 @@
 #include "modes/steps/step_brewing.h"
 #include "modes/steps/step_done.h"
 
-ModeRecipes::ModeRecipes(WeightSensor &weightSensor, UserInput &input, Display &display, const Recipe recipes[],
+ModeRecipes::ModeRecipes(WeightSensor &weightSensor, Display &display, const Recipe recipes[],
                          uint8_t recipeCount)
-    : weightSensor(weightSensor), input(input), display(display), currentRecipeStep(0),
+    : weightSensor(weightSensor), display(display), currentRecipeStep(0),
       recipeSteps{
-          new RecipeSwitcherStep(recipeStepState, display, input, recipes, recipeCount),
+          new RecipeSwitcherStep(recipeStepState, display, recipes, recipeCount),
           new RecipeSummaryStep(recipeStepState, display),
-          new RecipeConfigRatioStep(recipeStepState, display, input),
-          new RecipeConfigWeightStep(recipeStepState, display, input),
-          new RecipePrepare(recipeStepState, display, input, weightSensor),
-          new RecipeBrewing(recipeStepState, display, input, weightSensor),
+          new RecipeConfigRatioStep(recipeStepState, display),
+          new RecipeConfigWeightStep(recipeStepState, display),
+          new RecipePrepare(recipeStepState, display, weightSensor),
+          new RecipeBrewing(recipeStepState, display, weightSensor),
           new RecipeDone(recipeStepState, display),
       } {};
 
@@ -32,7 +33,7 @@ void ModeRecipes::update()
     // if long click, go back to previous step
     // when all steos are done, advancing to next step returns to first step
     uint8_t previousStep = currentRecipeStep;
-    if (input.getEncoderClick() == ClickType::SINGLE && recipeSteps[currentRecipeStep]->canStepForward())
+    if (Interface::getEncoderClick() == ClickType::SINGLE && recipeSteps[currentRecipeStep]->canStepForward())
     {
         currentRecipeStep++;
         if (currentRecipeStep >= recipeStepCount)
@@ -40,7 +41,7 @@ void ModeRecipes::update()
             currentRecipeStep = 0;
         }
     }
-    else if (input.getEncoderClick() == ClickType::LONG && recipeSteps[currentRecipeStep]->canStepBackward())
+    else if (Interface::getEncoderClick() == ClickType::LONG && recipeSteps[currentRecipeStep]->canStepBackward())
     {
         if (currentRecipeStep > 0)
         {
@@ -52,7 +53,7 @@ void ModeRecipes::update()
     {
         recipeSteps[previousStep]->exit();
         recipeSteps[currentRecipeStep]->enter();
-        input.consumeEncoderClick();
+        Interface::consumeEncoderClick();
     }
 
     recipeSteps[currentRecipeStep]->update();

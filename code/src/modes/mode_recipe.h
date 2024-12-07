@@ -4,13 +4,12 @@
 #include "recipe.h"
 #include "modes/steps/step.h"
 #include "scale.h"
-#include "user_interface.h"
+#include "display.h"
 
 class ModeRecipes : public Mode
 {
 public:
-    ModeRecipes(WeightSensor &weightSensor, UserInput &input,
-                Display &display, const Recipe recipes[], uint8_t recipeCount);
+    ModeRecipes(WeightSensor &weightSensor, Display &display, const Recipe recipes[], uint8_t recipeCount);
     void update();
     const char *getName();
     bool canSwitchMode();
@@ -18,7 +17,6 @@ public:
 
 private:
     WeightSensor &weightSensor;
-    UserInput &input;
     Display &display;
 
     RecipeStepState recipeStepState;

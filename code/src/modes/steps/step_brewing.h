@@ -2,12 +2,12 @@
 
 #include "scale.h"
 #include "step.h"
-#include "user_interface.h"
+#include "display.h"
 
 class RecipeBrewing : public RecipeStep
 {
 public:
-    RecipeBrewing(RecipeStepState &state, Display &display, UserInput &input, WeightSensor &weightSensor);
+    RecipeBrewing(RecipeStepState &state, Display &display, WeightSensor &weightSensor);
     void update() override;
     void enter() override;
     bool canStepForward() override;
@@ -16,7 +16,6 @@ public:
 private:
     RecipeStepState &state;
     Display &display;
-    UserInput &input;
     WeightSensor &weightSensor;
 
     unsigned long pourStartMillis = 0;

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "step.h"
-#include "user_interface.h"
+#include "display.h"
 
 class RecipeSummaryStep : public RecipeStep
 {

@@ -1,12 +1,13 @@
 #include "modes/mode_espresso.h"
 #include "data/localization.h"
+#include "interface.h"
 
-void ModeEspresso::enter() { buttons.resetEncoderTicks(); }
+void ModeEspresso::enter() { Interface::resetEncoderTicks(); }
 
 void ModeEspresso::update()
 {
     // start stopwatch and tare on click
-    if (buttons.getEncoderClick() == ClickType::SINGLE)
+    if (Interface::getEncoderClick() == ClickType::SINGLE)
     {
         stopwatch.toggle();
 
@@ -18,7 +19,7 @@ void ModeEspresso::update()
     }
 
     // clamp target weight to min and max
-    targetWeightMg += (buttons.getEncoderTicks() * ENCODER_MG_PER_TICK);
+    targetWeightMg += (Interface::getEncoderTicks() * ENCODER_MG_PER_TICK);
     if (targetWeightMg < MIN_TARGET_WEIGHT_MG)
     {
         targetWeightMg = MIN_TARGET_WEIGHT_MG;
@@ -28,9 +29,9 @@ void ModeEspresso::update()
         targetWeightMg = MAX_TARGET_WEIGHT_MG;
     }
 
-    if (buttons.getEncoderTicks() >= 1 || buttons.getEncoderTicks() <= -1)
+    if (Interface::getEncoderTicks() >= 1 || Interface::getEncoderTicks() <= -1)
     {
-        buttons.resetEncoderTicks();
+        Interface::resetEncoderTicks();
     }
 
     // new weight must be handled for regression

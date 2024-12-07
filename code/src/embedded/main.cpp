@@ -14,7 +14,7 @@
 #include "modes/mode_recipe.h"
 #include "u8g_display.h"
 #include "update.h"
-#include "user_input.h"
+#include "interface.h"
 #include "battery.h"
 
 #define AVERAGING_LOOPS 100
@@ -23,7 +23,6 @@
 
 DefaultWeightSensor weightSensor;
 U8GDisplay display(PIN_I2C_SDA, PIN_I2C_SCL, U8G2_R1);
-EmbeddedUserInput input(PIN_ENC_A, PIN_ENC_B, PIN_ENC_BTN, PIN_BUZZER);
 Stopwatch stopwatch;
 
 void saveScale(float scale)
@@ -35,18 +34,18 @@ void saveScale(float scale)
   weightSensor.setScale(scale);
 }
 
-ModeScale modeDefault(weightSensor, input, display, stopwatch);
-ModeEspresso modeEspresso(weightSensor, input, display, stopwatch);
-ModeCalibration modeCalibration(input, display, stopwatch, saveScale);
-ModeRecipes modeRecipes(weightSensor, input, display, RECIPES, RECIPE_COUNT);
+ModeScale modeDefault(weightSensor, display, stopwatch);
+ModeEspresso modeEspresso(weightSensor, display, stopwatch);
+ModeCalibration modeCalibration(display, stopwatch, saveScale);
+ModeRecipes modeRecipes(weightSensor, display, RECIPES, RECIPE_COUNT);
 Mode *modes[] = {&modeDefault, &modeRecipes, &modeEspresso, &modeCalibration};
-ModeManager modeManager(modes, 4, display, input);
+ModeManager modeManager(modes, 4, display);
 
-EncoderDirection encoderDirection;
+Interface::EncoderDirection encoderDirection;
 
 void IRAM_ATTR isr_input()
 {
-  input.update();
+  Interface::update();
 }
 
 void setup()
@@ -56,6 +55,9 @@ void setup()
 
   EEPROM.begin(2048);
   btStop();
+
+  //////// INTERFACE //////
+  Interface::begin();
 
   //////// BATTERY ////////
   Battery::init();
@@ -103,7 +105,7 @@ void setup()
   //////// UPDATES ////////
   if (digitalRead(PIN_UPDATE_FIRMWARE) == LOW)
   {
-      Updater::update_firmware(display, input);
+      Updater::update_firmware(display);
   }
 
   ESP_LOGI(TAG, "Setup finished!");
@@ -116,7 +118,7 @@ unsigned long lastTime = millis();
 
 void loop()
 {
-  input.update();
+  Interface::update();
   weightSensor.update();
   display.update();
   modeManager.update();

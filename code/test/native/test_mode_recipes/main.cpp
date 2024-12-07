@@ -3,10 +3,10 @@
 #include "stopwatch.h"
 #include "modes/mode_recipe.h"
 #include "millis.h"
+#include "mock/mock_interface.h"
 
 static Stopwatch *stopwatch;
 static MockWeightSensor *weightSensor;
-static MockButtons *buttons;
 static MockDisplay *display;
 
 const Recipe RECIPES[] = {
@@ -48,16 +48,14 @@ void setUp(void)
 {
     stopwatch = new Stopwatch();
     weightSensor = new MockWeightSensor();
-    buttons = new MockButtons();
     display = new MockDisplay();
-    modeRecipes = new ModeRecipes(*weightSensor, *buttons, *display, RECIPES, 3);
+    modeRecipes = new ModeRecipes(*weightSensor, *display, RECIPES, 3);
 }
 
 void tearDown(void)
 {
     delete stopwatch;
     delete weightSensor;
-    delete buttons;
     delete display;
     delete modeRecipes;
 }
@@ -65,53 +63,53 @@ void tearDown(void)
 void test_steps_forward_and_back(void)
 {
     TEST_ASSERT_EQUAL(0, modeRecipes->getCurrentStepIndex());
-    buttons->encoderClick = ClickType::SINGLE;
+    Interface::encoderClick = ClickType::SINGLE;
     modeRecipes->update();
 
     TEST_ASSERT_EQUAL(1, modeRecipes->getCurrentStepIndex());
-    buttons->encoderClick = ClickType::SINGLE;
+    Interface::encoderClick = ClickType::SINGLE;
     modeRecipes->update();
 
     TEST_ASSERT_EQUAL(2, modeRecipes->getCurrentStepIndex());
-    buttons->encoderClick = ClickType::SINGLE;
+    Interface::encoderClick = ClickType::SINGLE;
     modeRecipes->update();
 
     TEST_ASSERT_EQUAL(3, modeRecipes->getCurrentStepIndex());
-    buttons->encoderClick = ClickType::SINGLE;
+    Interface::encoderClick = ClickType::SINGLE;
     modeRecipes->update();
 
     TEST_ASSERT_EQUAL(4, modeRecipes->getCurrentStepIndex());
-    buttons->encoderClick = ClickType::SINGLE;
+    Interface::encoderClick = ClickType::SINGLE;
     modeRecipes->update();
 
     TEST_ASSERT_EQUAL(5, modeRecipes->getCurrentStepIndex());
-    buttons->encoderClick = ClickType::SINGLE;
+    Interface::encoderClick = ClickType::SINGLE;
     modeRecipes->update();
 
     // Should not go further, as timer did not expire yet
 
     TEST_ASSERT_EQUAL(5, modeRecipes->getCurrentStepIndex());
-    buttons->encoderClick = ClickType::LONG;
+    Interface::encoderClick = ClickType::LONG;
     modeRecipes->update();
 
     TEST_ASSERT_EQUAL(4, modeRecipes->getCurrentStepIndex());
-    buttons->encoderClick = ClickType::LONG;
+    Interface::encoderClick = ClickType::LONG;
     modeRecipes->update();
 
     TEST_ASSERT_EQUAL(3, modeRecipes->getCurrentStepIndex());
-    buttons->encoderClick = ClickType::LONG;
+    Interface::encoderClick = ClickType::LONG;
     modeRecipes->update();
 
     TEST_ASSERT_EQUAL(2, modeRecipes->getCurrentStepIndex());
-    buttons->encoderClick = ClickType::LONG;
+    Interface::encoderClick = ClickType::LONG;
     modeRecipes->update();
 
     TEST_ASSERT_EQUAL(1, modeRecipes->getCurrentStepIndex());
-    buttons->encoderClick = ClickType::LONG;
+    Interface::encoderClick = ClickType::LONG;
     modeRecipes->update();
 
     TEST_ASSERT_EQUAL(0, modeRecipes->getCurrentStepIndex());
-    buttons->encoderClick = ClickType::LONG;
+    Interface::encoderClick = ClickType::LONG;
     modeRecipes->update();
 
     TEST_ASSERT_EQUAL(0, modeRecipes->getCurrentStepIndex());
@@ -119,7 +117,7 @@ void test_steps_forward_and_back(void)
 
 void nextStep()
 {
-    buttons->encoderClick = ClickType::SINGLE;
+    Interface::encoderClick = ClickType::SINGLE;
     modeRecipes->update();
 }
 
@@ -134,7 +132,7 @@ void test_issue_25(void)
 
     // ratio config step
     // adjust ratio
-    buttons->encoderTicks = 10;
+    Interface::encoderTicks = 10;
     modeRecipes->update();
 
     // next step
@@ -142,7 +140,7 @@ void test_issue_25(void)
     TEST_ASSERT_EQUAL(3, modeRecipes->getCurrentStepIndex());
 
     // go back
-    buttons->encoderClick = ClickType::LONG;
+    Interface::encoderClick = ClickType::LONG;
     modeRecipes->update();
     TEST_ASSERT_EQUAL(2, modeRecipes->getCurrentStepIndex());
 
