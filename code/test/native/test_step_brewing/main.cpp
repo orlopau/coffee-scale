@@ -296,12 +296,12 @@ void test_force_advance_to_next_pour_via_click(void)
 int main(void)
 {
     UNITY_BEGIN();
-    // RUN_TEST(test_can_step_forward);
-    // RUN_TEST(test_recipe_brewing);
-    // RUN_TEST(test_recipe_auto_advances_step_when_flag_is_set);
-    // RUN_TEST(test_recipe_auto_starts_when_flag_is_enbled);
-    // RUN_TEST(test_recipe_shows_pause_time_when_auto_start_disabled_and_pour_time_0);
+    RUN_TEST(test_can_step_forward);
+    RUN_TEST(test_recipe_brewing);
+    RUN_TEST(test_recipe_auto_advances_step_when_flag_is_set);
+    RUN_TEST(test_recipe_auto_starts_when_flag_is_enbled);
+    RUN_TEST(test_recipe_shows_pause_time_when_auto_start_disabled_and_pour_time_0);
     RUN_TEST(test_advance_to_next_pour_via_click);
-    // RUN_TEST(test_force_advance_to_next_pour_via_click);
+    RUN_TEST(test_force_advance_to_next_pour_via_click);
     UNITY_END();
 }
