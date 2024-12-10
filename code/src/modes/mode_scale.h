@@ -2,14 +2,13 @@
 
 #include "mode.h"
 #include "scale.h"
-#include "display.h"
 #include "stopwatch.h"
 
 class ModeScale : public Mode
 {
 public:
-    ModeScale(WeightSensor &weightSensor, Display &display, Stopwatch &stopwatch)
-        : weightSensor(weightSensor), display(display), stopwatch(stopwatch){};
+    ModeScale(WeightSensor &weightSensor, Stopwatch &stopwatch)
+        : weightSensor(weightSensor), stopwatch(stopwatch){};
     ~ModeScale(){};
     void update();
     bool canSwitchMode();
@@ -17,6 +16,5 @@ public:
 
 private:
     WeightSensor &weightSensor;
-    Display &display;
     Stopwatch &stopwatch;
 };

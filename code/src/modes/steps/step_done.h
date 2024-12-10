@@ -6,13 +6,12 @@
 class RecipeDone : public RecipeStep
 {
 public:
-    RecipeDone(RecipeStepState &state, Display &display) : state(state), display(display){};
+    RecipeDone(RecipeStepState &state) : state(state){};
     void update() override
     {
-        display.centerText("Done!", 30);
+        Display::centerText("Done!", 30);
     }
 
 private:
     RecipeStepState &state;
-    Display &display;
 };

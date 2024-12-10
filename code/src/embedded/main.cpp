@@ -12,7 +12,7 @@
 #include "modes/mode_espresso.h"
 #include "modes/mode_calibrate.h"
 #include "modes/mode_recipe.h"
-#include "u8g_display.h"
+#include "display.h"
 #include "update.h"
 #include "interface.h"
 #include "battery.h"
@@ -22,7 +22,6 @@
 #define TAG "MAIN"
 
 DefaultWeightSensor weightSensor;
-U8GDisplay display(PIN_I2C_SDA, PIN_I2C_SCL, U8G2_R1);
 Stopwatch stopwatch;
 
 void saveScale(float scale)
@@ -34,12 +33,12 @@ void saveScale(float scale)
   weightSensor.setScale(scale);
 }
 
-ModeScale modeDefault(weightSensor, display, stopwatch);
-ModeEspresso modeEspresso(weightSensor, display, stopwatch);
-ModeCalibration modeCalibration(display, stopwatch, saveScale);
-ModeRecipes modeRecipes(weightSensor, display, RECIPES, RECIPE_COUNT);
+ModeScale modeDefault(weightSensor, stopwatch);
+ModeEspresso modeEspresso(weightSensor, stopwatch);
+ModeCalibration modeCalibration(stopwatch, saveScale);
+ModeRecipes modeRecipes(weightSensor, RECIPES, RECIPE_COUNT);
 Mode *modes[] = {&modeDefault, &modeRecipes, &modeEspresso, &modeCalibration};
-ModeManager modeManager(modes, 4, display);
+ModeManager modeManager(modes, 4);
 
 Interface::EncoderDirection encoderDirection;
 
@@ -63,8 +62,8 @@ void setup()
   Battery::init();
 
   //////// DISPLAY ////////
-  display.begin();
-  display.drawOpener();
+  Display::begin();
+  Display::drawOpener();
 
   //////// WEIGHT SENSOR ////////
   LoadCell::begin();
@@ -105,7 +104,7 @@ void setup()
   //////// UPDATES ////////
   if (digitalRead(PIN_UPDATE_FIRMWARE) == LOW)
   {
-      Updater::update_firmware(display);
+      Updater::update_firmware();
   }
 
   ESP_LOGI(TAG, "Setup finished!");
@@ -120,7 +119,6 @@ void loop()
 {
   Interface::update();
   weightSensor.update();
-  display.update();
   modeManager.update();
 
 #ifdef PERF

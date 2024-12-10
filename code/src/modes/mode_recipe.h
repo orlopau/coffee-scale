@@ -9,7 +9,7 @@
 class ModeRecipes : public Mode
 {
 public:
-    ModeRecipes(WeightSensor &weightSensor, Display &display, const Recipe recipes[], uint8_t recipeCount);
+    ModeRecipes(WeightSensor &weightSensor, const Recipe recipes[], uint8_t recipeCount);
     void update();
     const char *getName();
     bool canSwitchMode();
@@ -17,7 +17,6 @@ public:
 
 private:
     WeightSensor &weightSensor;
-    Display &display;
 
     RecipeStepState recipeStepState;
 

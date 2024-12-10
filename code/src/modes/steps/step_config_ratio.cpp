@@ -1,8 +1,9 @@
 #include "step_config_ratio.h"
 #include "interface.h"
+#include "display.h"
 
-RecipeConfigRatioStep::RecipeConfigRatioStep(RecipeStepState &state, Display &display)
-    : state(state), display(display)
+RecipeConfigRatioStep::RecipeConfigRatioStep(RecipeStepState &state)
+    : state(state)
 {
 }
 
@@ -27,7 +28,7 @@ void RecipeConfigRatioStep::update()
     newRatio = recipeGetTotalRatio(*state.originalRecipe) + Interface::getEncoderTicks() * RATIO_ADJUST_MULTIPLIER;
 
     // update values and display
-    display.recipeConfigRatio(state.configRecipe.name, 1 * RECIPE_RATIO_MUL, newRatio);
+    Display::recipeConfigRatio(state.configRecipe.name, 1 * RECIPE_RATIO_MUL, newRatio);
 }
 
 void RecipeConfigRatioStep::enter()

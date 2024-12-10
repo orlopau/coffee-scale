@@ -45,7 +45,7 @@ void ModeEspresso::update()
     bool waiting =
         !stopwatch.isRunning() || remainingTime < 0 || remainingTime > REGRESSION_MAX_TIME || stopwatch.getTime() < REGRESSION_GRACE_PERIOD;
 
-    display.espressoShot(stopwatch.getTime(), remainingTime, weightSensor.getWeight() * 1000, targetWeightMg, waiting);
+    Display::espressoShot(stopwatch.getTime(), remainingTime, weightSensor.getWeight() * 1000, targetWeightMg, waiting);
 }
 
 void ModeEspresso::handleNewWeight()

@@ -18,8 +18,8 @@
 class ModeEspresso : public Mode
 {
 public:
-    ModeEspresso(WeightSensor &weightSensor, Display &display, Stopwatch &stopwatch)
-        : weightSensor(weightSensor), display(display), stopwatch(stopwatch),
+    ModeEspresso(WeightSensor &weightSensor, Stopwatch &stopwatch)
+        : weightSensor(weightSensor), stopwatch(stopwatch),
           targetWeightMg(36 * 1000), approximator(REGRESSION_BUFFER_SIZE), lastEstimatedTime(0){};
     ~ModeEspresso(){};
     void update() override;
@@ -29,7 +29,6 @@ public:
 
 private:
     WeightSensor &weightSensor;
-    Display &display;
     Stopwatch &stopwatch;
 
     Regression::Approximator approximator;

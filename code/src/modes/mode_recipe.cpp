@@ -13,17 +13,17 @@
 #include "modes/steps/step_brewing.h"
 #include "modes/steps/step_done.h"
 
-ModeRecipes::ModeRecipes(WeightSensor &weightSensor, Display &display, const Recipe recipes[],
+ModeRecipes::ModeRecipes(WeightSensor &weightSensor, const Recipe recipes[],
                          uint8_t recipeCount)
-    : weightSensor(weightSensor), display(display), currentRecipeStep(0),
+    : weightSensor(weightSensor), currentRecipeStep(0),
       recipeSteps{
-          new RecipeSwitcherStep(recipeStepState, display, recipes, recipeCount),
-          new RecipeSummaryStep(recipeStepState, display),
-          new RecipeConfigRatioStep(recipeStepState, display),
-          new RecipeConfigWeightStep(recipeStepState, display),
-          new RecipePrepare(recipeStepState, display, weightSensor),
-          new RecipeBrewing(recipeStepState, display, weightSensor),
-          new RecipeDone(recipeStepState, display),
+          new RecipeSwitcherStep(recipeStepState, recipes, recipeCount),
+          new RecipeSummaryStep(recipeStepState),
+          new RecipeConfigRatioStep(recipeStepState),
+          new RecipeConfigWeightStep(recipeStepState),
+          new RecipePrepare(recipeStepState, weightSensor),
+          new RecipeBrewing(recipeStepState, weightSensor),
+          new RecipeDone(recipeStepState),
       } {};
 
 void ModeRecipes::update()

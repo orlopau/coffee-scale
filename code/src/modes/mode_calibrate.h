@@ -11,7 +11,7 @@
 class ModeCalibration : public Mode
 {
 public:
-    ModeCalibration(Display &display, Stopwatch &stopwatch, void (*saveScaleFnc)(float));
+    ModeCalibration(Stopwatch &stopwatch, void (*saveScaleFnc)(float));
     ~ModeCalibration(){};
     void update();
     const char* getName();
@@ -26,7 +26,6 @@ private:
         END
     };
 
-    Display &display;
     Stopwatch &stopwatch;
     void (*saveScaleFnc)(float);
 

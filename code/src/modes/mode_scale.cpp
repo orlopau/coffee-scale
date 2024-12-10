@@ -2,10 +2,11 @@
 #include "scale.h"
 #include "data/localization.h"
 #include "interface.h"
+#include "display.h"
 
 void ModeScale::update()
 {
-    display.display(weightSensor.getWeight(), stopwatch.getTime());
+    Display::display(weightSensor.getWeight(), stopwatch.getTime());
 
     if (Interface::getEncoderDirection() != Interface::EncoderDirection::NONE)
     {

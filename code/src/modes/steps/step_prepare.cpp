@@ -1,8 +1,9 @@
 #include "step_prepare.h"
 #include "interface.h"
+#include "display.h"
 
-RecipePrepare::RecipePrepare(RecipeStepState &state, Display &display, WeightSensor &weightSensor)
-    : state(state), display(display), weightSensor(weightSensor) {}
+RecipePrepare::RecipePrepare(RecipeStepState &state, WeightSensor &weightSensor)
+    : state(state), weightSensor(weightSensor) {}
 
 void RecipePrepare::update()
 {
@@ -12,7 +13,7 @@ void RecipePrepare::update()
         weightSensor.tare();
     }
 
-    display.recipeInsertCoffee(weightSensor.getWeight() * 1000, state.configRecipe.coffeeWeightMg);
+    Display::recipeInsertCoffee(weightSensor.getWeight() * 1000, state.configRecipe.coffeeWeightMg);
 }
 
 void RecipePrepare::enter()
