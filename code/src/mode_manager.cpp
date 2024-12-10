@@ -2,9 +2,10 @@
 #include "millis.h"
 #include "battery.h"
 #include "interface.h"
+#include "display.h"
 
-ModeManager::ModeManager(Mode *modes[], const int modeCount, Display &display)
-    : modes(modes), modeCount(modeCount), currentMode(0), inModeChange(false), display(display), lastBatteryTime(0)
+ModeManager::ModeManager(Mode *modes[], const int modeCount)
+    : modes(modes), modeCount(modeCount), currentMode(0), inModeChange(false), lastBatteryTime(0)
 {
 }
 
@@ -30,7 +31,7 @@ void ModeManager::update()
             lastPercentage = Battery::getPercentage();
         }
 
-        display.modeSwitcher(modes[currentMode]->getName(), currentMode, modeCount, lastVoltage, lastPercentage, Battery::isCharging());
+        Display::modeSwitcher(modes[currentMode]->getName(), currentMode, modeCount, lastVoltage, lastPercentage, Battery::isCharging());
 
         if (Interface::getEncoderClick() == ClickType::SINGLE)
         {

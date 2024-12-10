@@ -2,6 +2,7 @@
 #include "modes/mode_scale.h"
 #include "mocks.h"
 #include "mock/mock_interface.h"
+#include "mock/mock_display.h"
 #include "stopwatch.h"
 
 #include <chrono>
@@ -9,22 +10,20 @@
 
 static Stopwatch *stopwatch;
 static MockWeightSensor *weightSensor;
-static MockDisplay *display;
 
 ModeScale *modeScale;
 
 void setUp(void)
 {
+    Display::reset();
     stopwatch = new Stopwatch();
     weightSensor = new MockWeightSensor();
-    display = new MockDisplay();
-    modeScale = new ModeScale(*weightSensor, *display, *stopwatch);
+    modeScale = new ModeScale(*weightSensor, *stopwatch);
 }
 
 void tearDown(void)
 {
     delete stopwatch;
-    delete display;
     delete modeScale;
     delete weightSensor;
 }
@@ -59,7 +58,7 @@ void test_display_shows_weight(void)
     weightSensor->weight = 1;
 
     modeScale->update();
-    TEST_ASSERT_EQUAL(1.0, display->weight);
+    TEST_ASSERT_EQUAL(1.0, Display::weight);
 }
 
 void test_display_shows_time(void)
@@ -67,7 +66,7 @@ void test_display_shows_time(void)
     stopwatch->start();
     std::this_thread::sleep_for(std::chrono::milliseconds(2));
     modeScale->update();
-    TEST_ASSERT_GREATER_OR_EQUAL(2, display->time);
+    TEST_ASSERT_GREATER_OR_EQUAL(2, Display::time);
 }
 
 int main(void)

@@ -1,25 +1,24 @@
 #include "millis.h"
 #include "mocks.h"
 #include "modes/steps/step_prepare.h"
+#include "mock/mock_display.h"
 #include <unity.h>
 
-MockDisplay *display;
 MockWeightSensor *weightSensor;
 RecipePrepare *prepare;
 RecipeStepState recipeStepState;
 
 void setUp(void)
 {
-    display = new MockDisplay();
+    Display::reset();
     weightSensor = new MockWeightSensor();
-    prepare = new RecipePrepare(recipeStepState, *display, *weightSensor);
+    prepare = new RecipePrepare(recipeStepState, *weightSensor);
     prepare->enter();
 }
 
 void tearDown(void)
 {
     delete weightSensor;
-    delete display;
     delete prepare;
 }
 
@@ -44,16 +43,16 @@ void test_displays_current_weight_and_target_coffee_weight()
     prepare->update();
 
     // should show required weight and current weight
-    TEST_ASSERT_EQUAL(3000, display->recipeInsertRequiredWeightMg);
-    TEST_ASSERT_EQUAL(0, display->recipeInsertWeightMg);
+    TEST_ASSERT_EQUAL(3000, Display::recipeInsertRequiredWeightMg);
+    TEST_ASSERT_EQUAL(0, Display::recipeInsertWeightMg);
 
     weightSensor->weight = 1000;
     weightSensor->newWeight = true;
     prepare->update();
 
     // should show required weight and current weight
-    TEST_ASSERT_EQUAL(3000, display->recipeInsertRequiredWeightMg);
-    TEST_ASSERT_EQUAL(1000 * 1000, display->recipeInsertWeightMg);
+    TEST_ASSERT_EQUAL(3000, Display::recipeInsertRequiredWeightMg);
+    TEST_ASSERT_EQUAL(1000 * 1000, Display::recipeInsertWeightMg);
 }
 
 int main(void)

@@ -1,23 +1,23 @@
 #include "millis.h"
 #include "mocks.h"
 #include "mock/mock_interface.h"
+#include "mock/mock_display.h"
 #include "modes/steps/step_config_weight.h"
 #include <unity.h>
 
-MockDisplay *display;
 RecipeConfigWeightStep *configWeight;
 RecipeStepState recipeStepState;
 
 void setUp(void)
 {
-    display = new MockDisplay();
-    configWeight = new RecipeConfigWeightStep(recipeStepState, *display);
+    Display::reset();
+    configWeight = 
+    new RecipeConfigWeightStep(recipeStepState);
     configWeight->enter();
 }
 
 void tearDown(void)
 {
-    delete display;
     delete configWeight;
 }
 
@@ -42,24 +42,24 @@ void test_adjust_weight_via_encoder()
     configWeight->update();
 
     // initial coffee weight is 3 grams
-    TEST_ASSERT_EQUAL(3000, display->weightConfigWeightMg);
+    TEST_ASSERT_EQUAL(3000, Display::weightConfigWeightMg);
     // 3000mg coffee -> 2 pours with 2 and 3 times coffee weight as water respectively, resulting in 15g water
-    TEST_ASSERT_EQUAL(15, display->weightConfigWaterWeightMl);
+    TEST_ASSERT_EQUAL(15, Display::weightConfigWaterWeightMl);
 
     // encoder ticks adjust coffee weight
     // turning encoder left should decrease
     Interface::encoderTicks = -1;
     configWeight->update();
-    TEST_ASSERT_EQUAL(2000, display->weightConfigWeightMg);
+    TEST_ASSERT_EQUAL(2000, Display::weightConfigWeightMg);
     TEST_ASSERT_EQUAL(2000, recipeStepState.configRecipe.coffeeWeightMg);
-    TEST_ASSERT_EQUAL(10, display->weightConfigWaterWeightMl);
+    TEST_ASSERT_EQUAL(10, Display::weightConfigWaterWeightMl);
 
     // cant reduce to 0 or below
     Interface::encoderTicks = -3;
     configWeight->update();
-    TEST_ASSERT_EQUAL(1000, display->weightConfigWeightMg);
+    TEST_ASSERT_EQUAL(1000, Display::weightConfigWeightMg);
     TEST_ASSERT_EQUAL(1000, recipeStepState.configRecipe.coffeeWeightMg);
-    TEST_ASSERT_EQUAL(5, display->weightConfigWaterWeightMl);
+    TEST_ASSERT_EQUAL(5, Display::weightConfigWaterWeightMl);
 }
 
 int main(void)

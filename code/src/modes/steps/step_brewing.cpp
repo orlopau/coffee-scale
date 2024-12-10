@@ -1,9 +1,10 @@
 #include "step_brewing.h"
 #include "millis.h"
 #include "interface.h"
+#include "display.h"
 
-RecipeBrewing::RecipeBrewing(RecipeStepState &state, Display &display, WeightSensor &weightSensor)
-    : state(state), display(display), weightSensor(weightSensor)
+RecipeBrewing::RecipeBrewing(RecipeStepState &state, WeightSensor &weightSensor)
+    : state(state), weightSensor(weightSensor)
 {
 }
 
@@ -87,7 +88,7 @@ void RecipeBrewing::update()
     }
 
     const int32_t remainingWeightMg = totalPourWeightMg - (weightSensor.getWeight() * 1000);
-    display.recipePour(pour->note, remainingWeightMg, remainingTimePourMs, isPause, recipePourIndex, state.configRecipe.poursCount);
+    Display::recipePour(pour->note, remainingWeightMg, remainingTimePourMs, isPause, recipePourIndex, state.configRecipe.poursCount);
 }
 
 void RecipeBrewing::nextPour()

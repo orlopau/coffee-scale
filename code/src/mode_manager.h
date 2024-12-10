@@ -6,7 +6,7 @@
 class ModeManager
 {
 public:
-    ModeManager(Mode *modes[], const int modeCount, Display &display);
+    ModeManager(Mode *modes[], const int modeCount);
     ~ModeManager(){};
     void update();
 
@@ -15,7 +15,6 @@ private:
     int currentMode;
     bool inModeChange;
     Mode **modes;
-    Display &display;
     float lastVoltage, lastPercentage;
     long lastBatteryTime;
 };

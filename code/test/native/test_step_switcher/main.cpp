@@ -2,9 +2,9 @@
 #include "mocks.h"
 #include "mock/mock_interface.h"
 #include "modes/steps/step_switcher.h"
+#include "mock/mock_display.h"
 #include <unity.h>
 
-MockDisplay *display;
 RecipeSwitcherStep *switcherStep;
 RecipeStepState recipeStepState;
 
@@ -17,15 +17,14 @@ const Recipe RECIPES[] = {
 
 void setUp(void)
 {
+    Display::reset();
     Interface::reset();
-    display = new MockDisplay();
-    switcherStep = new RecipeSwitcherStep(recipeStepState, *display, RECIPES, RECIPE_COUNT);
+    switcherStep = new RecipeSwitcherStep(recipeStepState, RECIPES, RECIPE_COUNT);
     switcherStep->enter();
 }
 
 void tearDown(void)
 {
-    delete display;
     delete switcherStep;
 }
 
@@ -34,32 +33,32 @@ void test_encoder_rotation_changes_chosen_recipe()
     switcherStep->update();
 
     // initial recipe is number 0
-    TEST_ASSERT_EQUAL(0, display->switcherIndex);
+    TEST_ASSERT_EQUAL(0, Display::switcherIndex);
 
     // turning encoder to left should remain at 0
     Interface::encoderDirection = Interface::EncoderDirection::CCW;
     switcherStep->update();
-    TEST_ASSERT_EQUAL(0, display->switcherIndex);
+    TEST_ASSERT_EQUAL(0, Display::switcherIndex);
 
     // turning encoder to right should change to 1
     Interface::encoderDirection = Interface::EncoderDirection::CW;
     switcherStep->update();
-    TEST_ASSERT_EQUAL(1, display->switcherIndex);
+    TEST_ASSERT_EQUAL(1, Display::switcherIndex);
 
     // turning encoder to right should change to 2
     Interface::encoderDirection = Interface::EncoderDirection::CW;
     switcherStep->update();
-    TEST_ASSERT_EQUAL(2, display->switcherIndex);
+    TEST_ASSERT_EQUAL(2, Display::switcherIndex);
 
     // turning encoder to right should remain at 2
     Interface::encoderDirection = Interface::EncoderDirection::CW;
     switcherStep->update();
-    TEST_ASSERT_EQUAL(2, display->switcherIndex);
+    TEST_ASSERT_EQUAL(2, Display::switcherIndex);
 
     // turning encoder to left should change to 1
     Interface::encoderDirection = Interface::EncoderDirection::CCW;
     switcherStep->update();
-    TEST_ASSERT_EQUAL(1, display->switcherIndex);
+    TEST_ASSERT_EQUAL(1, Display::switcherIndex);
 }
 
 void test_switcher_sets_recipe_state_to_chosen_recipe(void)

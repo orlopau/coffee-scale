@@ -4,10 +4,10 @@
 #include "modes/mode_recipe.h"
 #include "millis.h"
 #include "mock/mock_interface.h"
+#include "mock/mock_display.h"
 
 static Stopwatch *stopwatch;
 static MockWeightSensor *weightSensor;
-static MockDisplay *display;
 
 const Recipe RECIPES[] = {
     {"name1",
@@ -46,17 +46,16 @@ ModeRecipes *modeRecipes;
 
 void setUp(void)
 {
+    Display::reset();
     stopwatch = new Stopwatch();
     weightSensor = new MockWeightSensor();
-    display = new MockDisplay();
-    modeRecipes = new ModeRecipes(*weightSensor, *display, RECIPES, 3);
+    modeRecipes = new ModeRecipes(*weightSensor, RECIPES, 3);
 }
 
 void tearDown(void)
 {
     delete stopwatch;
     delete weightSensor;
-    delete display;
     delete modeRecipes;
 }
 
@@ -149,7 +148,7 @@ void test_issue_25(void)
     TEST_ASSERT_EQUAL(3, modeRecipes->getCurrentStepIndex());
 
     // check that ratio is reset to default 21ml
-    TEST_ASSERT_EQUAL(21, display->weightConfigWaterWeightMl);
+    TEST_ASSERT_EQUAL(21, Display::weightConfigWaterWeightMl);
 }
 
 int main(void)

@@ -6,8 +6,8 @@
 
 #define TAG "MODE-CAL"
 
-ModeCalibration::ModeCalibration(Display &display, Stopwatch &stopwatch, void (*saveScaleFnc)(float))
-    : display(display), stopwatch(stopwatch),
+ModeCalibration::ModeCalibration(Stopwatch &stopwatch, void (*saveScaleFnc)(float))
+    : stopwatch(stopwatch),
       calibrationStep(CalibrationStep::BEGIN), saveScaleFnc(saveScaleFnc) {}
 
 void ModeCalibration::update()
@@ -19,7 +19,7 @@ void ModeCalibration::update()
     switch (calibrationStep)
     {
     case CalibrationStep::BEGIN:
-        display.text("Starting calibration.\nRemove all items from\nscale.\n\nClick to continue!");
+        Display::text("Starting calibration.\nRemove all items from\nscale.\n\nClick to continue!");
         sumMeasurements = 0;
         numMeasurements = 0;
 
@@ -35,14 +35,14 @@ void ModeCalibration::update()
         }
         break;
     case CalibrationStep::ADD_WEIGHT:
-        display.text("Add weight to scale.\n\nClick to continue!");
+        Display::text("Add weight to scale.\n\nClick to continue!");
         if (Interface::getEncoderClick() == ClickType::SINGLE)
         {
             calibrationStep = CalibrationStep::CALIBRATING;
         }
         break;
     case CalibrationStep::CALIBRATING:
-        display.text("Calibrating...");
+        Display::text("Calibrating...");
         if (LoadCell::isReady())
         {
             sumMeasurements += static_cast<unsigned long>(LoadCell::read());
@@ -62,7 +62,7 @@ void ModeCalibration::update()
     case CalibrationStep::END:
         static char buffer[48];
         sprintf(buffer, "Calibration complete.\nScale: %.4f", scale);
-        display.text(buffer);
+        Display::text(buffer);
         break;
     }
 }

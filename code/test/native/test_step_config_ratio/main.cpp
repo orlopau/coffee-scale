@@ -1,23 +1,21 @@
 #include "millis.h"
 #include "mocks.h"
 #include "mock/mock_interface.h"
+#include "mock/mock_display.h"
 #include "modes/steps/step_config_ratio.h"
 #include <unity.h>
 
-MockDisplay *display;
 RecipeConfigRatioStep *configRatio;
 RecipeStepState recipeStepState;
 
 void setUp(void)
 {
-    display = new MockDisplay();
-    configRatio = new RecipeConfigRatioStep(recipeStepState, *display);
+    configRatio = new RecipeConfigRatioStep(recipeStepState);
     configRatio->enter();
 }
 
 void tearDown(void)
 {
-    delete display;
     delete configRatio;
 }
 
@@ -43,31 +41,31 @@ void test_adjust_ratio_via_encoder()
 
     // initial ratio is as given in the recipe, i.e. 1 gram of coffee to 5 grams water
     // ratios must be divided by 100 to get the actual ratio
-    TEST_ASSERT_EQUAL(10, display->ratioCoffee);
-    TEST_ASSERT_EQUAL(50, display->ratioWater);
+    TEST_ASSERT_EQUAL(10, Display::ratioCoffee);
+    TEST_ASSERT_EQUAL(50, Display::ratioWater);
 
     // by turning encoder, ratio can be adjusted in steps of 0.1
     Interface::encoderTicks = 1;
     configRatio->update();
-    TEST_ASSERT_EQUAL(51, display->ratioWater);
+    TEST_ASSERT_EQUAL(51, Display::ratioWater);
     Interface::encoderTicks = -1;
     configRatio->update();
-    TEST_ASSERT_EQUAL(49, display->ratioWater);
+    TEST_ASSERT_EQUAL(49, Display::ratioWater);
 
     // ratio can not be reduced below 1:1
     Interface::encoderTicks = -10000;
     configRatio->update();
-    TEST_ASSERT_EQUAL(10, display->ratioWater);
+    TEST_ASSERT_EQUAL(10, Display::ratioWater);
 
     // maxium ratio is limited by 64
     Interface::encoderTicks = 10000;
     configRatio->update();
-    TEST_ASSERT_EQUAL(640 + 50, display->ratioWater);
+    TEST_ASSERT_EQUAL(640 + 50, Display::ratioWater);
 
     // return to normal ratio
     Interface::encoderTicks = 0;
     configRatio->update();
-    TEST_ASSERT_EQUAL(50, display->ratioWater);
+    TEST_ASSERT_EQUAL(50, Display::ratioWater);
 }
 
 void test_adjusting_ratio_affects_pour_ratios()

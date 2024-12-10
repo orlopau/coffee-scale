@@ -1,8 +1,9 @@
 #include "step_config_weight.h"
 #include "interface.h"
+#include "display.h"
 
-RecipeConfigWeightStep::RecipeConfigWeightStep(RecipeStepState &state, Display &display)
-    : state(state), display(display){};
+RecipeConfigWeightStep::RecipeConfigWeightStep(RecipeStepState &state)
+    : state(state){};
 
 void RecipeConfigWeightStep::update()
 {
@@ -24,7 +25,7 @@ void RecipeConfigWeightStep::update()
     // update values and display
     state.configRecipe.coffeeWeightMg =
         state.originalRecipe->coffeeWeightMg + Interface::getEncoderTicks() * WEIGHT_ADJUST_MULTIPLIER;
-    display.recipeConfigCoffeeWeight(state.configRecipe.name, state.configRecipe.coffeeWeightMg,
+    Display::recipeConfigCoffeeWeight(state.configRecipe.name, state.configRecipe.coffeeWeightMg,
                                      state.configRecipe.coffeeWeightMg *
                                          ((float)recipeGetTotalRatio(state.configRecipe) / (float)RECIPE_RATIO_MUL) / 1000);
 }
