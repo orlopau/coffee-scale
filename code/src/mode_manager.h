@@ -9,6 +9,7 @@ public:
     ModeManager(Mode *modes[], const int modeCount);
     ~ModeManager(){};
     void update();
+    void begin();
 
 private:
     const int modeCount;

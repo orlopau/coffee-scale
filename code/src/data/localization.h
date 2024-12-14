@@ -62,6 +62,7 @@
 #define SETTINGS_TARE_2 "Auto-Tare Gewicht 3"
 #define SETTINGS_TARE_3 "Auto-Tare Gewicht 4"
 #define SETTINGS_TARE_4 "Auto-Tare Gewicht 5"
+#define SETTINGS_TARE_TOLERANCE "Auto-Tare Toleranz"
 //////////////////////////////////////////////
 #else
 /////////////////// ENGLISH ///////////////////
@@ -125,5 +126,6 @@
 #define SETTINGS_TARE_2 "Auto-Tare Weight 3"
 #define SETTINGS_TARE_3 "Auto-Tare Weight 4"
 #define SETTINGS_TARE_4 "Auto-Tare Weight 5"
+#define SETTINGS_TARE_TOLERANCE "Auto-Tare Tolerance"
 //////////////////////////////////////////////
 #endif

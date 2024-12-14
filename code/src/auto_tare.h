@@ -15,9 +15,9 @@ public:
     bool shouldTare();
     void update(float rawWeight);
     std::vector<float> weights;
-private:
     float tolerance;
     float maxStdDev;
+private:
     RingBuffer<float> buffer;
     bool isTare = false;
 

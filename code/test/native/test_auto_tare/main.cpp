@@ -6,8 +6,8 @@ AutoTare *autoTare;
 
 void setUp(void)
 {
-    // tolerance 0.1 and std dev 1g, 5 buffer size
-    autoTare = new AutoTare(0.1, 1, 5);
+    // tolerance 1 and std dev 1g, 5 buffer size
+    autoTare = new AutoTare(1, 1, 5);
     // add a weight of 36g
     autoTare->weights.push_back(36.0);
 }

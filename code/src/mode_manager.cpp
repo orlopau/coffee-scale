@@ -9,6 +9,8 @@ ModeManager::ModeManager(Mode *modes[], const int modeCount)
 {
 }
 
+void ModeManager::begin() { modes[currentMode]->enter(); }
+
 void ModeManager::update()
 {
     if (inModeChange)

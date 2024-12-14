@@ -7,9 +7,10 @@
 
 #define STABLE_WEIGHT_DIFF 2.0f
 
-bool isCloseTo(float tolerance, float a, float b) { return abs(a - b) <= tolerance; }
+bool isCloseTo(float toleranceAbs, float a, float b) { return abs(a - b) <= toleranceAbs; }
 
-AutoTare::AutoTare(float tolerance, float maxStdDev, uint16_t bufferSize) : tolerance(tolerance), maxStdDev(maxStdDev), buffer(bufferSize)
+AutoTare::AutoTare(float toleranceG, float maxStdDevG, uint16_t bufferSize)
+    : tolerance(toleranceG), maxStdDev(maxStdDevG), buffer(bufferSize)
 {
 }
 
@@ -27,26 +28,29 @@ void AutoTare::update(float rawWeight)
     if (buffer.standardDeviationLast(buffer.size()) < maxStdDev)
     {
         float avgWeight = buffer.averageLast(buffer.size());
-        float diff = avgWeight - lastStableWeight;
 
-        // only tare if the diff is positive
-        if (diff > 0)
-        {
-            // if the diff is similar to any saved weight, tare
-            for (float weight : weights)
-            {
-                if (isCloseTo(tolerance * weight, weight, diff))
-                {
-                    isTare = true;
-                }
-            }
-        }
-
-        // only set new stable weight if there is some siginificant diff
+        // only use stable weight if there is some siginificant diff
         if (!isCloseTo(STABLE_WEIGHT_DIFF, lastStableWeight, avgWeight))
         {
+            float diff = avgWeight - lastStableWeight;
+
+            // only tare if the diff is positive
+            if (diff > 0)
+            {
+                LOGI(TAG, "got new diff: %f\n", diff);
+
+                // if the diff is similar to any saved weight, tare
+                for (float weight : weights)
+                {
+                    if (isCloseTo(tolerance, weight, diff))
+                    {
+                        isTare = true;
+                    }
+                }
+            }
+
             // set the last stable one to this one
-            LOGI(TAG, "new stable weight: %f\n", avgWeight);
+            LOGI(TAG, "new last stable weight: %f\n", avgWeight);
             lastStableWeight = avgWeight;
         }
     }

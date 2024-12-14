@@ -109,6 +109,9 @@ void setup()
       Updater::update_firmware();
   }
 
+  /// MODE MANAGER ////
+  modeManager.begin();
+
   ESP_LOGI(TAG, "Setup finished!");
 }
 

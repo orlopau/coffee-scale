@@ -13,11 +13,12 @@ namespace Settings
         AUTO_TARE_2,
         AUTO_TARE_3,
         AUTO_TARE_4,
+        AUTO_TARE_TOLERANCE,
         FLOAT_SETTING_NUM
     };
 
     static const char *floatSettingNames[] = {
-        SETTINGS_TARE_0, SETTINGS_TARE_1, SETTINGS_TARE_2, SETTINGS_TARE_3, SETTINGS_TARE_4,
+        SETTINGS_TARE_0, SETTINGS_TARE_1, SETTINGS_TARE_2, SETTINGS_TARE_3, SETTINGS_TARE_4, SETTINGS_TARE_TOLERANCE
     };
 
     float getFloat(FloatSetting s);
@@ -33,8 +34,8 @@ namespace Settings
             FloatSetting setting = static_cast<FloatSetting>(i);
             float value = getFloat(setting);
 
-            // only use values that arent NaN
-            if (!std::isnan(value))
+            // only use values that arent NaN and greater than 1
+            if (!std::isnan(value) && value > 1)
             {
                 autoTares.push_back(value);
             }

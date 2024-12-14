@@ -19,5 +19,5 @@ public:
 private:
     WeightSensor &weightSensor;
     Stopwatch &stopwatch;
-    AutoTare *autoTare = new AutoTare(0.1, 1, 16); // 1g std deviation
+    AutoTare *autoTare = new AutoTare(2, 1, 16); // 1g std deviation, 2g tolerance by default
 };

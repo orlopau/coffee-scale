@@ -1,9 +1,10 @@
 #include "modes/mode_scale.h"
-#include "weight_sensor.h"
 #include "data/localization.h"
-#include "interface.h"
 #include "display.h"
+#include "interface.h"
+#include "logger.h"
 #include "settings.h"
+#include "weight_sensor.h"
 
 void ModeScale::update()
 {
@@ -32,6 +33,18 @@ void ModeScale::update()
 void ModeScale::enter() {
     // set correct values for auto tare
     autoTare->weights = Settings::getAllAutoTares();
+    for (auto weight : autoTare->weights)
+    {
+        LOGI("Scale", "auto tare weights: %f\n", weight);
+    }
+
+    float tolerance = Settings::getFloat(Settings::AUTO_TARE_TOLERANCE);
+    if (!isnan(tolerance))
+    {
+        autoTare->tolerance = tolerance;
+    }
+
+    LOGI("Scale", "auto tare tolerance: %f\n", autoTare->tolerance);
 }
 
 bool ModeScale::canSwitchMode()
