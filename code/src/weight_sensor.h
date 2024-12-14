@@ -21,6 +21,7 @@ public:
      * @return weight in grams
      */
     virtual float getLastWeight() = 0;
+    virtual float getLastUntaredWeight() = 0;
     virtual bool isNewWeight() = 0;
     virtual void tare() = 0;
     virtual void setScale(float scale) = 0;
@@ -46,6 +47,7 @@ public:
     void update() override;
     float getWeight() override;
     float getLastWeight() override;
+    float getLastUntaredWeight() override;
     bool isNewWeight() override;
     void tare() override;
     void setScale(float scale) override;

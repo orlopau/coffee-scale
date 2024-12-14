@@ -17,6 +17,14 @@ void ModeScale::update()
     {
         stopwatch.toggle();
     }
+
+    if (weightSensor.isNewWeight())
+    {
+        autoTare->update(weightSensor.getLastUntaredWeight());
+        if (autoTare->shouldTare()) {
+            weightSensor.tare();
+        }
+    }
 }
 
 bool ModeScale::canSwitchMode()

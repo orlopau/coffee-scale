@@ -115,7 +115,9 @@
         "types": "cpp",
         "geometry": "cpp",
         "forward_list": "cpp",
-        "regex": "cpp"
+        "regex": "cpp",
+        "matrixd": "cpp",
+        "matrixf": "cpp"
     },
     "java.project.sourcePaths": [
         "test/native"

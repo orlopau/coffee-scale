@@ -1,5 +1,6 @@
 #pragma once
 #include <stdint.h>
+#include <cmath>
 
 template <typename T>
 class RingBuffer
@@ -65,6 +66,18 @@ public:
         head = 0;
         full = false;
     };
+    float varianceLast(unsigned int count) const
+    {
+        float mean = averageLast(count);
+        float variance = 0;
+        for (int i = 0; i < count; i++)
+        {
+            float diff = getRelative(-i) - mean;
+            variance += diff * diff;
+        }
+        return variance / count;
+    };
+    float standardDeviationLast(unsigned int count) const { return std::sqrt(varianceLast(count)); };
 
 private:
     T *buffer;
