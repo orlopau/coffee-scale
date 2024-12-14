@@ -2,7 +2,7 @@
 
 #include "millis.h"
 #include "button.h"
-#include "scale.h"
+#include "weight_sensor.h"
 #include "mock/mock_loadcell.h"
 
 DefaultWeightSensor *weightSensor;

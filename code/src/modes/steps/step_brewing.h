@@ -1,6 +1,6 @@
 #pragma once
 
-#include "scale.h"
+#include "weight_sensor.h"
 #include "step.h"
 
 class RecipeBrewing : public RecipeStep

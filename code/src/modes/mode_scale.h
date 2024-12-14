@@ -1,7 +1,7 @@
 #pragma once
 
 #include "mode.h"
-#include "scale.h"
+#include "weight_sensor.h"
 #include "stopwatch.h"
 
 class ModeScale : public Mode

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "scale.h"
+#include "weight_sensor.h"
 #include "display.h"
 #include "stopwatch.h"
 #include "mode.h"

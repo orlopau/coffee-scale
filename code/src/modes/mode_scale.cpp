@@ -1,5 +1,5 @@
 #include "modes/mode_scale.h"
-#include "scale.h"
+#include "weight_sensor.h"
 #include "data/localization.h"
 #include "interface.h"
 #include "display.h"

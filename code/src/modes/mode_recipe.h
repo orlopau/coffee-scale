@@ -3,7 +3,7 @@
 #include "mode.h"
 #include "recipe.h"
 #include "modes/steps/step.h"
-#include "scale.h"
+#include "weight_sensor.h"
 #include "display.h"
 
 class ModeRecipes : public Mode
