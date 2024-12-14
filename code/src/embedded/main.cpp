@@ -12,6 +12,7 @@
 #include "modes/mode_espresso.h"
 #include "modes/mode_calibrate.h"
 #include "modes/mode_recipe.h"
+#include "modes/mode_settings.h"
 #include "display.h"
 #include "update.h"
 #include "interface.h"
@@ -36,9 +37,10 @@ void saveScale(float scale)
 ModeScale modeDefault(weightSensor, stopwatch);
 ModeEspresso modeEspresso(weightSensor, stopwatch);
 ModeCalibration modeCalibration(stopwatch, saveScale);
+ModeSettings modeSettings;
 ModeRecipes modeRecipes(weightSensor, RECIPES, RECIPE_COUNT);
-Mode *modes[] = {&modeDefault, &modeRecipes, &modeEspresso, &modeCalibration};
-ModeManager modeManager(modes, 4);
+Mode *modes[] = {&modeDefault, &modeRecipes, &modeEspresso, &modeCalibration, &modeSettings};
+ModeManager modeManager(modes, 5);
 
 Interface::EncoderDirection encoderDirection;
 

@@ -11,6 +11,7 @@ public:
     ModeScale(WeightSensor &weightSensor, Stopwatch &stopwatch)
         : weightSensor(weightSensor), stopwatch(stopwatch){};
     ~ModeScale(){};
+    void enter() override;
     void update();
     bool canSwitchMode();
     const char* getName();

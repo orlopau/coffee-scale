@@ -3,6 +3,7 @@
 #include "data/localization.h"
 #include "interface.h"
 #include "display.h"
+#include "settings.h"
 
 void ModeScale::update()
 {
@@ -22,9 +23,15 @@ void ModeScale::update()
     {
         autoTare->update(weightSensor.getLastUntaredWeight());
         if (autoTare->shouldTare()) {
+            Interface::buzzerTone(100);
             weightSensor.tare();
         }
     }
+}
+
+void ModeScale::enter() {
+    // set correct values for auto tare
+    autoTare->weights = Settings::getAllAutoTares();
 }
 
 bool ModeScale::canSwitchMode()

@@ -55,6 +55,13 @@
 #define MODE_NAME_RECIPES "Rezepte"
 #define MODE_NAME_SCALE "Waage"
 #define MODE_NAME_ESPRESSO "Espresso"
+#define MODE_NAME_SETTINGS "Einstellungen"
+
+#define SETTINGS_TARE_0 "Auto-Tare Gewicht 1"
+#define SETTINGS_TARE_1 "Auto-Tare Gewicht 2"
+#define SETTINGS_TARE_2 "Auto-Tare Gewicht 3"
+#define SETTINGS_TARE_3 "Auto-Tare Gewicht 4"
+#define SETTINGS_TARE_4 "Auto-Tare Gewicht 5"
 //////////////////////////////////////////////
 #else
 /////////////////// ENGLISH ///////////////////
@@ -111,5 +118,12 @@
 #define MODE_NAME_RECIPES "Recipes"
 #define MODE_NAME_SCALE "Scale"
 #define MODE_NAME_ESPRESSO "Espresso"
+#define MODE_NAME_SETTINGS "Settings"
+
+#define SETTINGS_TARE_0 "Auto-Tare Weight 1"
+#define SETTINGS_TARE_1 "Auto-Tare Weight 2"
+#define SETTINGS_TARE_2 "Auto-Tare Weight 3"
+#define SETTINGS_TARE_3 "Auto-Tare Weight 4"
+#define SETTINGS_TARE_4 "Auto-Tare Weight 5"
 //////////////////////////////////////////////
 #endif

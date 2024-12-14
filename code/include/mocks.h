@@ -15,6 +15,7 @@ public:
     void tare() override { weight = 0; }
     void setScale(float scale) override {}
     float getLastWeight() override { return weight; }
+    float getLastUntaredWeight() { return -1.0f; }
     float weight = 0;
     bool newWeight = false;
 };
