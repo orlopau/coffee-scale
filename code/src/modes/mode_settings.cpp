@@ -39,17 +39,18 @@ void ModeSettings::updateSwitcher()
         Interface::resetEncoderTicks();
     }
 
-    Display::switcher(MODE_NAME_SETTINGS, selected, Settings::FLOAT_SETTING_NUM, Settings::floatSettingNames);
+    Display::switcher(MODE_NAME_SETTINGS, selected, Settings::FLOAT_SETTING_NUM, Settings::getOptions());
 }
 
 void ModeSettings::updateFloatSetting()
 {
-    float val = Settings::getFloat(static_cast<Settings::FloatSetting>(selected));
+    auto setting = Settings::floatSettings[selected];
+    float val = Settings::getFloat(setting);
     if (isnan(val)) {
         val = 0;
     }
 
-    val += (float) Interface::getEncoderTicks() * 0.5f;
+    val += (float) Interface::getEncoderTicks() * setting.increment;
 
     // display value
     static char buffer[32];
@@ -59,7 +60,7 @@ void ModeSettings::updateFloatSetting()
     if (Interface::getEncoderClick() == ClickType::SINGLE)
     {
         modifySetting = false;
-        Settings::setFloat(static_cast<Settings::FloatSetting>(selected), val);
+        Settings::setFloat(setting, val);
         Settings::commit();
     }
     else if (Interface::getEncoderClick() == ClickType::LONG)
