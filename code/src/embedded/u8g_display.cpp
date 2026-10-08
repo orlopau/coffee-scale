@@ -1,10 +1,13 @@
 #ifndef NATIVE
 
 #include <cstring>
+#include <cstdlib>
 #include <qrcode.h>
 #include <U8g2lib.h>
 
 #include "display.h"
+#include "u8g2_canvas.h"
+#include "ui/widgets.h"
 #include "formatters.h"
 #include "data/bitmaps.h"
 #include "constants.h"
@@ -18,32 +21,10 @@
 #define FONT_LARGE u8g2_font_logisoso20_tf
 
 static U8G2_SH1107_64X128_F_HW_I2C u8g(U8G2_R1, U8X8_PIN_NONE, PIN_I2C_SCL, PIN_I2C_SDA);
+// All frames go through this canvas, so unchanged frames are not resent over I2C.
+static U8g2Canvas u8gCanvas(u8g.getU8g2());
 
-static void drawHCenterText(const char *text, uint8_t y)
-{
-    u8g.drawUTF8(u8g.getDisplayWidth() / 2.0 - u8g.getUTF8Width(text) / 2.0, y, text);
-}
-
-static void drawCenterText(const char *text)
-{
-    drawHCenterText(text, u8g.getDisplayHeight() / 2.0 + u8g.getFontAscent() / 2.0);
-}
-
-static int drawTitleLine(const char *title)
-{
-    u8g.setFont(FONT_SMALL);
-
-    int ascent = u8g.getAscent();
-    int descent = u8g.getDescent();
-    int width = u8g.getDisplayWidth();
-    int yy = ascent - descent;
-
-    // draw title line
-    u8g.drawUTF8(width / 2.0 - u8g.getUTF8Width(title) / 2.0, yy, title);
-    yy += Y_PADDING;
-    u8g.drawHLine(0, yy, width);
-    return yy;
-}
+Canvas &Display::canvas() { return u8gCanvas; }
 
 static bool shouldBlinkedBeVisible()
 {
@@ -76,50 +57,6 @@ static int drawQRCode(const char *bytes, uint8_t posX, uint8_t posY)
     u8g.setDrawColor(1);
 
     return 2 * qrcode.size + 2 * border;
-}
-
-static int drawSelectedBar(uint8_t index, uint8_t size)
-{
-    int width = u8g.getDisplayWidth();
-    int ascent = u8g.getAscent();
-
-    // display header shwoing number of pours as rectangles with current pur highlighted by a filled rectangle
-    static const int PROGRESS_HEIGHT = 4;
-    int boxWidth = width / size;
-    u8g.drawFrame(0, 0, width, PROGRESS_HEIGHT);
-    for (int i = 1; i < size; i++)
-    {
-        u8g.drawVLine(i * boxWidth, 0, PROGRESS_HEIGHT);
-    }
-    u8g.drawBox(index * boxWidth, 0, boxWidth, PROGRESS_HEIGHT);
-
-    return PROGRESS_HEIGHT;
-}
-
-static void drawTextAutoWrap(const char *text, int yTop, int xLeft, int maxWidth)
-{
-    u8g.setFont(u8g_font_6x10);
-    int ascent = u8g.getAscent();
-    int descent = u8g.getDescent();
-    int spaceWidth = u8g.getStrWidth(" ");
-
-    char *textCopy = strdup(text);
-    char *pointer = strtok(textCopy, " ");
-
-    int line = (ascent - descent) + yTop;
-    int x = xLeft;
-    while (pointer != NULL)
-    {
-        if (x + u8g.getUTF8Width(pointer) > maxWidth)
-        {
-            x = xLeft;
-            line += (ascent - descent);
-        }
-        u8g.drawUTF8(x, line, pointer);
-        x += u8g.getUTF8Width(pointer) + spaceWidth;
-        pointer = strtok(NULL, " ");
-    }
-    delete textCopy;
 }
 
 void Display::drawOpener()
@@ -159,13 +96,14 @@ void Display::drawOpener()
     textWidth = u8g.getStrWidth(textLineVersion);
     u8g.drawStr(remainingCenter - textWidth / 2.0, height - 2, textLineVersion);
 
-    u8g.sendBuffer();
+    u8gCanvas.flush();
 }
 
 void Display::begin()
 {
     u8g.setBusClock(1000000);
     u8g.begin();
+    u8gCanvas.invalidate();
 }
 
 void Display::clear()
@@ -182,7 +120,7 @@ void Display::display(float weight, unsigned long time)
     u8g.drawStr(0, 30, weightText);
     u8g.setFont(u8g2_font_logisoso22_tf);
     u8g.drawStr(0, 64, timeText);
-    u8g.sendBuffer();
+    u8gCanvas.flush();
 }
 
 void Display::promptText(const char *prompt, const char *text)
@@ -191,7 +129,7 @@ void Display::promptText(const char *prompt, const char *text)
     u8g.setFont(u8g_font_6x10);
     u8g.drawStr(0, 10, prompt);
     u8g.drawStr(0, 20, text);
-    u8g.sendBuffer();
+    u8gCanvas.flush();
 }
 
 void Display::centerText(const char *text, const uint8_t size)
@@ -219,15 +157,15 @@ void Display::centerText(const char *text, const uint8_t size)
         break;
     }
 
-    drawHCenterText(text, mid);
-    u8g.sendBuffer();
+    Widgets::textHCentered(u8gCanvas, text, mid);
+    u8gCanvas.flush();
 }
 
 void Display::switcher(const char* title, const uint8_t index, const uint8_t count, const char *options[])
 {
     u8g.clearBuffer();
 
-    int yy = drawTitleLine(title);
+    int yy = Widgets::titleLine(u8gCanvas, title);
     yy += 2;
 
     u8g.setFont(FONT_SMALL);
@@ -272,7 +210,7 @@ void Display::switcher(const char* title, const uint8_t index, const uint8_t cou
         yy += optionHeight;
     }
 
-    u8g.sendBuffer();
+    u8gCanvas.flush();
 };
 
 void Display::recipeSummary(const char *name, const char *description, const char *url)
@@ -288,27 +226,27 @@ void Display::recipeSummary(const char *name, const char *description, const cha
 
     if (url == nullptr)
     {
-        int yy = drawTitleLine(name);
-        drawTextAutoWrap(description, yy + 2, 0, width);
+        int yy = Widgets::titleLine(u8gCanvas, name);
+        Widgets::textWrapped(u8gCanvas, description, yy + 2, 0, width);
     }
     else
     {
         // u8g.drawBox(0, 0, u8g.getWidth(), u8g.getHeight());
         // u8g.setDrawColor(0);
-        drawTextAutoWrap(description, 0, 1, width - 54 - 3);
+        Widgets::textWrapped(u8gCanvas, description, 0, 1, width - 54 - 3);
         // u8g.setDrawColor(1);
 
         // qr code size 54
         drawQRCode(url, width - 54, (height - 54) / 2.0);
     }
 
-    u8g.sendBuffer();
+    u8gCanvas.flush();
 }
 
 void Display::recipeConfigCoffeeWeight(const char *header, unsigned int weightMg, unsigned int waterWeightMl)
 {
     u8g.clearBuffer();
-    int yy = drawTitleLine(header);
+    int yy = Widgets::titleLine(u8gCanvas, header);
     yy += Y_PADDING;
 
     int remainingHeight = u8g.getDisplayHeight() - yy;
@@ -335,18 +273,18 @@ void Display::recipeConfigCoffeeWeight(const char *header, unsigned int weightMg
     u8g.drawStr(u8g.getWidth() / 2.0, yy + (remainingHeight / 4.0) * 3, buffer);
 
     u8g.setFontPosBaseline();
-    u8g.sendBuffer();
+    u8gCanvas.flush();
 }
 
 void Display::recipeConfigRatio(const char *header, uint32_t coffee, uint32_t water)
 {
     u8g.clearBuffer();
-    int yy = drawTitleLine(header);
+    int yy = Widgets::titleLine(u8gCanvas, header);
     yy += 2 * Y_PADDING;
 
     u8g.setFont(FONT_MEDIUM);
     yy += u8g.getAscent();
-    drawHCenterText(DISPLAY_CONFIG_RATIO, yy);
+    Widgets::textHCentered(u8gCanvas, DISPLAY_CONFIG_RATIO, yy);
     yy += Y_PADDING;
 
     u8g.setFont(FONT_LARGE);
@@ -367,7 +305,7 @@ void Display::recipeConfigRatio(const char *header, uint32_t coffee, uint32_t wa
         u8g.drawStr(3 * u8g.getDisplayWidth() / 4.0 - u8g.getStrWidth(buffer) / 2.0, yy, buffer);
     }
 
-    u8g.sendBuffer();
+    u8gCanvas.flush();
 }
 
 void Display::recipeInsertCoffee(int32_t weightMg, uint32_t requiredWeightMg)
@@ -375,14 +313,14 @@ void Display::recipeInsertCoffee(int32_t weightMg, uint32_t requiredWeightMg)
     u8g.clearBuffer();
     u8g.setFont(u8g_font_7x13);
 
-    drawHCenterText(DISPLAY_INSERT_COFFEE, u8g.getAscent() + 5);
+    Widgets::textHCentered(u8gCanvas, DISPLAY_INSERT_COFFEE, u8g.getAscent() + 5);
 
     u8g.setFont(u8g_font_9x18);
     static char buffer[16];
     sprintf(buffer, "%.2fg/%.1fg", weightMg / 1000.0, requiredWeightMg / 1000.0);
-    drawCenterText(buffer);
+    Widgets::textCentered(u8gCanvas, buffer);
 
-    u8g.sendBuffer();
+    u8gCanvas.flush();
 }
 
 void Display::recipePour(const char *text, int32_t weightToPourMg, uint64_t timeToFinishMs, bool isPause, uint8_t pourIndex, uint8_t pours)
@@ -394,11 +332,11 @@ void Display::recipePour(const char *text, int32_t weightToPourMg, uint64_t time
     int ascent = u8g.getAscent();
 
     // display header shwoing number of pours as rectangles with current pur highlighted by a filled rectangle
-    int yy = drawSelectedBar(pourIndex, pours);
+    int yy = Widgets::segmentBar(u8gCanvas, pourIndex, pours);
 
     // draw info text
     yy += 2;
-    drawTextAutoWrap(text, yy, 0, width);
+    Widgets::textWrapped(u8gCanvas, text, yy, 0, width);
 
     // draw bottom: time and weight
     u8g.setFont(u8g_font_7x13);
@@ -429,7 +367,7 @@ void Display::recipePour(const char *text, int32_t weightToPourMg, uint64_t time
     int textWidth = u8g.getStrWidth(buffer);
     u8g.drawStr(width - textWidth - TEXT_X_PADDING, center + ascent / 2.0, buffer);
 
-    u8g.sendBuffer();
+    u8gCanvas.flush();
 }
 
 void Display::text(const char *text)
@@ -448,19 +386,19 @@ void Display::text(const char *text)
         line += 10;
         pointer = strtok(NULL, "\n");
     }
-    delete textCopy;
+    free(textCopy);
 
-    u8g.sendBuffer();
+    u8gCanvas.flush();
 }
 
 void Display::modeSwitcher(const char *current, const uint8_t index, const uint8_t count, float batV, float batPercentage, bool batCharging)
 {
     u8g.clearBuffer();
 
-    drawSelectedBar(index, count);
+    Widgets::segmentBar(u8gCanvas, index, count);
 
     u8g.setFont(u8g_font_10x20);
-    drawCenterText(current);
+    Widgets::textCentered(u8gCanvas, current);
 
     // battery state
     u8g.setFont(u8g2_font_battery19_tn);
@@ -487,60 +425,7 @@ void Display::modeSwitcher(const char *current, const uint8_t index, const uint8
         u8g.drawUTF8(u8g.getDisplayWidth() - textWidth - PADDING, u8g.getDisplayHeight() - PADDING, buffer);
     }
 
-    u8g.sendBuffer();
-}
-
-void Display::espressoShot(uint32_t currentTimeMs, uint32_t timeToFinishMs, int32_t currentWeightMg, uint32_t targetWeightMg,
-                              bool waiting)
-{
-    u8g.clearBuffer();
-    int width = u8g.getDisplayWidth();
-    int height = u8g.getDisplayHeight();
-
-    u8g.setFont(u8g2_font_logisoso18_tf);
-    int ascent = u8g.getAscent();
-
-    int barHeight = 5;
-    int barWidth = width;
-
-    int yy = 4;
-    int xx = 2;
-
-    // draw time to finish
-    float timeToFinishS = timeToFinishMs / 1000.0;
-    float currentTimeS = currentTimeMs / 1000.0;
-    static char buffer[16];
-    if (waiting)
-    {
-        sprintf(buffer, "%.1fs", currentTimeS);
-    }
-    else
-    {
-        sprintf(buffer, "%.1fs|%.1fs", -timeToFinishS, currentTimeS);
-    }
-    int textWidth = u8g.getUTF8Width(buffer);
-    u8g.drawUTF8(width / 2.0 - textWidth / 2.0, yy + ascent, buffer);
-
-    // change font
-    u8g.setFont(u8g2_font_logisoso16_tf);
-    ascent = u8g.getAscent();
-    yy = 2 + ascent;
-
-    // draw current weight in g
-    float currentWeightG = currentWeightMg / 1000.0;
-    float targetWeightG = targetWeightMg / 1000.0;
-    sprintf(buffer, "%.1fg/%.1fg", currentWeightG, targetWeightG);
-    textWidth = u8g.getUTF8Width(buffer);
-    u8g.drawUTF8(width / 2.0 - textWidth / 2.0, height - barHeight - 8, buffer);
-
-    // draw full width weight progress bar on bottom
-    int barY = height - barHeight;
-    int barX = 0;
-    int barProgress = (currentWeightG / targetWeightG) * barWidth;
-    u8g.drawFrame(barX, barY, barWidth, barHeight);
-    u8g.drawBox(barX, barY, barProgress, barHeight);
-
-    u8g.sendBuffer();
+    u8gCanvas.flush();
 }
 
 #endif

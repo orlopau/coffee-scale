@@ -3,7 +3,6 @@
 #include "weight_sensor.h"
 #include "mode.h"
 #include "stopwatch.h"
-#include "display.h"
 #include "regression.h"
 
 #define ENCODER_MG_PER_TICK 100
@@ -23,9 +22,17 @@ public:
           targetWeightMg(36 * 1000), approximator(REGRESSION_BUFFER_SIZE), lastEstimatedTime(0){};
     ~ModeEspresso(){};
     void update() override;
+    void render(Canvas &canvas) override;
+    bool rendersToCanvas() override { return true; }
     void enter() override;
     bool canSwitchMode() override;
     const char *getName() override;
+
+    int32_t getTargetWeightMg() const { return targetWeightMg; }
+    /** Estimated time until the target weight is reached. Only meaningful if !isWaitingForEstimate(). */
+    int32_t getRemainingTimeMs();
+    /** True while there is no usable estimate for the time to finish. */
+    bool isWaitingForEstimate();
 
 private:
     WeightSensor &weightSensor;

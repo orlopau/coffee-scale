@@ -1,6 +1,9 @@
+#include <stdio.h>
+
 #include "modes/mode_espresso.h"
 #include "data/localization.h"
 #include "interface.h"
+#include "ui/widgets.h"
 
 void ModeEspresso::enter() { Interface::resetEncoderTicks(); }
 
@@ -39,13 +42,48 @@ void ModeEspresso::update()
     {
         handleNewWeight();
     }
+}
 
-    // display
-    int32_t remainingTime = lastEstimatedTime - stopwatch.getTime();
-    bool waiting =
-        !stopwatch.isRunning() || remainingTime < 0 || remainingTime > REGRESSION_MAX_TIME || stopwatch.getTime() < REGRESSION_GRACE_PERIOD;
+int32_t ModeEspresso::getRemainingTimeMs() { return lastEstimatedTime - stopwatch.getTime(); }
 
-    Display::espressoShot(stopwatch.getTime(), remainingTime, weightSensor.getWeight() * 1000, targetWeightMg, waiting);
+bool ModeEspresso::isWaitingForEstimate()
+{
+    int32_t remainingTime = getRemainingTimeMs();
+    return !stopwatch.isRunning() || remainingTime < 0 || remainingTime > REGRESSION_MAX_TIME ||
+           stopwatch.getTime() < REGRESSION_GRACE_PERIOD;
+}
+
+void ModeEspresso::render(Canvas &canvas)
+{
+    static const int BAR_HEIGHT = 5;
+
+    const int width = canvas.width();
+    const int height = canvas.height();
+    char buffer[32];
+
+    // top: elapsed time, and remaining time once there is an estimate
+    float currentTimeS = (uint32_t)stopwatch.getTime() / 1000.0;
+    canvas.setFont(Font::Number18);
+    if (isWaitingForEstimate())
+    {
+        snprintf(buffer, sizeof(buffer), "%.1fs", currentTimeS);
+    }
+    else
+    {
+        float remainingTimeS = (uint32_t)getRemainingTimeMs() / 1000.0;
+        snprintf(buffer, sizeof(buffer), "%.1fs|%.1fs", -remainingTimeS, currentTimeS);
+    }
+    Widgets::textHCentered(canvas, buffer, 4 + canvas.ascent());
+
+    // bottom: current and target weight, with a progress bar
+    int32_t currentWeightMg = weightSensor.getWeight() * 1000;
+    float currentWeightG = currentWeightMg / 1000.0;
+    float targetWeightG = targetWeightMg / 1000.0;
+    canvas.setFont(Font::Number16);
+    snprintf(buffer, sizeof(buffer), "%.1fg/%.1fg", currentWeightG, targetWeightG);
+    Widgets::textHCentered(canvas, buffer, height - BAR_HEIGHT - 8);
+
+    Widgets::progressBar(canvas, 0, height - BAR_HEIGHT, width, BAR_HEIGHT, currentWeightG / targetWeightG);
 }
 
 void ModeEspresso::handleNewWeight()

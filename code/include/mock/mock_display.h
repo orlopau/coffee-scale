@@ -1,9 +1,13 @@
 #pragma once
 
+#include <stdlib.h>
 #include "display.h"
+#include "mock/mock_canvas.h"
 
 namespace Display
 {
+    inline RecordingCanvas mockCanvas;
+
     inline char *lastCenterText = nullptr;
     inline char *lastModeText = nullptr;
 
@@ -29,18 +33,13 @@ namespace Display
     inline uint64_t recipeTimeToFinishMs = 0;
     inline bool recipeIsPause = false;
 
-    inline uint32_t espressoCurrentTimeMs = 0;
-    inline uint32_t espressoTimeToFinishMs = 0;
-    inline int32_t espressoCurrentWeightMg = 0;
-    inline uint32_t espressoTargetWeightMg = 0;
-
     inline void reset()
     {
-        delete[] lastCenterText;
-        delete[] lastModeText;
-        delete[] recipeName;
-        delete[] recipeDescription;
-        delete[] weightConfigHeader;
+        free(lastCenterText);
+        free(lastModeText);
+        free(recipeName);
+        free(recipeDescription);
+        free(weightConfigHeader);
 
         lastCenterText = nullptr;
         lastModeText = nullptr;
@@ -64,9 +63,6 @@ namespace Display
         recipeTimeToFinishMs = 0;
         recipeIsPause = false;
 
-        espressoCurrentTimeMs = 0;
-        espressoTimeToFinishMs = 0;
-        espressoCurrentWeightMg = 0;
-        espressoTargetWeightMg = 0;
+        mockCanvas.reset();
     }
 }

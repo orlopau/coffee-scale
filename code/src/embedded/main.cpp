@@ -40,7 +40,7 @@ ModeCalibration modeCalibration(stopwatch, saveScale);
 ModeSettings modeSettings;
 ModeRecipes modeRecipes(weightSensor, RECIPES, RECIPE_COUNT);
 Mode *modes[] = {&modeDefault, &modeRecipes, &modeEspresso, &modeCalibration, &modeSettings};
-ModeManager modeManager(modes, 5);
+ModeManager modeManager(modes, 5, &Display::canvas());
 
 Interface::EncoderDirection encoderDirection;
 
@@ -130,7 +130,7 @@ void loop()
 #ifdef PERF
   if (loops >= AVERAGING_LOOPS)
   {
-    ESP_LOGI(TAG, "Loop time: %lu", (millis() - lastTime) / loops
+    ESP_LOGI(TAG, "Loop time: %lu", (millis() - lastTime) / loops);
     loops = 0;
     lastTime = millis();
   }
