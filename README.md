@@ -27,3 +27,12 @@ Possible adjustments include:
 - Changing the amount of coffee
 - Changing the brew ratio
 - Other adjustments based on the chosen recipe
+
+## Development: Updating From Your Computer
+During development, the scale can install a build straight from your computer over Wi-Fi, without USB and without a GitHub release.
+
+1. In `code/`, run `pio run -t serve`. This builds the firmware and serves it on your network. It is found by the scale via mDNS, so your computer's IP does not matter. The first run installs the Python package `zeroconf`.
+2. Hold the button while switching on the scale to open the updater. It connects to the Wi-Fi saved in the updater.
+3. On the language screen, **long-press** the button instead of clicking. The scale searches for your computer and installs the build.
+
+The server keeps running, so for the next build repeat steps 2 and 3 (`pio run -t serve` rebuilds when restarted). If the scale already runs the served build, it shows "No update available". Your computer and the scale must be on the same network, and the firewall must allow incoming connections for the server.
