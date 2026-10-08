@@ -5,6 +5,7 @@
 #include <HTTPUpdate.h>
 #include <WebServer.h>
 #include <WiFi.h>
+#include <ESPmDNS.h>
 
 #include "constants.h"
 #include "display.h"
@@ -13,9 +14,17 @@
 
 #define TAG "UPDATER"
 
+// mDNS service announced by scripts/serve_firmware.py (`pio run -t serve`)
+#define DEV_SERVER_SERVICE "coffeescale-fw"
+// each attempt waits up to 3 s for answers
+#define DEV_SERVER_SEARCH_ATTEMPTS 3
+
 namespace Updater
 {
     AutoConnect portal;
+
+    static void updateFromDevServer();
+    static void runUpdate(WiFiClient &client, const char *url);
 
     void started() { ESP_LOGI(TAG, "CALLBACK:  HTTP update process started"); }
 
@@ -68,13 +77,34 @@ namespace Updater
 
         delay(1000);
 
+        // The button may still be held from entering the updater at boot. Wait
+        // until it is released, so holding it does not count as a long press.
+        while (Interface::isEncoderPressed())
+        {
+            Interface::update();
+            delay(10);
+        }
+        Interface::consumeEncoderClick();
+
         // choose firmware type
         int selectedQualifier = 0;
         const uint8_t numQualifiers = 2;
         const char *names[] = {"Deutsch", "English"};
         const char *qualifiers[] = {"_de", "_en"};
-        while (Interface::getEncoderClick() != ClickType::SINGLE)
+        for (;;)
         {
+            ClickType click = Interface::getEncoderClick();
+            if (click == ClickType::SINGLE)
+            {
+                break;
+            }
+            // hidden: long press updates from a developer's computer instead of GitHub
+            if (click == ClickType::LONG)
+            {
+                Interface::consumeEncoderClick();
+                updateFromDevServer(); // only returns if no server was found
+            }
+
             selectedQualifier += static_cast<int>(Interface::getEncoderDirection());
             if (selectedQualifier < 0)
             {
@@ -88,18 +118,66 @@ namespace Updater
             Interface::update();
         }
 
+        WiFiClientSecure client;
+        client.setInsecure();
+
+        char url[128];
+        snprintf(url, 128, UPDATE_URL, qualifiers[selectedQualifier]);
+        runUpdate(client, url);
+    }
+
+    static bool findDevServer(char *url, size_t urlSize)
+    {
+        if (!MDNS.begin("coffee-scale"))
+        {
+            ESP_LOGE(TAG, "mDNS could not be started");
+            return false;
+        }
+
+        for (int attempt = 0; attempt < DEV_SERVER_SEARCH_ATTEMPTS; attempt++)
+        {
+            int found = MDNS.queryService(DEV_SERVER_SERVICE, "tcp");
+            if (found > 0)
+            {
+                String path = MDNS.txt(0, "path");
+                if (path.length() == 0)
+                {
+                    path = "/firmware.bin";
+                }
+                snprintf(url, urlSize, "http://%s:%u%s", MDNS.IP(0).toString().c_str(), MDNS.port(0), path.c_str());
+                return true;
+            }
+        }
+        return false;
+    }
+
+    static void updateFromDevServer()
+    {
+        Display::centerText(UPDATER_DEV_SEARCHING, 13);
+        ESP_LOGI(TAG, "Searching for dev firmware server...");
+
+        char url[128];
+        if (!findDevServer(url, sizeof(url)))
+        {
+            ESP_LOGI(TAG, "No dev firmware server found");
+            Display::centerText(UPDATER_DEV_NOT_FOUND, 13);
+            delay(2000);
+            return;
+        }
+
+        WiFiClient client;
+        runUpdate(client, url);
+    }
+
+    static void runUpdate(WiFiClient &client, const char *url)
+    {
         HTTPUpdate httpUpdate;
         httpUpdate.setFollowRedirects(HTTPC_FORCE_FOLLOW_REDIRECTS);
         httpUpdate.onStart(started);
         httpUpdate.onEnd(finished);
         httpUpdate.onProgress(progress);
         httpUpdate.onError(error);
-        
-        WiFiClientSecure client;
-        client.setInsecure();
 
-        char url[128];
-        snprintf(url, 128, UPDATE_URL, qualifiers[selectedQualifier]);
         ESP_LOGI(TAG, "Update URL: %s", url);
         t_httpUpdate_return code = httpUpdate.update(client, url);
 
