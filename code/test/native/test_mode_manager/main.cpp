@@ -173,9 +173,101 @@ void test_mode_manager_updates_next_mode_only_at_next_tick(void)
     TEST_ASSERT_TRUE(mockModes[1]->updateCalled);
 }
 
+class MockCanvasMode : public MockMode
+{
+public:
+    MockCanvasMode(const char *name) : MockMode(name){};
+    void render(Canvas &canvas) override
+    {
+        renderCount++;
+        canvas.drawText(0, 10, name);
+    }
+    bool rendersToCanvas() override { return true; }
+    int renderCount = 0;
+};
+
+void test_mode_manager_renders_canvas_mode_after_update(void)
+{
+    RecordingCanvas canvas;
+    MockCanvasMode mode("Canvas Mode");
+    Mode *canvasModes[] = {&mode};
+    ModeManager manager(canvasModes, 1, &canvas);
+    manager.begin();
+
+    manager.update();
+    TEST_ASSERT_TRUE(mode.updateCalled);
+    TEST_ASSERT_EQUAL(1, mode.renderCount);
+    TEST_ASSERT_EQUAL(1, canvas.clears);
+    TEST_ASSERT_EQUAL(1, canvas.flushes);
+    TEST_ASSERT_TRUE(canvas.hasText("Canvas Mode"));
+}
+
+void test_mode_manager_caps_render_rate(void)
+{
+    RecordingCanvas canvas;
+    MockCanvasMode mode("Canvas Mode");
+    Mode *canvasModes[] = {&mode};
+    ModeManager manager(canvasModes, 1, &canvas);
+    manager.begin();
+
+    // many updates in quick succession render only one frame
+    for (int i = 0; i < 20; i++)
+    {
+        manager.update();
+    }
+    TEST_ASSERT_EQUAL(1, mode.renderCount);
+
+    // after the frame interval passed, the next update renders again
+    sleep_for(RENDER_INTERVAL_MS + 5);
+    manager.update();
+    TEST_ASSERT_EQUAL(2, mode.renderCount);
+}
+
+void test_mode_manager_does_not_render_legacy_modes(void)
+{
+    RecordingCanvas canvas;
+    ModeManager manager(modes, 3, &canvas);
+    manager.begin();
+
+    manager.update();
+    TEST_ASSERT_TRUE(mockModes[0]->updateCalled);
+    TEST_ASSERT_EQUAL(0, canvas.clears);
+    TEST_ASSERT_EQUAL(0, canvas.flushes);
+}
+
+void test_mode_manager_renders_immediately_after_mode_selection(void)
+{
+    RecordingCanvas canvas;
+    MockCanvasMode first("First"), second("Second");
+    Mode *canvasModes[] = {&first, &second};
+    ModeManager manager(canvasModes, 2, &canvas);
+    manager.begin();
+    manager.update();
+    TEST_ASSERT_EQUAL(1, first.renderCount);
+
+    // switch to the second mode within the same frame interval
+    Interface::encoderClick = ClickType::LONG;
+    manager.update();
+    Interface::encoderClick = ClickType::NONE;
+    Interface::encoderDirection = Interface::EncoderDirection::CW;
+    manager.update();
+    Interface::encoderDirection = Interface::EncoderDirection::NONE;
+    Interface::encoderClick = ClickType::SINGLE;
+    manager.update();
+    Interface::encoderClick = ClickType::NONE;
+
+    manager.update();
+    TEST_ASSERT_EQUAL(1, second.renderCount);
+    TEST_ASSERT_TRUE(canvas.hasText("Second"));
+}
+
 int main(void)
 {
     UNITY_BEGIN();
+    RUN_TEST(test_mode_manager_renders_canvas_mode_after_update);
+    RUN_TEST(test_mode_manager_caps_render_rate);
+    RUN_TEST(test_mode_manager_does_not_render_legacy_modes);
+    RUN_TEST(test_mode_manager_renders_immediately_after_mode_selection);
     RUN_TEST(test_mode_manager_updates_current_mode_by_default);
     RUN_TEST(test_mode_manager_shows_current_mode_after_long_click);
     RUN_TEST(test_mode_manager_shows_next_and_previous_mode_after_rotation);
@@ -184,5 +276,6 @@ int main(void)
     RUN_TEST(test_mode_manager_does_not_call_update_when_changing);
     RUN_TEST(test_mode_manager_selects_mode_with_single_click);
     RUN_TEST(test_mode_manager_can_only_switch_when_mode_allows_it);
+    RUN_TEST(test_mode_manager_updates_next_mode_only_at_next_tick);
     UNITY_END();
 }

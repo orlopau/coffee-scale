@@ -1,11 +1,21 @@
 #pragma once
 #include "button.h"
+#include "canvas.h"
 #include <cstdio>
 #include <math.h>
 
 namespace Display
 {
     void begin();
+
+    /**
+     * Canvas for modes that render themselves (see Mode::render).
+     * Shares the frame buffer with the legacy screens below.
+     */
+    Canvas &canvas();
+
+    // Legacy screens: each draws and sends a full frame immediately.
+    // They move into their modes' render() one by one.
     void drawOpener();
     void display(float weight, unsigned long time);
     void promptText(const char *prompt, const char *subtext);
@@ -17,7 +27,6 @@ namespace Display
     void recipeConfigRatio(const char *header, uint32_t coffee, uint32_t water);
     void recipeInsertCoffee(int32_t weightMg, uint32_t requiredWeightMg);
     void recipePour(const char *text, int32_t weightToPourMg, uint64_t timeToFinishMs, bool isPause, uint8_t pourIndex, uint8_t pours);
-    void espressoShot(uint32_t currentTimeMs, uint32_t timeToFinishMs, int32_t currentWeightMg, uint32_t targetWeightMg, bool waiting);
     void text(const char *text);
     void clear();
 };

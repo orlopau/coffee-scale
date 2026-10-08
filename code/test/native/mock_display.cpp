@@ -5,6 +5,7 @@
 namespace Display
 {
     void begin() {}
+    Canvas &canvas() { return mockCanvas; }
     void update() {}
     void display(float weight, unsigned long time)
     {
@@ -14,7 +15,7 @@ namespace Display
     void promptText(const char *prompt, const char *subtext) {};
     void centerText(const char *text, const uint8_t size)
     {
-        delete[] lastCenterText;
+        free(lastCenterText);
         lastCenterText = strdup(text);
     };
     void modeSwitcher(const char *current, const uint8_t index, const uint8_t count, float batV, float batPercentage, bool batCharging)
@@ -28,8 +29,8 @@ namespace Display
     };
     void recipeSummary(const char *name, const char *description, const char *url)
     {
-        delete[] recipeName;
-        delete[] recipeDescription;
+        free(recipeName);
+        free(recipeDescription);
         recipeName = strdup(name);
         recipeDescription = strdup(description);
     };
@@ -37,7 +38,7 @@ namespace Display
     {
         weightConfigWeightMg = weightMg;
         weightConfigWaterWeightMl = waterWeightMl;
-        delete weightConfigHeader;
+        free(weightConfigHeader);
         weightConfigHeader = strdup(header);
     };
     void recipeConfigRatio(const char *header, uint32_t coffee, uint32_t water)
@@ -55,13 +56,6 @@ namespace Display
         recipeWeightToPourMg = weightToPour;
         recipeTimeToFinishMs = timeToFinish;
         recipeIsPause = isPause;
-    };
-    void espressoShot(uint32_t currentTimeMs, uint32_t timeToFinishMs, int32_t currentWeightMg, uint32_t targetWeightMg, bool waiting)
-    {
-        espressoCurrentTimeMs = currentTimeMs;
-        espressoTimeToFinishMs = timeToFinishMs;
-        espressoCurrentWeightMg = currentWeightMg;
-        espressoTargetWeightMg = targetWeightMg;
     };
     void text(const char *text) {};
     void drawTextAutoWrap(const char *text, int yTop) {};
