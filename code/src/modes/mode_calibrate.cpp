@@ -1,8 +1,11 @@
+#include <stdio.h>
+
 #include "mode_calibrate.h"
 #include "logger.h"
 #include "data/localization.h"
 #include "loadcell.h"
 #include "interface.h"
+#include "ui/widgets.h"
 
 #define TAG "MODE-CAL"
 
@@ -17,7 +20,6 @@ void ModeCalibration::update()
     switch (calibrationStep)
     {
     case CalibrationStep::BEGIN:
-        Display::text("Starting calibration.\nRemove all items from\nscale.\n\nClick to continue!");
         sumMeasurements = 0;
         numMeasurements = 0;
 
@@ -33,14 +35,12 @@ void ModeCalibration::update()
         }
         break;
     case CalibrationStep::ADD_WEIGHT:
-        Display::text("Add weight to scale.\n\nClick to continue!");
         if (Interface::getEncoderClick() == ClickType::SINGLE)
         {
             calibrationStep = CalibrationStep::CALIBRATING;
         }
         break;
     case CalibrationStep::CALIBRATING:
-        Display::text("Calibrating...");
         if (LoadCell::isReady())
         {
             sumMeasurements += static_cast<unsigned long>(LoadCell::read());
@@ -58,10 +58,30 @@ void ModeCalibration::update()
         }
         break;
     case CalibrationStep::END:
-        static char buffer[48];
-        sprintf(buffer, "Calibration complete.\nScale: %.4f", scale);
-        Display::text(buffer);
         break;
+    }
+}
+
+void ModeCalibration::render(Canvas &canvas)
+{
+    switch (calibrationStep)
+    {
+    case CalibrationStep::BEGIN:
+        Widgets::textLines(canvas, "Starting calibration.\nRemove all items from\nscale.\n\nClick to continue!");
+        break;
+    case CalibrationStep::ADD_WEIGHT:
+        Widgets::textLines(canvas, "Add weight to scale.\n\nClick to continue!");
+        break;
+    case CalibrationStep::CALIBRATING:
+        Widgets::textLines(canvas, "Calibrating...");
+        break;
+    case CalibrationStep::END:
+    {
+        char buffer[48];
+        snprintf(buffer, sizeof(buffer), "Calibration complete.\nScale: %.4f", scale);
+        Widgets::textLines(canvas, buffer);
+        break;
+    }
     }
 }
 

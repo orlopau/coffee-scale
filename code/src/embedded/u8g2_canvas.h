@@ -31,6 +31,7 @@ public:
     int descent() override;
     int textWidth(const char *text) override;
     void drawText(int x, int y, const char *text) override;
+    void drawGlyph(int x, int y, uint16_t glyph, uint8_t quarterTurns) override;
 
     void setColor(uint8_t color) override;
     void drawPixel(int x, int y) override;

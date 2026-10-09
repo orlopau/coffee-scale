@@ -1,7 +1,6 @@
 #pragma once
 
 #include "mode.h"
-#include "display.h"
 
 #define BATTERY_UPDATE_INTERVAL 2000
 // Minimum time between two rendered frames (20 fps). Input and weight handling
@@ -12,9 +11,9 @@ class ModeManager
 {
 public:
     /**
-     * @param canvas canvas that modes with rendersToCanvas() draw on. If null, such modes are not rendered.
+     * @param canvas canvas that the modes and the mode switcher are drawn on
      */
-    ModeManager(Mode *modes[], const int modeCount, Canvas *canvas = nullptr);
+    ModeManager(Mode *modes[], const int modeCount, Canvas &canvas);
     ~ModeManager(){};
     void update();
     void begin();
@@ -25,11 +24,14 @@ private:
     bool inModeChange;
     Mode **modes;
     float lastVoltage, lastPercentage;
+    bool lastCharging;
     long lastBatteryTime;
 
-    Canvas *canvas;
+    Canvas &canvas;
     unsigned long lastRenderTime;
     bool renderNow;
 
+    void updateModeChange();
     void renderIfDue();
+    void renderModeSwitcher();
 };

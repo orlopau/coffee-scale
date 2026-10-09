@@ -16,6 +16,7 @@ public:
     {
         updateCalled = true;
     };
+    void render(Canvas &canvas) override {}
     bool canSwitchMode()
     {
         return switchable;
@@ -43,7 +44,7 @@ void setUp(void)
     mockModes[0] = (MockMode *)modes[0];
     mockModes[1] = (MockMode *)modes[1];
     mockModes[2] = (MockMode *)modes[2];
-    modeManager = new ModeManager(modes, 3);
+    modeManager = new ModeManager(modes, 3, Display::mockCanvas);
 }
 
 void tearDown(void)
@@ -71,49 +72,49 @@ void test_mode_manager_updates_current_mode_by_default(void)
 void test_mode_manager_shows_current_mode_after_long_click(void)
 {
     enterSelection();
-    TEST_ASSERT_EQUAL_STRING("Mock Mode 1", Display::lastModeText);
+    TEST_ASSERT_TRUE(Display::mockCanvas.hasText("Mock Mode 1"));
 }
 
 void test_mode_manager_shows_next_and_previous_mode_after_rotation(void)
 {
     enterSelection();
-    TEST_ASSERT_EQUAL_STRING("Mock Mode 1", Display::lastModeText);
+    TEST_ASSERT_TRUE(Display::mockCanvas.hasText("Mock Mode 1"));
 
     Interface::encoderDirection = Interface::EncoderDirection::CW;
     modeManager->update();
-    TEST_ASSERT_EQUAL_STRING("Mock Mode 2", Display::lastModeText);
+    TEST_ASSERT_TRUE(Display::mockCanvas.hasText("Mock Mode 2"));
 
     Interface::encoderDirection = Interface::EncoderDirection::CCW;
     modeManager->update();
-    TEST_ASSERT_EQUAL_STRING("Mock Mode 1", Display::lastModeText);
+    TEST_ASSERT_TRUE(Display::mockCanvas.hasText("Mock Mode 1"));
 }
 
 void test_mode_manager_modes_lower_bound(void)
 {
     enterSelection();
-    TEST_ASSERT_EQUAL_STRING("Mock Mode 1", Display::lastModeText);
+    TEST_ASSERT_TRUE(Display::mockCanvas.hasText("Mock Mode 1"));
 
     Interface::encoderDirection = Interface::EncoderDirection::CCW;
     modeManager->update();
-    TEST_ASSERT_EQUAL_STRING("Mock Mode 1", Display::lastModeText);
+    TEST_ASSERT_TRUE(Display::mockCanvas.hasText("Mock Mode 1"));
 }
 
 void test_mode_manager_modes_upper_bound(void)
 {
     enterSelection();
-    TEST_ASSERT_EQUAL_STRING("Mock Mode 1", Display::lastModeText);
+    TEST_ASSERT_TRUE(Display::mockCanvas.hasText("Mock Mode 1"));
 
     Interface::encoderDirection = Interface::EncoderDirection::CW;
     modeManager->update();
-    TEST_ASSERT_EQUAL_STRING("Mock Mode 2", Display::lastModeText);
+    TEST_ASSERT_TRUE(Display::mockCanvas.hasText("Mock Mode 2"));
 
     Interface::encoderDirection = Interface::EncoderDirection::CW;
     modeManager->update();
-    TEST_ASSERT_EQUAL_STRING("Mock Mode 3", Display::lastModeText);
+    TEST_ASSERT_TRUE(Display::mockCanvas.hasText("Mock Mode 3"));
 
     Interface::encoderDirection = Interface::EncoderDirection::CW;
     modeManager->update();
-    TEST_ASSERT_EQUAL_STRING("Mock Mode 3", Display::lastModeText);
+    TEST_ASSERT_TRUE(Display::mockCanvas.hasText("Mock Mode 3"));
 }
 
 void test_mode_manager_does_not_call_update_when_changing(void)
@@ -134,12 +135,12 @@ void test_mode_manager_does_not_call_update_when_changing(void)
 void test_mode_manager_selects_mode_with_single_click(void)
 {
     enterSelection();
-    TEST_ASSERT_EQUAL_STRING("Mock Mode 1", Display::lastModeText);
+    TEST_ASSERT_TRUE(Display::mockCanvas.hasText("Mock Mode 1"));
 
     Interface::encoderDirection = Interface::EncoderDirection::CW;
     modeManager->update();
     Interface::encoderDirection = Interface::EncoderDirection::NONE;
-    TEST_ASSERT_EQUAL_STRING("Mock Mode 2", Display::lastModeText);
+    TEST_ASSERT_TRUE(Display::mockCanvas.hasText("Mock Mode 2"));
 
     Interface::encoderClick = ClickType::SINGLE;
     modeManager->update();
@@ -152,19 +153,19 @@ void test_mode_manager_can_only_switch_when_mode_allows_it(void)
 {
     mockModes[0]->switchable = false;
     enterSelection();
-    TEST_ASSERT_NULL(Display::lastModeText);
+    TEST_ASSERT_FALSE(Display::mockCanvas.hasText("Mock Mode 1"));
     TEST_ASSERT_TRUE(mockModes[0]->updateCalled);
 }
 
 void test_mode_manager_updates_next_mode_only_at_next_tick(void)
 {
     enterSelection();
-    TEST_ASSERT_EQUAL_STRING("Mock Mode 1", Display::lastModeText);
+    TEST_ASSERT_TRUE(Display::mockCanvas.hasText("Mock Mode 1"));
 
     Interface::encoderDirection = Interface::EncoderDirection::CW;
     modeManager->update();
     Interface::encoderDirection = Interface::EncoderDirection::NONE;
-    TEST_ASSERT_EQUAL_STRING("Mock Mode 2", Display::lastModeText);
+    TEST_ASSERT_TRUE(Display::mockCanvas.hasText("Mock Mode 2"));
 
     Interface::encoderClick = ClickType::SINGLE;
     modeManager->update();
@@ -182,7 +183,6 @@ public:
         renderCount++;
         canvas.drawText(0, 10, name);
     }
-    bool rendersToCanvas() override { return true; }
     int renderCount = 0;
 };
 
@@ -191,7 +191,7 @@ void test_mode_manager_renders_canvas_mode_after_update(void)
     RecordingCanvas canvas;
     MockCanvasMode mode("Canvas Mode");
     Mode *canvasModes[] = {&mode};
-    ModeManager manager(canvasModes, 1, &canvas);
+    ModeManager manager(canvasModes, 1, canvas);
     manager.begin();
 
     manager.update();
@@ -207,7 +207,7 @@ void test_mode_manager_caps_render_rate(void)
     RecordingCanvas canvas;
     MockCanvasMode mode("Canvas Mode");
     Mode *canvasModes[] = {&mode};
-    ModeManager manager(canvasModes, 1, &canvas);
+    ModeManager manager(canvasModes, 1, canvas);
     manager.begin();
 
     // many updates in quick succession render only one frame
@@ -223,24 +223,12 @@ void test_mode_manager_caps_render_rate(void)
     TEST_ASSERT_EQUAL(2, mode.renderCount);
 }
 
-void test_mode_manager_does_not_render_legacy_modes(void)
-{
-    RecordingCanvas canvas;
-    ModeManager manager(modes, 3, &canvas);
-    manager.begin();
-
-    manager.update();
-    TEST_ASSERT_TRUE(mockModes[0]->updateCalled);
-    TEST_ASSERT_EQUAL(0, canvas.clears);
-    TEST_ASSERT_EQUAL(0, canvas.flushes);
-}
-
 void test_mode_manager_renders_immediately_after_mode_selection(void)
 {
     RecordingCanvas canvas;
     MockCanvasMode first("First"), second("Second");
     Mode *canvasModes[] = {&first, &second};
-    ModeManager manager(canvasModes, 2, &canvas);
+    ModeManager manager(canvasModes, 2, canvas);
     manager.begin();
     manager.update();
     TEST_ASSERT_EQUAL(1, first.renderCount);
@@ -266,7 +254,6 @@ int main(void)
     UNITY_BEGIN();
     RUN_TEST(test_mode_manager_renders_canvas_mode_after_update);
     RUN_TEST(test_mode_manager_caps_render_rate);
-    RUN_TEST(test_mode_manager_does_not_render_legacy_modes);
     RUN_TEST(test_mode_manager_renders_immediately_after_mode_selection);
     RUN_TEST(test_mode_manager_updates_current_mode_by_default);
     RUN_TEST(test_mode_manager_shows_current_mode_after_long_click);

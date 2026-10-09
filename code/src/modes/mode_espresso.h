@@ -23,7 +23,6 @@ public:
     ~ModeEspresso(){};
     void update() override;
     void render(Canvas &canvas) override;
-    bool rendersToCanvas() override { return true; }
     void enter() override;
     bool canSwitchMode() override;
     const char *getName() override;

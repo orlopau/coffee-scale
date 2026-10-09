@@ -4,13 +4,13 @@
 #include "recipe.h"
 #include "modes/steps/step.h"
 #include "weight_sensor.h"
-#include "display.h"
 
 class ModeRecipes : public Mode
 {
 public:
     ModeRecipes(WeightSensor &weightSensor, const Recipe recipes[], uint8_t recipeCount);
-    void update();
+    void update() override;
+    void render(Canvas &canvas) override;
     const char *getName();
     bool canSwitchMode();
     uint8_t getCurrentStepIndex();

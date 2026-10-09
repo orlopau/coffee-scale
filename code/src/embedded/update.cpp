@@ -11,6 +11,7 @@
 #include "display.h"
 #include "interface.h"
 #include "data/localization.h"
+#include "ui/widgets.h"
 
 #define TAG "UPDATER"
 
@@ -26,6 +27,33 @@ namespace Updater
     static void updateFromDevServer();
     static void runUpdate(WiFiClient &client, const char *url);
 
+    // The updater blocks the main loop, so it draws and sends frames itself.
+
+    static void showMessage(const char *text)
+    {
+        Canvas &canvas = Display::canvas();
+        canvas.clear();
+        canvas.setFont(Font::Mono13);
+        Widgets::textHCentered(canvas, text, 38);
+        canvas.flush();
+    }
+
+    static void showText(const char *text)
+    {
+        Canvas &canvas = Display::canvas();
+        canvas.clear();
+        Widgets::textLines(canvas, text);
+        canvas.flush();
+    }
+
+    static void showSwitcher(const char *title, uint8_t index, uint8_t count, const char *const options[])
+    {
+        Canvas &canvas = Display::canvas();
+        canvas.clear();
+        Widgets::switcher(canvas, title, index, count, options);
+        canvas.flush();
+    }
+
     void started() { ESP_LOGI(TAG, "CALLBACK:  HTTP update process started"); }
 
     void finished() { ESP_LOGI(TAG, "CALLBACK:  HTTP update process finished"); }
@@ -35,7 +63,7 @@ namespace Updater
         ESP_LOGI(TAG, "CALLBACK:  HTTP update process at %d of %d bytes...", cur, total);
         static char progress[32];
         sprintf(progress, UPDATER_PROGRESS, ((float)cur / (float)total) * 100);
-        Display::centerText(progress, 13);
+        showMessage(progress);
     }
 
     void error(int err) { ESP_LOGI(TAG, "CALLBACK:  HTTP update fatal error code %d\n", err); }
@@ -45,13 +73,13 @@ namespace Updater
         ESP_LOGI(TAG, "Captive portal started");
         static char text[64];
         sprintf(text, UPDATER_WIFI_CONNECT_MANUAL, WiFi.softAPSSID().c_str());
-        Display::text(text);
+        showText(text);
         return true;
     }
 
     void update_firmware()
     {
-        Display::centerText(UPDATER_UPDATING, 13);
+        showMessage(UPDATER_UPDATING);
         ESP_LOGI(TAG, "Updating firmware...");
 
         uint32_t id = 0;
@@ -72,7 +100,7 @@ namespace Updater
         if (portal.begin())
         {
             ESP_LOGI(TAG, "WiFi connected");
-            Display::centerText(UPDATER_WIFI_CONNECTED, 13);
+            showMessage(UPDATER_WIFI_CONNECTED);
         }
 
         delay(1000);
@@ -114,7 +142,7 @@ namespace Updater
             {
                 selectedQualifier = numQualifiers - 1;
             }
-            Display::switcher("Choose Language", selectedQualifier, numQualifiers, names);
+            showSwitcher("Choose Language", selectedQualifier, numQualifiers, names);
             Interface::update();
         }
 
@@ -153,14 +181,14 @@ namespace Updater
 
     static void updateFromDevServer()
     {
-        Display::centerText(UPDATER_DEV_SEARCHING, 13);
+        showMessage(UPDATER_DEV_SEARCHING);
         ESP_LOGI(TAG, "Searching for dev firmware server...");
 
         char url[128];
         if (!findDevServer(url, sizeof(url)))
         {
             ESP_LOGI(TAG, "No dev firmware server found");
-            Display::centerText(UPDATER_DEV_NOT_FOUND, 13);
+            showMessage(UPDATER_DEV_NOT_FOUND);
             delay(2000);
             return;
         }
@@ -185,17 +213,17 @@ namespace Updater
         {
         case HTTP_UPDATE_FAILED:
             ESP_LOGI(TAG, "HTTP_UPDATE_FAILED Error (%d): %s", httpUpdate.getLastError(), httpUpdate.getLastErrorString().c_str());
-            Display::centerText(UPDATER_FAILED, 13);
+            showMessage(UPDATER_FAILED);
             break;
 
         case HTTP_UPDATE_NO_UPDATES:
             ESP_LOGI(TAG, "HTTP_UPDATE_NO_UPDATES");
-            Display::centerText(UPDATER_NO_UPDATE, 13);
+            showMessage(UPDATER_NO_UPDATE);
             break;
 
         case HTTP_UPDATE_OK:
             ESP_LOGI(TAG, "HTTP_UPDATE_OK");
-            Display::centerText(UPDATER_SUCCESS, 13);
+            showMessage(UPDATER_SUCCESS);
             break;
         }
 

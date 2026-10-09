@@ -12,7 +12,8 @@ public:
         : weightSensor(weightSensor), stopwatch(stopwatch){};
     ~ModeScale(){};
     void enter() override;
-    void update();
+    void update() override;
+    void render(Canvas &canvas) override;
     bool canSwitchMode();
     const char* getName();
 

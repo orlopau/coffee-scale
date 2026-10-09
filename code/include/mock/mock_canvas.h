@@ -38,6 +38,7 @@ public:
     int descent() override { return -2; }
     int textWidth(const char *text) override { return 6 * (int)std::string(text).size(); }
     void drawText(int x, int y, const char *text) override { texts.push_back({x, y, text}); }
+    void drawGlyph(int x, int y, uint16_t glyph, uint8_t quarterTurns) override {}
 
     void setColor(uint8_t color) override {}
     void drawPixel(int x, int y) override {}

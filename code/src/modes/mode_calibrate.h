@@ -1,7 +1,6 @@
 #pragma once
 
 #include "weight_sensor.h"
-#include "display.h"
 #include "stopwatch.h"
 #include "mode.h"
 
@@ -13,7 +12,8 @@ class ModeCalibration : public Mode
 public:
     ModeCalibration(Stopwatch &stopwatch, void (*saveScaleFnc)(float));
     ~ModeCalibration(){};
-    void update();
+    void update() override;
+    void render(Canvas &canvas) override;
     const char* getName();
     bool canSwitchMode();
 

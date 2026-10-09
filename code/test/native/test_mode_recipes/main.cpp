@@ -148,7 +148,8 @@ void test_issue_25(void)
     TEST_ASSERT_EQUAL(3, modeRecipes->getCurrentStepIndex());
 
     // check that ratio is reset to default 21ml
-    TEST_ASSERT_EQUAL(21, Display::weightConfigWaterWeightMl);
+    modeRecipes->render(Display::mockCanvas);
+    TEST_ASSERT_TRUE(Display::mockCanvas.hasText("21ml"));
 }
 
 int main(void)

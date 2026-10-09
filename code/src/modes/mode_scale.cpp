@@ -1,6 +1,8 @@
+#include <math.h>
+
 #include "modes/mode_scale.h"
 #include "data/localization.h"
-#include "display.h"
+#include "formatters.h"
 #include "interface.h"
 #include "logger.h"
 #include "settings.h"
@@ -8,8 +10,6 @@
 
 void ModeScale::update()
 {
-    Display::display(weightSensor.getWeight(), stopwatch.getTime());
-
     if (Interface::getEncoderDirection() != Interface::EncoderDirection::NONE)
     {
         weightSensor.tare();
@@ -28,6 +28,14 @@ void ModeScale::update()
             weightSensor.tare();
         }
     }
+}
+
+void ModeScale::render(Canvas &canvas)
+{
+    canvas.setFont(Font::Number30);
+    canvas.drawText(0, 30, formatWeight(weightSensor.getWeight()));
+    canvas.setFont(Font::Number22);
+    canvas.drawText(0, 64, formatTime(stopwatch.getTime()));
 }
 
 void ModeScale::enter() {

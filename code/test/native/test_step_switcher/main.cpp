@@ -33,32 +33,32 @@ void test_encoder_rotation_changes_chosen_recipe()
     switcherStep->update();
 
     // initial recipe is number 0
-    TEST_ASSERT_EQUAL(0, Display::switcherIndex);
+    TEST_ASSERT_EQUAL(0, switcherStep->recipeIndex);
 
     // turning encoder to left should remain at 0
     Interface::encoderDirection = Interface::EncoderDirection::CCW;
     switcherStep->update();
-    TEST_ASSERT_EQUAL(0, Display::switcherIndex);
+    TEST_ASSERT_EQUAL(0, switcherStep->recipeIndex);
 
     // turning encoder to right should change to 1
     Interface::encoderDirection = Interface::EncoderDirection::CW;
     switcherStep->update();
-    TEST_ASSERT_EQUAL(1, Display::switcherIndex);
+    TEST_ASSERT_EQUAL(1, switcherStep->recipeIndex);
 
     // turning encoder to right should change to 2
     Interface::encoderDirection = Interface::EncoderDirection::CW;
     switcherStep->update();
-    TEST_ASSERT_EQUAL(2, Display::switcherIndex);
+    TEST_ASSERT_EQUAL(2, switcherStep->recipeIndex);
 
     // turning encoder to right should remain at 2
     Interface::encoderDirection = Interface::EncoderDirection::CW;
     switcherStep->update();
-    TEST_ASSERT_EQUAL(2, Display::switcherIndex);
+    TEST_ASSERT_EQUAL(2, switcherStep->recipeIndex);
 
     // turning encoder to left should change to 1
     Interface::encoderDirection = Interface::EncoderDirection::CCW;
     switcherStep->update();
-    TEST_ASSERT_EQUAL(1, Display::switcherIndex);
+    TEST_ASSERT_EQUAL(1, switcherStep->recipeIndex);
 }
 
 void test_switcher_sets_recipe_state_to_chosen_recipe(void)
