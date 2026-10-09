@@ -256,6 +256,8 @@ static bool handleKey(const SDL_KeyboardEvent &key, int &speedIndex)
 
 int main(int argc, char **argv)
 {
+    // line by line, also when the output goes to a pipe, e.g. with pio run -t exec
+    setvbuf(stdout, nullptr, _IOLBF, 0);
     setup();
 
     ModeScale modeDefault(weightSensor, stopwatch);
@@ -287,7 +289,6 @@ int main(int argc, char **argv)
         return 1;
     }
     printf("%s", HELP);
-    fflush(stdout);
 
     int speedIndex = 0;
     Uint64 lastRealTime = SDL_GetTicks64();

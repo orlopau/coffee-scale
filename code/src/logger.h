@@ -5,8 +5,8 @@
 #include <cstdarg>
 inline void log_default(const char *tag, const char *format, ...)
 {
-    printf(tag);
-    printf(": ");
+    fputs(tag, stdout);
+    fputs(": ", stdout);
     va_list args;
     va_start(args, format);
     vprintf(format, args);
