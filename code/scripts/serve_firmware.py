@@ -34,24 +34,15 @@ def import_zeroconf():
 
 
 def lan_ipv4_addresses():
-    """IPv4 addresses of this computer that the scale could reach."""
-    addresses = []
-    try:
-        import ifaddr  # installed together with zeroconf
+    """IPv4 address of this computer that the scale can reach.
 
-        for adapter in ifaddr.get_adapters():
-            for ip in adapter.ips:
-                if isinstance(ip.ip, str) and not ip.ip.startswith(("127.", "169.254.")):
-                    addresses.append(ip.ip)
-    except ImportError:
-        pass
-
-    if not addresses:
-        # fall back to the address of the default route
-        with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
-            s.connect(("192.0.2.1", 9))  # TEST-NET, nothing is sent
-            addresses.append(s.getsockname()[0])
-    return sorted(set(addresses))
+    Only the address of the default route is announced. Announcing every
+    interface also announces unreachable ones (e.g. Docker bridges), and the
+    scale may pick one of those.
+    """
+    with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
+        s.connect(("192.0.2.1", 9))  # TEST-NET, nothing is sent
+        return [s.getsockname()[0]]
 
 
 def make_handler(firmware_file):
@@ -103,6 +94,7 @@ def main():
     parser.add_argument("firmware", help="path to firmware.bin")
     parser.add_argument("--port", type=int, default=0, help="HTTP port (default: any free port)")
     args = parser.parse_args()
+    sys.stdout.reconfigure(line_buffering=True)  # show output when piped, e.g. by pio
 
     zeroconf = import_zeroconf()
 
