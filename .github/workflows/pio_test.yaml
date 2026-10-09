@@ -33,6 +33,11 @@ jobs:
         pip install --upgrade platformio
     - name: Run Native Tests
       run: pio test -e native
+    - name: Build Emulator
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y libsdl2-dev
+        pio run -e emulator
     - name: Upload screenshots that differ
       if: failure()
       uses: actions/upload-artifact@v4
