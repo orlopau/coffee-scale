@@ -8,3 +8,6 @@
 .clang_complete
 .gcc-flags.json
 .pio
+
+# images of screens that differ from their reference, written by the screenshot tests
+test/native/test_screenshots/failed/

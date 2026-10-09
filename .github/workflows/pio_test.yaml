@@ -33,3 +33,10 @@ jobs:
         pip install --upgrade platformio
     - name: Run Native Tests
       run: pio test -e native
+    - name: Upload screenshots that differ
+      if: failure()
+      uses: actions/upload-artifact@v4
+      with:
+        name: failed-screenshots
+        path: code/test/native/test_screenshots/failed/
+        if-no-files-found: ignore
