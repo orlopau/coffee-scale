@@ -382,7 +382,7 @@ void Display::text(const char *text)
 
     while (pointer != NULL)
     {
-        u8g.drawStr(0, line, pointer);
+        u8g.drawUTF8(0, line, pointer);
         line += 10;
         pointer = strtok(NULL, "\n");
     }

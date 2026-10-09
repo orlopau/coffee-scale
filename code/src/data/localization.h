@@ -51,7 +51,7 @@
 #define UPDATER_WIFI_CONNECTED "WiFi verbunden."
 #define UPDATER_DEV_SEARCHING "Suche PC..."
 #define UPDATER_DEV_NOT_FOUND "Kein PC gefunden."
-#define UPDATER_WIFI_CONNECT_MANUAL "WiFi einrichten:\nMit Netzwerk\n%s\verbinden und\n\"Configure new AP\"\nwählen."
+#define UPDATER_WIFI_CONNECT_MANUAL "WiFi einrichten:\nMit Netzwerk\n%s\nverbinden und\n\"Configure new AP\"\nwählen."
 
 #define MODE_NAME_CALIBRATE "Kalibrierung"
 #define MODE_NAME_RECIPES "Rezepte"
