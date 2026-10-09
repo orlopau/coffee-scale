@@ -33,4 +33,5 @@ private:
     long sumMeasurements;
     unsigned int numMeasurements;
     long tare;
+    float scale;
 };

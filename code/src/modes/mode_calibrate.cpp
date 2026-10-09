@@ -12,9 +12,7 @@ ModeCalibration::ModeCalibration(Stopwatch &stopwatch, void (*saveScaleFnc)(floa
 
 void ModeCalibration::update()
 {
-    static char buffer[20];
     float average;
-    float scale;
 
     switch (calibrationStep)
     {
