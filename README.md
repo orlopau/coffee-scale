@@ -36,3 +36,15 @@ During development, the scale can install a build straight from your computer ov
 3. On the language screen, **long-press** the button instead of clicking. The scale searches for your computer and installs the build.
 
 The server keeps running, so for the next build repeat steps 2 and 3 (`pio run -t serve` rebuilds when restarted). If the scale already runs the served build, it shows "No update available". Your computer and the scale must be on the same network, and the firewall must allow incoming connections for the server.
+
+## Development: Screenshot Tests
+The native tests render every screen through u8g2, set up like the scale's display, and compare it with the reference images in `code/test/native/test_screenshots/screens/`. A screen that changes fails the tests, and its new image is written to `code/test/native/test_screenshots/failed/` (on GitHub, attached to the CI run as `failed-screenshots`).
+
+After changing a screen on purpose, accept the new images and commit them with the change:
+
+```
+cd code
+UPDATE_SCREENSHOTS=1 pio test -e native -f native/test_screenshots
+```
+
+The diff of the pull request then shows each changed screen before and after.
