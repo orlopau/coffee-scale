@@ -53,6 +53,13 @@
 #define UPDATER_DEV_NOT_FOUND "Kein PC gefunden."
 #define UPDATER_WIFI_CONNECT_MANUAL "WiFi einrichten:\nMit Netzwerk\n%s\nverbinden und\n\"Configure new AP\"\nwählen."
 
+#define RECORDER_RECORDING "Aufnahme"
+#define RECORDER_UPLOADING "Sende..."
+#define RECORDER_UPLOAD_FAILED "Fehler. Halten: neu"
+#define RECORDER_FULL "Voll. Halten: senden"
+#define RECORDER_NO_MEMORY "Zu wenig Speicher."
+#define RECORDER_MARKERS "Marker: %u"
+
 #define MODE_NAME_CALIBRATE "Kalibrierung"
 #define MODE_NAME_RECIPES "Rezepte"
 #define MODE_NAME_SCALE "Waage"
@@ -119,6 +126,13 @@
 #define UPDATER_DEV_SEARCHING "Searching PC..."
 #define UPDATER_DEV_NOT_FOUND "No PC found."
 #define UPDATER_WIFI_CONNECT_MANUAL "Setup WiFi by\nconnecting to the\nnetwork:\n%s\nand clicking\n\"Configure new AP\"."
+
+#define RECORDER_RECORDING "Recording"
+#define RECORDER_UPLOADING "Uploading..."
+#define RECORDER_UPLOAD_FAILED "Failed. Hold: retry"
+#define RECORDER_FULL "Full. Hold: upload"
+#define RECORDER_NO_MEMORY "Not enough memory."
+#define RECORDER_MARKERS "Marks: %u"
 
 #define MODE_NAME_CALIBRATE "Calibration"
 #define MODE_NAME_RECIPES "Recipes"

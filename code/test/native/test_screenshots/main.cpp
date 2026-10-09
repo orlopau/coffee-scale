@@ -35,6 +35,7 @@
 #include "modes/steps/step_prepare.h"
 #include "modes/steps/step_brewing.h"
 #include "modes/steps/step_done.h"
+#include "ui/recorder_screens.h"
 #include "ui/updater_screens.h"
 
 namespace fs = std::filesystem;
@@ -442,6 +443,29 @@ void test_updater(void)
     check("updater_wifi_setup");
 }
 
+void test_recorder(void)
+{
+    Canvas &canvas = display.canvas();
+
+    const struct
+    {
+        const char *name;
+        RecorderScreens::Status status;
+    } states[] = {
+        {"recording", RecorderScreens::Status::Recording},
+        {"uploading", RecorderScreens::Status::Uploading},
+        {"upload_failed", RecorderScreens::Status::UploadFailed},
+        {"full", RecorderScreens::Status::Full},
+        {"no_memory", RecorderScreens::Status::NoMemory},
+    };
+    for (const auto &state : states)
+    {
+        canvas.clear();
+        RecorderScreens::recording(canvas, {state.status, 12.34f, 83000, 217000, 3});
+        check("recorder_" + std::string(state.name));
+    }
+}
+
 /** Every reference image belongs to a screen, so renamed or removed screens leave none behind. */
 void test_no_unused_references(void)
 {
@@ -484,6 +508,7 @@ int main(void)
     RUN_TEST(test_settings);
     RUN_TEST(test_mode_switcher);
     RUN_TEST(test_updater);
+    RUN_TEST(test_recorder);
     RUN_TEST(test_no_unused_references);
     return UNITY_END();
 }
