@@ -43,7 +43,7 @@ void ModeScale::enter() {
     autoTare->weights = Settings::getAllAutoTares();
     for (auto weight : autoTare->weights)
     {
-        LOGI("Scale", "auto tare weights: %f\n", weight);
+        LOGI("Scale", "auto tare weights: %f", weight);
     }
 
     float tolerance = Settings::getFloat(Settings::floatSettings[Settings::AUTO_TARE_TOLERANCE]);
@@ -52,7 +52,7 @@ void ModeScale::enter() {
         autoTare->tolerance = tolerance;
     }
 
-    LOGI("Scale", "auto tare tolerance: %f\n", autoTare->tolerance);
+    LOGI("Scale", "auto tare tolerance: %f", autoTare->tolerance);
 }
 
 bool ModeScale::canSwitchMode()
