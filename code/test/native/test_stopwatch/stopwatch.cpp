@@ -1,8 +1,7 @@
 #include "unity.h"
 #include "stopwatch.h"
 
-#include <chrono>
-#include <thread>
+#include "millis.h"
 
 void setUp(void) {}
 
@@ -13,7 +12,7 @@ void test_stopwatch_start(void)
     Stopwatch stopwatch;
     stopwatch.start();
     TEST_ASSERT_TRUE(stopwatch.isRunning());
-    std::this_thread::sleep_for(std::chrono::milliseconds(2));
+    sleep_for(2);
     TEST_ASSERT_GREATER_OR_EQUAL(2, stopwatch.getTime());
 }
 
@@ -21,7 +20,7 @@ void test_stopwatch_stop(void)
 {
     Stopwatch stopwatch;
     stopwatch.start();
-    std::this_thread::sleep_for(std::chrono::milliseconds(2));
+    sleep_for(2);
     stopwatch.stop();
     TEST_ASSERT_FALSE(stopwatch.isRunning());
     TEST_ASSERT_GREATER_OR_EQUAL(2, stopwatch.getTime());
@@ -32,11 +31,11 @@ void test_stopwatch_toggle(void)
     Stopwatch stopwatch;
     stopwatch.toggle();
     TEST_ASSERT_TRUE(stopwatch.isRunning());
-    std::this_thread::sleep_for(std::chrono::milliseconds(2));
+    sleep_for(2);
     TEST_ASSERT_GREATER_OR_EQUAL(2, stopwatch.getTime());
     stopwatch.toggle();
     TEST_ASSERT_FALSE(stopwatch.isRunning());
-    std::this_thread::sleep_for(std::chrono::milliseconds(2));
+    sleep_for(2);
     TEST_ASSERT_GREATER_OR_EQUAL(2, stopwatch.getTime());
 }
 
