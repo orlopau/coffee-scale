@@ -11,3 +11,6 @@
 
 # images of screens that differ from their reference, written by the screenshot tests
 test/native/test_screenshots/failed/
+
+# screenshots saved by the emulator (P)
+screenshot-*.png

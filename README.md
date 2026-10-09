@@ -37,6 +37,33 @@ During development, the scale can install a build straight from your computer ov
 
 The server keeps running, so for the next build repeat steps 2 and 3 (`pio run -t serve` rebuilds when restarted). If the scale already runs the served build, it shows "No update available". Your computer and the scale must be on the same network, and the firewall must allow incoming connections for the server.
 
+## Development: Emulator
+The emulator runs the firmware on your computer, in a window that shows the scale's display. It needs SDL2 (`sudo apt install libsdl2-dev` on Debian/Ubuntu).
+
+```
+cd code
+pio run -e emulator -t exec
+```
+
+With `COMPILE_LANG=de` in front, it runs in German. The load cell is simulated, and the keyboard replaces the encoder:
+
+| Key | Action |
+|---|---|
+| Left / Right | turn the encoder |
+| Enter, Space | press the encoder, hold for a long press |
+| Up / Down | put 1 g on the scale or take it off, with Shift 0.1 g |
+| PageUp / PageDown | 10 g on or off |
+| Home | 100 g, e.g. for the calibration |
+| 0, Backspace | clear the scale |
+| F | pour on/off, 2 g/s |
+| S | espresso shot: 6 s pre-infusion, then about 38 g in 33 s |
+| N | noise on/off |
+| - / + | slower/faster time, up to 20x (1x while the button is held) |
+| P | save a screenshot to the current directory |
+| Esc, Q | quit |
+
+The window title shows the weight on the scale. The frame around the display lights up while the buzzer sounds. Settings are kept in memory only, and the boot splash screen and the updater only run on the device.
+
 ## Development: Screenshot Tests
 The native tests render every screen through u8g2, set up like the scale's display, and compare it with the reference images in `code/test/native/test_screenshots/screens/`. A screen that changes fails the tests, and its new image is written to `code/test/native/test_screenshots/failed/` (on GitHub, attached to the CI run as `failed-screenshots`).
 
