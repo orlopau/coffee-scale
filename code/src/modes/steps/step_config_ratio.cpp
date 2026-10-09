@@ -1,6 +1,9 @@
+#include <stdio.h>
+
 #include "step_config_ratio.h"
 #include "interface.h"
-#include "display.h"
+#include "data/localization.h"
+#include "ui/widgets.h"
 
 RecipeConfigRatioStep::RecipeConfigRatioStep(RecipeStepState &state)
     : state(state)
@@ -26,9 +29,33 @@ void RecipeConfigRatioStep::update()
 
     // adjust ratios of pours according to new ratio
     newRatio = recipeGetTotalRatio(*state.originalRecipe) + Interface::getEncoderTicks() * RATIO_ADJUST_MULTIPLIER;
+}
 
-    // update values and display
-    Display::recipeConfigRatio(state.configRecipe.name, 1 * RECIPE_RATIO_MUL, newRatio);
+void RecipeConfigRatioStep::render(Canvas &canvas)
+{
+    static const int Y_PADDING = 4;
+
+    const int width = canvas.width();
+    int y = Widgets::titleLine(canvas, state.configRecipe.name);
+    y += 2 * Y_PADDING;
+
+    canvas.setFont(Font::Medium);
+    y += canvas.ascent();
+    Widgets::textHCentered(canvas, DISPLAY_CONFIG_RATIO, y);
+    y += Y_PADDING;
+
+    // coffee : water, with the edited water part blinking
+    canvas.setFont(Font::Large);
+    y += (canvas.height() - y) / 2.0 + canvas.ascent() / 2.0;
+    canvas.drawText(width / 2.0 - canvas.textWidth(":") / 2.0, y, ":");
+
+    canvas.drawText(width / 4.0 - canvas.textWidth("1.0") / 2.0, y, "1.0");
+    if (Widgets::blinkVisible())
+    {
+        char buffer[16];
+        snprintf(buffer, sizeof(buffer), "%.1f", newRatio / (double)RECIPE_RATIO_MUL);
+        canvas.drawText(3 * width / 4.0 - canvas.textWidth(buffer) / 2.0, y, buffer);
+    }
 }
 
 void RecipeConfigRatioStep::enter()

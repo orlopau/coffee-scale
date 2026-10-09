@@ -40,7 +40,7 @@ ModeCalibration modeCalibration(stopwatch, saveScale);
 ModeSettings modeSettings;
 ModeRecipes modeRecipes(weightSensor, RECIPES, RECIPE_COUNT);
 Mode *modes[] = {&modeDefault, &modeRecipes, &modeEspresso, &modeCalibration, &modeSettings};
-ModeManager modeManager(modes, 5, &Display::canvas());
+ModeManager modeManager(modes, 5, Display::canvas());
 
 Interface::EncoderDirection encoderDirection;
 

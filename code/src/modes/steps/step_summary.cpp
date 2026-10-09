@@ -1,17 +1,24 @@
 #include "step_summary.h"
-#include "display.h"
+#include "ui/widgets.h"
 
-RecipeSummaryStep::RecipeSummaryStep(RecipeStepState &state) : state(state), isDisplayed(false) {}
+// size of the QR code of a recipe's URL
+#define QR_SIZE 54
 
-void RecipeSummaryStep::update()
+RecipeSummaryStep::RecipeSummaryStep(RecipeStepState &state) : state(state) {}
+
+void RecipeSummaryStep::render(Canvas &canvas)
 {
-    if (isDisplayed)
+    const Recipe *recipe = state.originalRecipe;
+    const int width = canvas.width();
+
+    if (recipe->url[0] == '\0')
     {
-        return;
+        int y = Widgets::titleLine(canvas, recipe->name);
+        Widgets::textWrapped(canvas, recipe->note, y + 2, 0, width);
     }
-
-    Display::recipeSummary(state.originalRecipe->name, state.originalRecipe->note, state.originalRecipe->url[0] == '\0' ? nullptr : state.originalRecipe->url);
-    isDisplayed = true;
+    else
+    {
+        Widgets::textWrapped(canvas, recipe->note, 0, 1, width - QR_SIZE - 3);
+        Widgets::qrCode(canvas, recipe->url, width - QR_SIZE, (canvas.height() - QR_SIZE) / 2);
+    }
 }
-
-void RecipeSummaryStep::enter() { isDisplayed = false; }

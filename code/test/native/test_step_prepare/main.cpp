@@ -43,16 +43,17 @@ void test_displays_current_weight_and_target_coffee_weight()
     prepare->update();
 
     // should show required weight and current weight
-    TEST_ASSERT_EQUAL(3000, Display::recipeInsertRequiredWeightMg);
-    TEST_ASSERT_EQUAL(0, Display::recipeInsertWeightMg);
+    prepare->render(Display::mockCanvas);
+    TEST_ASSERT_TRUE(Display::mockCanvas.hasText("0.00g/3.0g"));
 
     weightSensor->weight = 1000;
     weightSensor->newWeight = true;
     prepare->update();
 
     // should show required weight and current weight
-    TEST_ASSERT_EQUAL(3000, Display::recipeInsertRequiredWeightMg);
-    TEST_ASSERT_EQUAL(1000 * 1000, Display::recipeInsertWeightMg);
+    Display::mockCanvas.clear();
+    prepare->render(Display::mockCanvas);
+    TEST_ASSERT_TRUE(Display::mockCanvas.hasText("1000.00g/3.0g"));
 }
 
 int main(void)

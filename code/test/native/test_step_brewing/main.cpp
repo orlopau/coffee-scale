@@ -75,31 +75,31 @@ void test_recipe_brewing(void)
     // brewing recipe
     // 2 pours with 2 and 3 times coffee weight as water respectively
     // should show weight to add and time to add it
-    TEST_ASSERT_EQUAL(6000, Display::recipeWeightToPourMg);
-    TEST_ASSERT_EQUAL(500, Display::recipeTimeToFinishMs);
+    TEST_ASSERT_EQUAL(6000, recipeBrewing->getRemainingWeightMg());
+    TEST_ASSERT_EQUAL(500, recipeBrewing->getRemainingTimeMs());
 
     // 500ms pour time
     // after 200ms still 6000mg to pour and ~300ms left
     // still pour time not pause time
     sleep_for(201);
     recipeBrewing->update();
-    TEST_ASSERT_LESS_THAN(300, Display::recipeTimeToFinishMs);
-    TEST_ASSERT_GREATER_THAN(200, Display::recipeTimeToFinishMs);
-    TEST_ASSERT_FALSE(Display::recipeIsPause);
+    TEST_ASSERT_LESS_THAN(300, recipeBrewing->getRemainingTimeMs());
+    TEST_ASSERT_GREATER_THAN(200, recipeBrewing->getRemainingTimeMs());
+    TEST_ASSERT_FALSE(recipeBrewing->isPausing());
 
     // wait another ~300ms
     sleep_for(301);
     recipeBrewing->update();
     // now pause has started, 300ms pause time
-    TEST_ASSERT_TRUE(Display::recipeIsPause);
-    TEST_ASSERT_LESS_THAN(300, Display::recipeTimeToFinishMs);
-    TEST_ASSERT_GREATER_THAN(200, Display::recipeTimeToFinishMs);
+    TEST_ASSERT_TRUE(recipeBrewing->isPausing());
+    TEST_ASSERT_LESS_THAN(300, recipeBrewing->getRemainingTimeMs());
+    TEST_ASSERT_GREATER_THAN(200, recipeBrewing->getRemainingTimeMs());
 
     // wait another ~300ms
     sleep_for(301);
     recipeBrewing->update();
     // now time should be 0
-    TEST_ASSERT_EQUAL(0, Display::recipeTimeToFinishMs);
+    TEST_ASSERT_EQUAL(0, recipeBrewing->getRemainingTimeMs());
 
     // next step reached by single click
     Interface::encoderClick = ClickType::SINGLE;
@@ -110,16 +110,16 @@ void test_recipe_brewing(void)
     // verify that second step has started
     // as loadcell always returns 0, total missing weight is now the
     // weight of the first pour + the weight of the second pour = 6000 + 9000 = 15000
-    TEST_ASSERT_EQUAL(15000, Display::recipeWeightToPourMg);
+    TEST_ASSERT_EQUAL(15000, recipeBrewing->getRemainingWeightMg());
 
     // as second pour only contains pause time, should instantly show pause time
-    TEST_ASSERT_TRUE(Display::recipeIsPause);
-    TEST_ASSERT_EQUAL(300, Display::recipeTimeToFinishMs);
+    TEST_ASSERT_TRUE(recipeBrewing->isPausing());
+    TEST_ASSERT_EQUAL(300, recipeBrewing->getRemainingTimeMs());
 
     // after 300ms, recipe should be done
     sleep_for(301);
     recipeBrewing->update();
-    TEST_ASSERT_EQUAL(0, Display::recipeTimeToFinishMs);
+    TEST_ASSERT_EQUAL(0, recipeBrewing->getRemainingTimeMs());
 }
 
 void test_recipe_auto_advances_step_when_flag_is_set(void)
@@ -179,11 +179,11 @@ void test_recipe_auto_starts_when_flag_is_enbled(void)
 
     // second step does not auto start, recipe should display time to finish
     recipeBrewing->update();
-    TEST_ASSERT_EQUAL(50, Display::recipeTimeToFinishMs);
+    TEST_ASSERT_EQUAL(50, recipeBrewing->getRemainingTimeMs());
     sleep_for(101);
     recipeBrewing->update();
     // even after 100ms, still 50ms to go
-    TEST_ASSERT_EQUAL(50, Display::recipeTimeToFinishMs);
+    TEST_ASSERT_EQUAL(50, recipeBrewing->getRemainingTimeMs());
 
     // only after clicking encoder we should see the next step
     Interface::encoderClick = ClickType::SINGLE;
@@ -193,7 +193,7 @@ void test_recipe_auto_starts_when_flag_is_enbled(void)
     // verify that step has started after clicking
     sleep_for(10);
     recipeBrewing->update();
-    TEST_ASSERT_LESS_OR_EQUAL(40, Display::recipeTimeToFinishMs);
+    TEST_ASSERT_LESS_OR_EQUAL(40, recipeBrewing->getRemainingTimeMs());
 }
 
 void test_recipe_shows_pause_time_when_auto_start_disabled_and_pour_time_0(void)
@@ -212,7 +212,7 @@ void test_recipe_shows_pause_time_when_auto_start_disabled_and_pour_time_0(void)
     recipeBrewing->update();
 
     // verify that the remaining time is shown
-    TEST_ASSERT_EQUAL(50, Display::recipeTimeToFinishMs);
+    TEST_ASSERT_EQUAL(50, recipeBrewing->getRemainingTimeMs());
 }
 
 void test_advance_to_next_pour_via_click(void)

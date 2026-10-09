@@ -1,6 +1,9 @@
+#include <math.h>
+#include <stdio.h>
+
 #include "mode_settings.h"
 #include "data/localization.h"
-#include "display.h"
+#include "ui/widgets.h"
 #include "interface.h"
 #include "logger.h"
 #include "settings.h"
@@ -37,30 +40,46 @@ void ModeSettings::updateSwitcher()
     {
         modifySetting = true;
         Interface::resetEncoderTicks();
+        // render() shows the value already in this tick
+        value = editedValue();
     }
+}
 
-    Display::switcher(MODE_NAME_SETTINGS, selected, Settings::FLOAT_SETTING_NUM, Settings::getOptions());
+float ModeSettings::editedValue()
+{
+    auto setting = Settings::floatSettings[selected];
+    float stored = Settings::getFloat(setting);
+    if (isnan(stored))
+    {
+        stored = 0;
+    }
+    return stored + (float)Interface::getEncoderTicks() * setting.increment;
+}
+
+void ModeSettings::render(Canvas &canvas)
+{
+    if (modifySetting)
+    {
+        char buffer[32];
+        snprintf(buffer, sizeof(buffer), "%.1f", value);
+        canvas.setFont(Font::Number16);
+        Widgets::textHCentered(canvas, buffer, 40);
+    }
+    else
+    {
+        Widgets::switcher(canvas, MODE_NAME_SETTINGS, selected, Settings::FLOAT_SETTING_NUM, Settings::getOptions());
+    }
 }
 
 void ModeSettings::updateFloatSetting()
 {
     auto setting = Settings::floatSettings[selected];
-    float val = Settings::getFloat(setting);
-    if (isnan(val)) {
-        val = 0;
-    }
-
-    val += (float) Interface::getEncoderTicks() * setting.increment;
-
-    // display value
-    static char buffer[32];
-    sprintf(buffer, "%.1f", val);
-    Display::centerText(buffer, 16);
+    value = editedValue();
 
     if (Interface::getEncoderClick() == ClickType::SINGLE)
     {
         modifySetting = false;
-        Settings::setFloat(setting, val);
+        Settings::setFloat(setting, value);
         Settings::commit();
     }
     else if (Interface::getEncoderClick() == ClickType::LONG)

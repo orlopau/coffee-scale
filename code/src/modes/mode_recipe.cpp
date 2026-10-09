@@ -59,6 +59,8 @@ void ModeRecipes::update()
     recipeSteps[currentRecipeStep]->update();
 }
 
+void ModeRecipes::render(Canvas &canvas) { recipeSteps[currentRecipeStep]->render(canvas); }
+
 bool ModeRecipes::canSwitchMode()
 {
     return currentRecipeStep == 0;

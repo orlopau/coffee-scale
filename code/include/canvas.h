@@ -8,14 +8,19 @@
  */
 enum class Font : uint8_t
 {
-    Small,    // titles, labels
-    Body,     // running text
-    Medium,   // emphasized labels
-    Large,    // large text
-    Number16, // numeric readouts, from small to huge
+    Small,       // titles, labels
+    SmallMedium, // labels next to Medium values
+    Body,        // running text
+    Medium,      // emphasized labels
+    Large,       // large text
+    Mono13,      // fixed width text, from small to large
+    Mono18,
+    Mono20,
+    Number16,    // numeric readouts, from small to huge
     Number18,
     Number22,
     Number30,
+    Battery,     // battery icons, glyphs '0' (empty) to '5' (full) and '6' (charging)
 };
 
 /**
@@ -45,6 +50,8 @@ public:
     virtual int descent() = 0;
     virtual int textWidth(const char *text) = 0;
     virtual void drawText(int x, int y, const char *text) = 0;
+    /** Draws a single glyph of the current font, rotated clockwise by quarterTurns * 90 degrees. */
+    virtual void drawGlyph(int x, int y, uint16_t glyph, uint8_t quarterTurns) = 0;
 
     /** 1 draws pixels on, 0 draws pixels off (for inverted content). */
     virtual void setColor(uint8_t color) = 0;

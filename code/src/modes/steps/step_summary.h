@@ -6,10 +6,9 @@ class RecipeSummaryStep : public RecipeStep
 {
 public:
     RecipeSummaryStep(RecipeStepState &state);
-    void update() override;
-    void enter() override;
+    void update() override {}
+    void render(Canvas &canvas) override;
 
 private:
     RecipeStepState &state;
-    bool isDisplayed;
 };

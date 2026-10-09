@@ -1,7 +1,7 @@
 #include "step_switcher.h"
 #include "data/localization.h"
 #include "interface.h"
-#include "display.h"
+#include "ui/widgets.h"
 
 RecipeSwitcherStep::~RecipeSwitcherStep()
 {
@@ -34,8 +34,11 @@ void RecipeSwitcherStep::update()
     {
         recipeIndex += change;
     }
+}
 
-    Display::switcher(DISPLAY_RECIPE_SWITCHER_TITLE, recipeIndex, recipeCount, recipeSwitcherEntries);
+void RecipeSwitcherStep::render(Canvas &canvas)
+{
+    Widgets::switcher(canvas, DISPLAY_RECIPE_SWITCHER_TITLE, recipeIndex, recipeCount, recipeSwitcherEntries);
 }
 
 void RecipeSwitcherStep::exit()

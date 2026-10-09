@@ -9,7 +9,8 @@
 class ModeSettings : public Mode
 {
 public:
-    void update();
+    void update() override;
+    void render(Canvas &canvas) override;
     void enter() {
         selected = 0;
         modifySetting = false;
@@ -19,6 +20,9 @@ public:
 private:
     void updateSwitcher();
     void updateFloatSetting();
+    float editedValue();
     int selected = 0;
     bool modifySetting = false;
+    // value of the setting being modified, saved on click
+    float value = 0;
 };

@@ -112,8 +112,6 @@ void test_update_does_not_draw(void)
     TEST_ASSERT_EQUAL(0, (int)Display::mockCanvas.texts.size());
 }
 
-void test_renders_to_canvas(void) { TEST_ASSERT_TRUE(modeEspresso->rendersToCanvas()); }
-
 int main(void)
 {
     UNITY_BEGIN();
@@ -123,6 +121,5 @@ int main(void)
     RUN_TEST(test_render_shows_current_and_target_weight);
     RUN_TEST(test_render_shows_only_elapsed_time_without_estimate);
     RUN_TEST(test_update_does_not_draw);
-    RUN_TEST(test_renders_to_canvas);
     UNITY_END();
 }

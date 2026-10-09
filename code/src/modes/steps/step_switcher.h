@@ -9,6 +9,7 @@ public:
     RecipeSwitcherStep(RecipeStepState &state, const Recipe recipes[],
                        const uint8_t recipeCount);
     void update() override;
+    void render(Canvas &canvas) override;
     void exit() override;
     uint8_t recipeIndex;
 

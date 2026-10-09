@@ -1,6 +1,8 @@
 #include <string.h>
+#include <qrcode.h>
 
 #include "ui/widgets.h"
+#include "millis.h"
 
 namespace Widgets
 {
@@ -106,4 +108,111 @@ namespace Widgets
 
         return line;
     }
+
+    void textLines(Canvas &canvas, const char *text)
+    {
+        static const int LINE_HEIGHT = 10;
+
+        canvas.setFont(Font::Body);
+        char line[64];
+        int y = LINE_HEIGHT;
+        const char *p = text;
+        while (*p != '\0')
+        {
+            size_t len = strcspn(p, "\n");
+            if (len > 0)
+            {
+                size_t copied = len < sizeof(line) - 1 ? len : sizeof(line) - 1;
+                memcpy(line, p, copied);
+                line[copied] = '\0';
+                canvas.drawText(0, y, line);
+                y += LINE_HEIGHT;
+            }
+            p += len;
+            if (*p == '\n')
+            {
+                p++;
+            }
+        }
+    }
+
+    void switcher(Canvas &canvas, const char *title, uint8_t index, uint8_t count, const char *const options[])
+    {
+        int y = titleLine(canvas, title) + 2;
+
+        canvas.setFont(Font::Small);
+        int ascent = canvas.ascent();
+        int optionHeight = ascent + 2;
+        int visibleCount = (canvas.height() - y) / optionHeight;
+        if (visibleCount > count)
+        {
+            visibleCount = count;
+        }
+
+        int first = index - visibleCount / 2;
+        if (first < 0)
+        {
+            first = 0;
+        }
+        else if (first + visibleCount > count)
+        {
+            // start at the last possible option instead of showing empty space at the end
+            first = count - visibleCount;
+        }
+
+        // y is the top of the current option
+        for (int i = 0; i < visibleCount; i++)
+        {
+            int option = first + i;
+            if (option == index)
+            {
+                canvas.drawBox(0, y, canvas.width(), optionHeight);
+                canvas.setColor(0);
+            }
+            canvas.drawText(2, y + ascent + 1, options[option]);
+            canvas.setColor(1);
+            y += optionHeight;
+        }
+    }
+
+    int qrCode(Canvas &canvas, const char *text, int x, int y)
+    {
+        static const uint8_t VERSION = 2;
+        static const int BORDER = 2;
+        static QRCode qrcode;
+        static uint8_t *bytes = new uint8_t[qrcode_getBufferSize(VERSION)];
+        // encoding is the expensive part, and screens redraw every frame
+        static char encoded[32] = "";
+
+        if (strncmp(encoded, text, sizeof(encoded)) != 0)
+        {
+            qrcode_initText(&qrcode, bytes, VERSION, ECC_QUARTILE, text);
+            strncpy(encoded, text, sizeof(encoded) - 1);
+        }
+
+        // modules are drawn off on a filled box, with a border around them
+        int size = 2 * qrcode.size + 2 * BORDER;
+        canvas.drawBox(x, y, size, size);
+        canvas.setColor(0);
+        for (uint8_t my = 0; my < qrcode.size; my++)
+        {
+            for (uint8_t mx = 0; mx < qrcode.size; mx++)
+            {
+                if (qrcode_getModule(&qrcode, mx, my))
+                {
+                    canvas.drawBox(2 * mx + x + BORDER, 2 * my + y + BORDER, 2, 2);
+                }
+            }
+        }
+        canvas.setColor(1);
+        return size;
+    }
+
+    int centerBaseline(Canvas &canvas, int y)
+    {
+        // same as u8g2's setFontPosCenter()
+        return y + (canvas.ascent() - canvas.descent()) / 2 + canvas.descent();
+    }
+
+    bool blinkVisible() { return now() % 1000 > 200; }
 }

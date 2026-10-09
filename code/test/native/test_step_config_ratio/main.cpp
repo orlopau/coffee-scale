@@ -40,32 +40,34 @@ void test_adjust_ratio_via_encoder()
     configRatio->update();
 
     // initial ratio is as given in the recipe, i.e. 1 gram of coffee to 5 grams water
-    // ratios must be divided by 100 to get the actual ratio
-    TEST_ASSERT_EQUAL(10, Display::ratioCoffee);
-    TEST_ASSERT_EQUAL(50, Display::ratioWater);
+    // ratios must be divided by RECIPE_RATIO_MUL to get the actual ratio
+    TEST_ASSERT_EQUAL(50, configRatio->getRatio());
+    // the water side blinks, so only the constant coffee side is checked on screen
+    configRatio->render(Display::mockCanvas);
+    TEST_ASSERT_TRUE(Display::mockCanvas.hasText("1.0"));
 
     // by turning encoder, ratio can be adjusted in steps of 0.1
     Interface::encoderTicks = 1;
     configRatio->update();
-    TEST_ASSERT_EQUAL(51, Display::ratioWater);
+    TEST_ASSERT_EQUAL(51, configRatio->getRatio());
     Interface::encoderTicks = -1;
     configRatio->update();
-    TEST_ASSERT_EQUAL(49, Display::ratioWater);
+    TEST_ASSERT_EQUAL(49, configRatio->getRatio());
 
     // ratio can not be reduced below 1:1
     Interface::encoderTicks = -10000;
     configRatio->update();
-    TEST_ASSERT_EQUAL(10, Display::ratioWater);
+    TEST_ASSERT_EQUAL(10, configRatio->getRatio());
 
     // maxium ratio is limited by 64
     Interface::encoderTicks = 10000;
     configRatio->update();
-    TEST_ASSERT_EQUAL(640 + 50, Display::ratioWater);
+    TEST_ASSERT_EQUAL(640 + 50, configRatio->getRatio());
 
     // return to normal ratio
     Interface::encoderTicks = 0;
     configRatio->update();
-    TEST_ASSERT_EQUAL(50, Display::ratioWater);
+    TEST_ASSERT_EQUAL(50, configRatio->getRatio());
 }
 
 void test_adjusting_ratio_affects_pour_ratios()
