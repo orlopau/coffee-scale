@@ -15,3 +15,6 @@ test/native/test_screenshots/failed/
 
 # screenshots saved by the emulator (P)
 screenshot-*.png
+
+# Python caches of the scripts and their tests
+__pycache__/
