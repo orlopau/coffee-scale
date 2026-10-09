@@ -1,0 +1,10 @@
+# coffee-scale recording
+# firmware: v1.9.0
+# grams_per_count: 0.0025
+ms,event,value
+0,sample,1000
+100,sample,1010
+150,click,
+200,sample,1020
+250,future_event,1
+300,sample,1030
