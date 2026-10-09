@@ -17,8 +17,8 @@ public:
     static constexpr float COUNTS_PER_GRAM = 420;
     /** Raw reading of the empty scale, a load cell never reads zero. */
     static constexpr long EMPTY_COUNTS = 84000;
-    /** The HX711 measures 10 or 80 times per second, depending on its RATE pin. */
-    static constexpr float SAMPLES_PER_SECOND = 80;
+    /** The HX711 measures 10 or 80 times per second depending on its RATE pin, the scale's 10. */
+    static constexpr float SAMPLES_PER_SECOND = 10;
     /** Standard deviation of the noise, when enabled. */
     static constexpr float NOISE_COUNTS = 25;
     /** How long an espresso shot started with startShot() runs, in ms. */
