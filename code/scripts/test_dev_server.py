@@ -8,8 +8,10 @@ import http.client
 import http.server
 import os
 import re
+import socket
 import tempfile
 import threading
+import time
 import unittest
 from datetime import datetime
 from unittest import mock
@@ -87,6 +89,36 @@ class RecordModeTest(unittest.TestCase):
         self.assertEqual(400, response.status)
         self.assertEqual([], self.files())
 
+    def send_partial(self, close):
+        """Announces the whole recording but sends only half of it, like an upload cut off by Wi-Fi."""
+        data = RECORDING.encode()
+        sock = socket.create_connection(("127.0.0.1", self.server.server.server_address[1]), timeout=5)
+        sock.sendall(
+            b"POST /samples HTTP/1.1\r\nHost: test\r\nContent-Length: %d\r\n\r\n" % len(data) + data[: len(data) // 2]
+        )
+        if close:
+            sock.shutdown(socket.SHUT_WR)
+        response = sock.recv(1024)
+        sock.close()
+        return response
+
+    def test_rejects_cut_off_upload(self):
+        response = self.send_partial(close=True)
+
+        self.assertIn(b" 400 ", response.split(b"\r\n")[0])
+        self.assertEqual([], self.files())
+
+    def test_stalled_upload_times_out(self):
+        self.server.close()
+        with mock.patch.object(dev_server, "UPLOAD_TIMEOUT_S", 0.5):
+            self.server = Server(record_dir=self.record_dir)
+        started = time.monotonic()
+
+        self.send_partial(close=False)
+
+        self.assertLess(time.monotonic() - started, 3)
+        self.assertEqual([], self.files())
+
     def test_other_paths_not_found(self):
         response, _ = self.server.request("POST", "/firmware.bin", RECORDING.encode())
         self.assertEqual(404, response.status)
@@ -97,6 +129,9 @@ class RecordModeTest(unittest.TestCase):
 class SummarizeTest(unittest.TestCase):
     def test_summarize(self):
         self.assertEqual((2, 1.234, 1), dev_server.summarize(RECORDING))
+
+    def test_summarize_skips_broken_rows(self):
+        self.assertEqual((2, 1.234, 1), dev_server.summarize(RECORDING + "x,sample,1\n"))
 
     def test_summarize_empty(self):
         self.assertEqual((0, 0.0, 0), dev_server.summarize(RECORDING.split("ms,event,value\n")[0] + "ms,event,value\n"))
