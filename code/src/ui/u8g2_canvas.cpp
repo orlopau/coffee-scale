@@ -1,8 +1,6 @@
-#ifndef NATIVE
-
 #include <string.h>
 
-#include "u8g2_canvas.h"
+#include "ui/u8g2_canvas.h"
 #include "millis.h"
 
 #define REFRESH_INTERVAL_MS 1000
@@ -91,5 +89,3 @@ void U8g2Canvas::drawHLine(int x, int y, int w) { u8g2_DrawHLine(u8g2, x, y, w);
 void U8g2Canvas::drawVLine(int x, int y, int h) { u8g2_DrawVLine(u8g2, x, y, h); }
 void U8g2Canvas::drawBox(int x, int y, int w, int h) { u8g2_DrawBox(u8g2, x, y, w, h); }
 void U8g2Canvas::drawFrame(int x, int y, int w, int h) { u8g2_DrawFrame(u8g2, x, y, w, h); }
-
-#endif

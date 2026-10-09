@@ -3,7 +3,7 @@
 #include <U8g2lib.h>
 
 #include "display.h"
-#include "u8g2_canvas.h"
+#include "ui/u8g2_canvas.h"
 #include "data/bitmaps.h"
 #include "constants.h"
 

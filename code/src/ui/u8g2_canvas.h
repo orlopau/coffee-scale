@@ -1,6 +1,6 @@
 #pragma once
 
-#include <U8g2lib.h>
+#include <clib/u8g2.h>
 #include "canvas.h"
 
 /**
