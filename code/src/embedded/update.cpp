@@ -11,7 +11,7 @@
 #include "display.h"
 #include "interface.h"
 #include "data/localization.h"
-#include "ui/widgets.h"
+#include "ui/updater_screens.h"
 
 #define TAG "UPDATER"
 
@@ -33,8 +33,7 @@ namespace Updater
     {
         Canvas &canvas = Display::canvas();
         canvas.clear();
-        canvas.setFont(Font::Mono13);
-        Widgets::textHCentered(canvas, text, 38);
+        UpdaterScreens::message(canvas, text);
         canvas.flush();
     }
 
@@ -42,7 +41,7 @@ namespace Updater
     {
         Canvas &canvas = Display::canvas();
         canvas.clear();
-        Widgets::textLines(canvas, text);
+        UpdaterScreens::text(canvas, text);
         canvas.flush();
     }
 
@@ -50,7 +49,7 @@ namespace Updater
     {
         Canvas &canvas = Display::canvas();
         canvas.clear();
-        Widgets::switcher(canvas, title, index, count, options);
+        UpdaterScreens::switcher(canvas, title, index, count, options);
         canvas.flush();
     }
 
