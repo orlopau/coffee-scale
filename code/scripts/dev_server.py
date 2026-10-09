@@ -31,6 +31,8 @@ FIRMWARE_PATH = "/firmware.bin"
 RECORD_PATH = "/samples"
 RECORDING_FIRST_LINE = "# coffee-scale recording\n"
 COLUMNS_LINE = "ms,event,value"
+# an upload that stalls this long is given up, so it doesn't block a thread forever
+UPLOAD_TIMEOUT_S = 10
 
 
 def import_zeroconf():
@@ -70,7 +72,7 @@ def summarize(text):
             in_data = line == COLUMNS_LINE
             continue
         fields = line.split(",")
-        if len(fields) != 3:
+        if len(fields) != 3 or not fields[0].isdigit():
             continue
         if fields[1] == "sample":
             samples += 1
@@ -99,6 +101,8 @@ def save_recording(record_dir, data):
 
 def make_handler(firmware_file=None, record_dir=None):
     class DevServerHandler(http.server.BaseHTTPRequestHandler):
+        timeout = UPLOAD_TIMEOUT_S
+
         def do_GET(self):
             self.serve(send_body=True)
 
@@ -111,7 +115,17 @@ def make_handler(firmware_file=None, record_dir=None):
                 return
 
             length = int(self.headers.get("Content-Length", 0))
-            data = self.rfile.read(length)
+            try:
+                data = self.rfile.read(length)
+            except OSError:  # includes the timeout
+                print(f"{self.client_address[0]} stopped sending, the recording was not saved")
+                self.close_connection = True
+                return
+            if len(data) != length:
+                # the scale lost the connection and will retry, a partial file would look complete
+                print(f"{self.client_address[0]} sent {len(data)} of {length} bytes, the recording was not saved")
+                self.send_error(400, "incomplete recording")
+                return
             text = data.decode("utf-8", errors="replace")
             if not text.startswith(RECORDING_FIRST_LINE):
                 print(f"{self.client_address[0]} sent something that is not a recording")
