@@ -30,7 +30,7 @@ void ModeCalibration::update()
 
         if (Interface::getEncoderClick() == ClickType::SINGLE)
         {
-            LOGI(TAG, "Tare: %ld\n", tare);
+            LOGI(TAG, "Tare: %ld", tare);
             calibrationStep = CalibrationStep::ADD_WEIGHT;
         }
         break;
@@ -50,7 +50,7 @@ void ModeCalibration::update()
         if (numMeasurements >= CALIBRATION_SAMPLE_SIZE)
         {
             average = static_cast<float>(sumMeasurements) / static_cast<float>(numMeasurements);
-            LOGI(TAG, "Average: %f\n", average);
+            LOGI(TAG, "Average: %f", average);
 
             scale = static_cast<float>(DEFAULT_CALIBRATION_WEIGHT) / (average - tare);
             saveScaleFnc(scale);

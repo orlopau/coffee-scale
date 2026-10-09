@@ -65,7 +65,7 @@ namespace Updater
         showMessage(progress);
     }
 
-    void error(int err) { ESP_LOGI(TAG, "CALLBACK:  HTTP update fatal error code %d\n", err); }
+    void error(int err) { ESP_LOGI(TAG, "CALLBACK:  HTTP update fatal error code %d", err); }
 
     bool onCaptivePortalStart(IPAddress &address)
     {

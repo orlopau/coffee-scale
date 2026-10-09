@@ -37,7 +37,7 @@ void AutoTare::update(float rawWeight)
             // only tare if the diff is positive
             if (diff > 0)
             {
-                LOGI(TAG, "got new diff: %f\n", diff);
+                LOGI(TAG, "got new diff: %f", diff);
 
                 // if the diff is similar to any saved weight, tare
                 for (float weight : weights)
@@ -50,7 +50,7 @@ void AutoTare::update(float rawWeight)
             }
 
             // set the last stable one to this one
-            LOGI(TAG, "new last stable weight: %f\n", avgWeight);
+            LOGI(TAG, "new last stable weight: %f", avgWeight);
             lastStableWeight = avgWeight;
         }
     }
