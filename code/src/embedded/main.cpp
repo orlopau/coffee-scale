@@ -107,7 +107,7 @@ void setup()
   //////// UPDATES ////////
   if (digitalRead(PIN_UPDATE_FIRMWARE) == LOW)
   {
-      Updater::update_firmware();
+      Updater::update_firmware(scale);
   }
 
   /// MODE MANAGER ////

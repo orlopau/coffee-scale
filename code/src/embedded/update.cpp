@@ -12,6 +12,7 @@
 #include "interface.h"
 #include "data/localization.h"
 #include "ui/updater_screens.h"
+#include "embedded/record.h"
 
 #define TAG "UPDATER"
 
@@ -23,6 +24,9 @@
 namespace Updater
 {
     AutoConnect portal;
+
+    // calibration of the scale, written into recordings
+    static float gramsPerCount = 1;
 
     static void updateFromDevServer();
     static void runUpdate(WiFiClient &client, const char *url);
@@ -76,8 +80,9 @@ namespace Updater
         return true;
     }
 
-    void update_firmware()
+    void update_firmware(float scale)
     {
+        gramsPerCount = scale;
         showMessage(UPDATER_UPDATING);
         ESP_LOGI(TAG, "Updating firmware...");
 
@@ -153,7 +158,17 @@ namespace Updater
         runUpdate(client, url);
     }
 
-    static bool findDevServer(char *url, size_t urlSize)
+    struct DevServer
+    {
+        IPAddress ip;
+        uint16_t port;
+        /** Path of the firmware, if the server serves one (`pio run -t serve`). */
+        String firmwarePath;
+        /** Path to upload recordings to, if the server receives them (`pio run -t record`). */
+        String recordPath;
+    };
+
+    static bool findDevServer(DevServer &server)
     {
         if (!MDNS.begin("coffee-scale"))
         {
@@ -166,12 +181,14 @@ namespace Updater
             int found = MDNS.queryService(DEV_SERVER_SERVICE, "tcp");
             if (found > 0)
             {
-                String path = MDNS.txt(0, "path");
-                if (path.length() == 0)
+                server.ip = MDNS.IP(0);
+                server.port = MDNS.port(0);
+                server.firmwarePath = MDNS.txt(0, "path");
+                server.recordPath = MDNS.txt(0, "record");
+                if (server.firmwarePath.length() == 0 && server.recordPath.length() == 0)
                 {
-                    path = "/firmware.bin";
+                    server.firmwarePath = "/firmware.bin";
                 }
-                snprintf(url, urlSize, "http://%s:%u%s", MDNS.IP(0).toString().c_str(), MDNS.port(0), path.c_str());
                 return true;
             }
         }
@@ -183,8 +200,8 @@ namespace Updater
         showMessage(UPDATER_DEV_SEARCHING);
         ESP_LOGI(TAG, "Searching for dev firmware server...");
 
-        char url[128];
-        if (!findDevServer(url, sizeof(url)))
+        DevServer server;
+        if (!findDevServer(server))
         {
             ESP_LOGI(TAG, "No dev firmware server found");
             showMessage(UPDATER_DEV_NOT_FOUND);
@@ -192,6 +209,13 @@ namespace Updater
             return;
         }
 
+        if (server.recordPath.length() > 0)
+        {
+            Recording::run(server.ip, server.port, server.recordPath.c_str(), gramsPerCount);
+        }
+
+        char url[128];
+        snprintf(url, sizeof(url), "http://%s:%u%s", server.ip.toString().c_str(), server.port, server.firmwarePath.c_str());
         WiFiClient client;
         runUpdate(client, url);
     }
