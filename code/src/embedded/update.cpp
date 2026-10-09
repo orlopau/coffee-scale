@@ -15,7 +15,7 @@
 
 #define TAG "UPDATER"
 
-// mDNS service announced by scripts/serve_firmware.py (`pio run -t serve`)
+// mDNS service announced by scripts/dev_server.py (`pio run -t serve` or `-t record`)
 #define DEV_SERVER_SERVICE "coffeescale-fw"
 // each attempt waits up to 3 s for answers
 #define DEV_SERVER_SEARCH_ATTEMPTS 3
