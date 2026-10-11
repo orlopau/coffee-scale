@@ -1,6 +1,6 @@
 #pragma once
 
-#include "weighing/weight_sensor.h"
+#include "weighing/weight_source.h"
 #include "stopwatch.h"
 #include "mode.h"
 
@@ -10,7 +10,7 @@
 class ModeCalibration : public Mode
 {
 public:
-    ModeCalibration(WeightSensor &weightSensor, Stopwatch &stopwatch, void (*saveScaleFnc)(float));
+    ModeCalibration(WeightSource &weightSource, Stopwatch &stopwatch, void (*saveScaleFnc)(float));
     ~ModeCalibration(){};
     void update() override;
     void render(Canvas &canvas) override;
@@ -26,7 +26,7 @@ private:
         END
     };
 
-    WeightSensor &weightSensor;
+    WeightSource &weightSource;
     Stopwatch &stopwatch;
     void (*saveScaleFnc)(float);
 

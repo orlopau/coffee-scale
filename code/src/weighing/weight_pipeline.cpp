@@ -1,5 +1,17 @@
 #include "weighing/weight_pipeline.h"
 
+WeightPipeline::WeightPipeline(SampleSource &samples) : samples(samples) { readings.reserve(EXPECTED_READINGS); }
+
+void WeightPipeline::update()
+{
+    readings.clear();
+    Sample sample;
+    while (samples.next(sample))
+    {
+        readings.push_back(process(sample));
+    }
+}
+
 void WeightPipeline::setGramsPerCount(float gramsPerCount)
 {
     this->gramsPerCount = gramsPerCount;

@@ -4,21 +4,21 @@
 #include "mock/mock_display.h"
 #include <unity.h>
 
-MockWeightSensor *weightSensor;
+MockWeightSource *weightSource;
 RecipePrepare *prepare;
 RecipeStepState recipeStepState;
 
 void setUp(void)
 {
     Display::reset();
-    weightSensor = new MockWeightSensor();
-    prepare = new RecipePrepare(recipeStepState, *weightSensor);
+    weightSource = new MockWeightSource();
+    prepare = new RecipePrepare(recipeStepState, *weightSource);
     prepare->enter();
 }
 
 void tearDown(void)
 {
-    delete weightSensor;
+    delete weightSource;
     delete prepare;
 }
 
@@ -46,7 +46,7 @@ void test_displays_current_weight_and_target_coffee_weight()
     prepare->render(Display::mockCanvas);
     TEST_ASSERT_TRUE(Display::mockCanvas.hasText("0.00g/3.0g"));
 
-    weightSensor->newReading(1000);
+    weightSource->newReading(1000);
     prepare->update();
 
     // should show required weight and current weight

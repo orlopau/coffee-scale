@@ -5,21 +5,21 @@
 #include "modes/steps/step_brewing.h"
 #include <unity.h>
 
-static MockWeightSensor *weightSensor;
+static MockWeightSource *weightSource;
 static RecipeBrewing *recipeBrewing;
 RecipeStepState recipeStepState;
 
 void setUp(void)
 {
     Display::reset();
-    weightSensor = new MockWeightSensor();
-    recipeBrewing = new RecipeBrewing(recipeStepState, *weightSensor);
+    weightSource = new MockWeightSource();
+    recipeBrewing = new RecipeBrewing(recipeStepState, *weightSource);
     recipeBrewing->enter();
 }
 
 void tearDown(void)
 {
-    delete weightSensor;
+    delete weightSource;
     delete recipeBrewing;
 }
 

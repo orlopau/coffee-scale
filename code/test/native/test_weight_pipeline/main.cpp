@@ -1,16 +1,23 @@
 #include <unity.h>
 
+#include "mock/mock_sample_source.h"
 #include "weighing/weight_pipeline.h"
 
+static QueuedSamples *samples;
 static WeightPipeline *pipeline;
 
 void setUp(void)
 {
-    pipeline = new WeightPipeline();
+    samples = new QueuedSamples();
+    pipeline = new WeightPipeline(*samples);
     pipeline->setGramsPerCount(0.01f);
 }
 
-void tearDown(void) { delete pipeline; }
+void tearDown(void)
+{
+    delete pipeline;
+    delete samples;
+}
 
 void test_no_reading_before_the_first_sample(void) { TEST_ASSERT_FALSE(pipeline->hasReading()); }
 
@@ -121,6 +128,65 @@ void test_tare_right_after_a_new_scale_uses_the_last_sample(void)
     TEST_ASSERT_FLOAT_WITHIN(0.001, 0, r.net);
 }
 
+void test_no_readings_without_samples(void)
+{
+    pipeline->setGramsPerCount(1);
+    pipeline->update();
+    TEST_ASSERT_TRUE(pipeline->newReadings().empty());
+    TEST_ASSERT_EQUAL_FLOAT(0, pipeline->getWeight());
+}
+
+void test_all_waiting_samples_become_readings_in_order(void)
+{
+    pipeline->setGramsPerCount(1);
+    samples->samples = {{100, 10}, {200, 20}, {300, 30}};
+    pipeline->update();
+
+    const std::vector<Reading> &readings = pipeline->newReadings();
+    TEST_ASSERT_EQUAL(3, readings.size());
+    TEST_ASSERT_EQUAL(100, readings[0].ms);
+    TEST_ASSERT_EQUAL(20, readings[1].raw);
+    TEST_ASSERT_EQUAL(300, readings[2].ms);
+    TEST_ASSERT_EQUAL_FLOAT(30, pipeline->getWeight());
+}
+
+void test_readings_are_new_only_once(void)
+{
+    pipeline->setGramsPerCount(1);
+    samples->samples = {{100, 10}};
+    pipeline->update();
+    pipeline->update();
+
+    TEST_ASSERT_TRUE(pipeline->newReadings().empty());
+    TEST_ASSERT_EQUAL_FLOAT(10, pipeline->getWeight());
+}
+
+void test_weight_is_calibrated_and_tared(void)
+{
+    pipeline->setGramsPerCount(0.5f);
+    samples->samples = {{100, 1000}};
+    pipeline->update();
+    TEST_ASSERT_EQUAL_FLOAT(500, pipeline->getWeight());
+
+    pipeline->tare();
+    TEST_ASSERT_EQUAL_FLOAT(0, pipeline->getWeight());
+
+    samples->samples = {{200, 1010}};
+    pipeline->update();
+    TEST_ASSERT_EQUAL_FLOAT(5, pipeline->getWeight());
+    TEST_ASSERT_EQUAL_FLOAT(505, pipeline->newReadings()[0].grams);
+}
+
+void test_auto_averaging_threshold_in_grams_per_second(void)
+{
+    pipeline->setGramsPerCount(0.01f);
+    // 0.1 g in 100 ms is 1 g/s, under 2 g/s, so averaged
+    pipeline->setAutoAveraging(2, 4);
+    samples->samples = {{0, 10000}, {100, 10000}, {200, 10010}};
+    pipeline->update();
+    TEST_ASSERT_FLOAT_WITHIN(0.0001, 100.05, pipeline->getWeight());
+}
+
 int main(void)
 {
     UNITY_BEGIN();
@@ -134,5 +200,10 @@ int main(void)
     RUN_TEST(test_tare_survives_a_new_scale);
     RUN_TEST(test_new_scale_starts_filter_and_flow_over);
     RUN_TEST(test_tare_right_after_a_new_scale_uses_the_last_sample);
+    RUN_TEST(test_no_readings_without_samples);
+    RUN_TEST(test_all_waiting_samples_become_readings_in_order);
+    RUN_TEST(test_readings_are_new_only_once);
+    RUN_TEST(test_weight_is_calibrated_and_tared);
+    RUN_TEST(test_auto_averaging_threshold_in_grams_per_second);
     return UNITY_END();
 }

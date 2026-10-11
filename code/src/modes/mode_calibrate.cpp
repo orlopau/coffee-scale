@@ -8,8 +8,8 @@
 
 #define TAG "MODE-CAL"
 
-ModeCalibration::ModeCalibration(WeightSensor &weightSensor, Stopwatch &stopwatch, void (*saveScaleFnc)(float))
-    : weightSensor(weightSensor), stopwatch(stopwatch),
+ModeCalibration::ModeCalibration(WeightSource &weightSource, Stopwatch &stopwatch, void (*saveScaleFnc)(float))
+    : weightSource(weightSource), stopwatch(stopwatch),
       calibrationStep(CalibrationStep::BEGIN), saveScaleFnc(saveScaleFnc) {}
 
 void ModeCalibration::update()
@@ -22,7 +22,7 @@ void ModeCalibration::update()
         sumMeasurements = 0;
         numMeasurements = 0;
 
-        for (const Reading &reading : weightSensor.newReadings())
+        for (const Reading &reading : weightSource.newReadings())
         {
             tare = reading.raw;
         }
@@ -40,7 +40,7 @@ void ModeCalibration::update()
         }
         break;
     case CalibrationStep::CALIBRATING:
-        for (const Reading &reading : weightSensor.newReadings())
+        for (const Reading &reading : weightSource.newReadings())
         {
             if (numMeasurements < CALIBRATION_SAMPLE_SIZE)
             {

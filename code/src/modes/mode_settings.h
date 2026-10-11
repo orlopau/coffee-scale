@@ -3,7 +3,7 @@
 #include "auto_tare.h"
 #include "mode.h"
 #include "stopwatch.h"
-#include "weighing/weight_sensor.h"
+#include "weighing/weight_source.h"
 #include "settings.h"
 
 class ModeSettings : public Mode

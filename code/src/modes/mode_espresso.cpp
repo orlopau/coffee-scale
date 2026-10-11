@@ -17,7 +17,7 @@ void ModeEspresso::update()
 
         if (stopwatch.isRunning())
         {
-            weightSensor.tare();
+            weightSource.tare();
             approximator.reset();
         }
     }
@@ -39,7 +39,7 @@ void ModeEspresso::update()
     }
 
     // every reading goes into the regression
-    for (const Reading &reading : weightSensor.newReadings())
+    for (const Reading &reading : weightSource.newReadings())
     {
         handleReading(reading);
     }
@@ -77,7 +77,7 @@ void ModeEspresso::render(Canvas &canvas)
     Widgets::textHCentered(canvas, buffer, 4 + canvas.ascent());
 
     // bottom: current and target weight, with a progress bar
-    int32_t currentWeightMg = weightSensor.getWeight() * 1000;
+    int32_t currentWeightMg = weightSource.getWeight() * 1000;
     float currentWeightG = currentWeightMg / 1000.0;
     float targetWeightG = targetWeightMg / 1000.0;
     canvas.setFont(Font::Number16);

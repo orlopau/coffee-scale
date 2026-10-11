@@ -20,12 +20,6 @@ bool LoadCellTask::begin()
 {
     LoadCell::begin();
 
-    queue = xQueueCreate(QUEUE_LENGTH, sizeof(Sample));
-    if (queue == nullptr)
-    {
-        ESP_LOGE(TAG, "Cannot create the queue");
-        return false;
-    }
     if (xTaskCreatePinnedToCore(run, "loadcell", TASK_STACK, this, TASK_PRIORITY, &task, TASK_CORE) != pdPASS)
     {
         ESP_LOGE(TAG, "Cannot start the task");
@@ -36,8 +30,6 @@ bool LoadCellTask::begin()
     attachInterruptArg(PIN_HX711_DAT, onDataReady, this, FALLING);
     return true;
 }
-
-bool LoadCellTask::next(Sample &sample) { return queue != nullptr && xQueueReceive(queue, &sample, 0) == pdTRUE; }
 
 void ARDUINO_ISR_ATTR LoadCellTask::onDataReady(void *task)
 {
@@ -70,28 +62,8 @@ void LoadCellTask::loop()
         int32_t raw = LoadCell::read();
         gpio_intr_enable(static_cast<gpio_num_t>(PIN_HX711_DAT));
 
-        push({ms, raw});
+        samples.push({ms, raw});
     }
-}
-
-void LoadCellTask::push(const Sample &sample)
-{
-    if (xQueueSend(queue, &sample, 0) == pdTRUE)
-    {
-        if (droppedInARow > 0)
-        {
-            ESP_LOGW(TAG, "Queue was full, dropped the %u oldest readings", droppedInARow);
-            droppedInARow = 0;
-        }
-        return;
-    }
-
-    // full: make room by dropping the oldest
-    Sample oldest;
-    xQueueReceive(queue, &oldest, 0);
-    xQueueSend(queue, &sample, 0);
-    dropped = dropped + 1;
-    droppedInARow++;
 }
 
 #endif

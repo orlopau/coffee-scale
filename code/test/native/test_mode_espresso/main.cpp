@@ -6,9 +6,10 @@
 #include "stopwatch.h"
 #include "millis.h"
 #include "mock/mock_sample_source.h"
+#include "weighing/weight_pipeline.h"
 #include <unity.h>
 
-static MockWeightSensor *weightSensor;
+static MockWeightSource *weightSource;
 static Stopwatch *stopwatch;
 static RecordingCanvas *canvas;
 
@@ -18,10 +19,10 @@ void setUp(void)
 {
     Display::reset();
     Interface::reset();
-    weightSensor = new MockWeightSensor();
+    weightSource = new MockWeightSource();
     stopwatch = new Stopwatch();
     canvas = new RecordingCanvas();
-    modeEspresso = new ModeEspresso(*weightSensor, *stopwatch);
+    modeEspresso = new ModeEspresso(*weightSource, *stopwatch);
 }
 
 void tearDown(void)
@@ -29,7 +30,7 @@ void tearDown(void)
     delete modeEspresso;
     delete canvas;
     delete stopwatch;
-    delete weightSensor;
+    delete weightSource;
 }
 
 static void renderFrame()
@@ -87,7 +88,7 @@ void test_clicking_encoder_starts_stopwatch(void)
 
 void test_render_shows_current_and_target_weight(void)
 {
-    weightSensor->weight = 10;
+    weightSource->weight = 10;
     modeEspresso->update();
     renderFrame();
     TEST_ASSERT_TRUE(canvas->hasText("10.0g/36.0g"));
@@ -107,7 +108,7 @@ void test_render_shows_only_elapsed_time_without_estimate(void)
 
 void test_update_does_not_draw(void)
 {
-    weightSensor->weight = 10;
+    weightSource->weight = 10;
     modeEspresso->update();
     TEST_ASSERT_EQUAL(0, Display::mockCanvas.clears);
     TEST_ASSERT_EQUAL(0, Display::mockCanvas.flushes);
@@ -126,7 +127,7 @@ void test_estimate_uses_the_time_of_each_reading(void)
 
     sleep_for(1500);
     // 10 g/s: 36 g after 3.6 s
-    weightSensor->readings = {readingAt(start + 500, 5), readingAt(start + 1000, 10), readingAt(start + 1500, 15)};
+    weightSource->readings = {readingAt(start + 500, 5), readingAt(start + 1000, 10), readingAt(start + 1500, 15)};
     modeEspresso->update();
 
     TEST_ASSERT_FALSE(modeEspresso->isWaitingForEstimate());
@@ -141,7 +142,7 @@ void test_estimate_skips_readings_from_before_the_start(void)
     Interface::reset();
 
     sleep_for(1500);
-    weightSensor->readings = {readingAt(start - 500, 100), readingAt(start + 500, 5), readingAt(start + 1000, 10),
+    weightSource->readings = {readingAt(start - 500, 100), readingAt(start + 500, 5), readingAt(start + 1000, 10),
                               readingAt(start + 1500, 15)};
     modeEspresso->update();
 
@@ -153,13 +154,13 @@ void test_estimate_skips_readings_from_before_the_start(void)
 void test_readings_from_before_the_tare_are_skipped(void)
 {
     QueuedSamples samples;
-    DefaultWeightSensor sensor(samples);
-    ModeEspresso espresso(sensor, *stopwatch);
-    sensor.setScale(0.01f);
+    WeightPipeline pipeline(samples);
+    ModeEspresso espresso(pipeline, *stopwatch);
+    pipeline.setGramsPerCount(0.01f);
 
     // a 150 g cup, measured in the same millisecond as the click
     samples.samples = {{static_cast<uint32_t>(now()), 15000}};
-    sensor.update();
+    pipeline.update();
     Interface::encoderClick = ClickType::SINGLE;
     espresso.update();
     Interface::reset();
