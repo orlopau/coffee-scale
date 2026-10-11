@@ -16,18 +16,35 @@ void AdaptiveAverage::reset()
     buffer->clear();
     averaged = 0;
     hasLast = false;
+    held = false;
     current = 0;
 }
 
 float AdaptiveAverage::add(uint32_t ms, float grams)
 {
+    // While averaging, one fast sample alone is likely noise: it is held back
+    // until the next sample shows whether the weight really changed. That one
+    // is compared with the average, the best guess of the weight so far,
+    // rather than with a single sample that may be noisy itself, and over the
+    // time of one sample, like the held one, so a small real step isn't taken
+    // for slow. A held sample from back in time gives no time to measure over.
+    const uint32_t sinceMs = held && heldMs > lastMs ? heldMs : lastMs;
+    const float since = held ? current : buffer->getRelative(0);
     // Same time twice, or time running backwards, has no rate: like a fast change.
     bool slow = false;
-    if (hasLast && ms > lastMs)
+    if (hasLast && ms > sinceMs)
     {
-        float seconds = (ms - lastMs) / 1000.0f;
-        slow = std::fabs(grams - buffer->getRelative(0)) / seconds < threshold;
+        float seconds = (ms - sinceMs) / 1000.0f;
+        slow = std::fabs(grams - since) / seconds < threshold;
     }
+
+    if (!slow && averaged > 0 && !held)
+    {
+        held = true;
+        heldMs = ms;
+        return current;
+    }
+    held = false;
 
     buffer->push(grams);
     hasLast = true;
