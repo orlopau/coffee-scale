@@ -2,6 +2,7 @@
 
 #include "modes/mode_espresso.h"
 #include "data/localization.h"
+#include "formatters.h"
 #include "interface.h"
 #include "millis.h"
 #include "ui/widgets.h"
@@ -81,7 +82,7 @@ void ModeEspresso::render(Canvas &canvas)
     float currentWeightG = currentWeightMg / 1000.0;
     float targetWeightG = targetWeightMg / 1000.0;
     canvas.setFont(Font::Number16);
-    snprintf(buffer, sizeof(buffer), "%.1fg/%.1fg", currentWeightG, targetWeightG);
+    snprintf(buffer, sizeof(buffer), "%s/%.1fg", formatWeight(currentWeightG, 1), targetWeightG);
     Widgets::textHCentered(canvas, buffer, height - BAR_HEIGHT - 8);
 
     Widgets::progressBar(canvas, 0, height - BAR_HEIGHT, width, BAR_HEIGHT, currentWeightG / targetWeightG);

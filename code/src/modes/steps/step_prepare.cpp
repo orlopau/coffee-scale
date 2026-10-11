@@ -3,6 +3,7 @@
 #include "step_prepare.h"
 #include "interface.h"
 #include "data/localization.h"
+#include "formatters.h"
 #include "ui/widgets.h"
 
 RecipePrepare::RecipePrepare(RecipeStepState &state, WeightSource &weightSource)
@@ -24,7 +25,7 @@ void RecipePrepare::render(Canvas &canvas)
 
     int32_t weightMg = weightSource.getWeight() * 1000;
     char buffer[24];
-    snprintf(buffer, sizeof(buffer), "%.2fg/%.1fg", weightMg / 1000.0, state.configRecipe.coffeeWeightMg / 1000.0);
+    snprintf(buffer, sizeof(buffer), "%s/%.1fg", formatWeight(weightMg / 1000.0), state.configRecipe.coffeeWeightMg / 1000.0);
     canvas.setFont(Font::Mono18);
     Widgets::textCentered(canvas, buffer);
 }

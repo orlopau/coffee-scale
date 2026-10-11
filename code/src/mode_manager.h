@@ -17,6 +17,8 @@ public:
     ~ModeManager(){};
     void update();
     void begin();
+    /** The current mode's isMeasuring(), false while the mode switcher is shown. */
+    bool isMeasuring() { return !inModeChange && modes[currentMode]->isMeasuring(); }
 
 private:
     const int modeCount;

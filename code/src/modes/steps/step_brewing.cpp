@@ -1,6 +1,7 @@
 #include <stdio.h>
 
 #include "step_brewing.h"
+#include "formatters.h"
 #include "millis.h"
 #include "interface.h"
 #include "ui/widgets.h"
@@ -115,8 +116,7 @@ void RecipeBrewing::render(Canvas &canvas)
     y += 3;
     const int center = y + (canvas.height() - y) / 2.0;
 
-    snprintf(buffer, sizeof(buffer), "%.2fg", -1 * remainingWeightMg / 1000.0);
-    canvas.drawText(TEXT_X_PADDING, center + bodyAscent / 2.0, buffer);
+    canvas.drawText(TEXT_X_PADDING, center + bodyAscent / 2.0, formatWeight(-1 * remainingWeightMg / 1000.0));
 
     snprintf(buffer, sizeof(buffer), pausing ? "TP-%02d:%02d" : "T-%02d:%02d", (int)(remainingTimeMs / 1000 / 60),
              (int)(remainingTimeMs / 1000 % 60));

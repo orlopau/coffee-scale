@@ -291,6 +291,18 @@ void test_force_advance_to_next_pour_via_click(void)
     TEST_ASSERT_EQUAL(1, recipeBrewing->recipePourIndex);
 }
 
+// 4 mg short of the pour, the noise is either side of it
+void test_shows_no_minus_on_zero_to_pour(void)
+{
+    const Recipe recipe = {"name1", "desc1", "", 3000, 1, 0, {{"pour1", 2 * RECIPE_RATIO_MUL, .timePour = 100, .timePause = 100}}};
+    setRecipe(recipe);
+    weightSource->weight = 5.996f;
+    recipeBrewing->update();
+    recipeBrewing->render(Display::mockCanvas);
+    TEST_ASSERT_TRUE(Display::mockCanvas.hasText("0.00g"));
+    TEST_ASSERT_FALSE(Display::mockCanvas.hasText("-0.00g"));
+}
+
 int main(void)
 {
     UNITY_BEGIN();
@@ -301,5 +313,6 @@ int main(void)
     RUN_TEST(test_recipe_shows_pause_time_when_auto_start_disabled_and_pour_time_0);
     RUN_TEST(test_advance_to_next_pour_via_click);
     RUN_TEST(test_force_advance_to_next_pour_via_click);
+    RUN_TEST(test_shows_no_minus_on_zero_to_pour);
     UNITY_END();
 }

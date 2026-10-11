@@ -68,6 +68,7 @@ static void setup()
     Display::begin();
     weightPipeline.setGramsPerCount(1 / SimulatedScale::COUNTS_PER_GRAM);
     weightPipeline.setAutoAveraging(fabs(Settings::getFloat(Settings::floatSettings[Settings::AVERAGING_DELTA])), 64);
+    weightPipeline.setZeroTracking(fabs(Settings::getFloat(Settings::floatSettings[Settings::ZERO_TRACKING])));
 
     // tare after 32 samples
     for (size_t readings = 0; readings < 32;)
@@ -83,6 +84,8 @@ static void setup()
 static void loop(ModeManager &modeManager)
 {
     Interface::update();
+    // from the mode's state of the last loop, see WeightPipeline::holdZero()
+    weightPipeline.holdZero(modeManager.isMeasuring());
     weightPipeline.update();
     modeManager.update();
 }

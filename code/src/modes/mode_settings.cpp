@@ -56,12 +56,28 @@ float ModeSettings::editedValue()
     return stored + (float)Interface::getEncoderTicks() * setting.increment;
 }
 
+/** As many decimals as a setting's step needs, at least one, e.g. 2 for 0.05. */
+static int decimalsFor(float increment)
+{
+    int decimals = 1;
+    while (decimals < 3)
+    {
+        float scaled = increment * powf(10, decimals);
+        if (fabsf(scaled - roundf(scaled)) < 0.001f)
+        {
+            break;
+        }
+        decimals++;
+    }
+    return decimals;
+}
+
 void ModeSettings::render(Canvas &canvas)
 {
     if (modifySetting)
     {
         char buffer[32];
-        snprintf(buffer, sizeof(buffer), "%.1f", value);
+        snprintf(buffer, sizeof(buffer), "%.*f", decimalsFor(Settings::floatSettings[selected].increment), value);
         canvas.setFont(Font::Number16);
         Widgets::textHCentered(canvas, buffer, 40);
     }

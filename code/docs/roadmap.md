@@ -26,7 +26,7 @@ Cleanup and tooling before new features.
   Settings and calibration stored under keys in NVS, via the ESP-IDF API, instead of at fixed EEPROM addresses.
 - [ ] **Improv instead of AutoConnect, then Core 3.x** _(Firmware, Web)_
   Wi-Fi setup via Improv, right while flashing in the browser. Then the move to Arduino Core 3.x, updates with real certificate validation instead of `setInsecure()`, and rollback on broken firmware.
-- [ ] **Zero tracking** _(Firmware)_
+- [x] **Zero tracking** _(Firmware)_
   When the scale is empty and steady, it slowly pulls small deviations around zero back to zero, e.g. as it warms up. Paused during shots and recipes so slow first drops aren't tracked away.
 
 ## 02 Detection

@@ -13,6 +13,8 @@ public:
     void render(Canvas &canvas) override;
     const char *getName();
     bool canSwitchMode();
+    /** While brewing. */
+    bool isMeasuring() override { return currentRecipeStep == BREWING_STEP; }
     uint8_t getCurrentStepIndex();
 
 private:
@@ -22,5 +24,7 @@ private:
 
     uint8_t currentRecipeStep;
     static const uint8_t recipeStepCount = 7;
+    /** Where RecipeBrewing is in recipeSteps. */
+    static const uint8_t BREWING_STEP = 5;
     RecipeStep *recipeSteps[recipeStepCount];
 };

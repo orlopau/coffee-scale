@@ -187,6 +187,75 @@ void test_auto_averaging_threshold_in_grams_per_second(void)
     TEST_ASSERT_FLOAT_WITHIN(0.0001, 100.05, pipeline->getWeight());
 }
 
+/** Tares at 100 g, then feeds a steady weight 0.05 g above it at 10 Hz, and returns the last reading. */
+static Reading driftedBy5Hundredths(WeightPipeline &p, int readings)
+{
+    p.process({0, 10000});
+    p.tare();
+    Reading r = {};
+    for (int i = 1; i <= readings; i++)
+    {
+        r = p.process({(uint32_t)(i * 100), 10005});
+    }
+    return r;
+}
+
+// at 0.01 g/s, 0.05 g are gone after 5 s
+void test_zero_tracking_pulls_a_drift_back_to_zero(void)
+{
+    pipeline->setZeroTracking(0.1f);
+    Reading r = driftedBy5Hundredths(*pipeline, 60);
+    TEST_ASSERT_FLOAT_WITHIN(0.0001, 0, r.filtered);
+    TEST_ASSERT_FLOAT_WITHIN(0.0001, 0, r.net);
+}
+
+// in 1 s at most 0.01 g, and less while the step to 0.05 g still looks like a flow
+void test_zero_tracking_moves_no_faster_than_its_speed(void)
+{
+    pipeline->setZeroTracking(0.1f);
+    Reading r = driftedBy5Hundredths(*pipeline, 11);
+    TEST_ASSERT_TRUE(r.filtered >= 0.04f - 0.0001f);
+    TEST_ASSERT_TRUE(r.filtered < 0.05f - 0.0001f);
+}
+
+void test_zero_tracking_is_off_by_default(void)
+{
+    Reading r = driftedBy5Hundredths(*pipeline, 60);
+    TEST_ASSERT_FLOAT_WITHIN(0.0001, 0.05, r.filtered);
+}
+
+void test_zero_tracking_leaves_grams_and_flow_alone(void)
+{
+    QueuedSamples otherSamples;
+    WeightPipeline untracked(otherSamples);
+    untracked.setGramsPerCount(0.01f);
+    pipeline->setZeroTracking(0.1f);
+
+    Reading tracked = driftedBy5Hundredths(*pipeline, 30);
+    Reading plain = driftedBy5Hundredths(untracked, 30);
+    TEST_ASSERT_EQUAL_FLOAT(plain.grams, tracked.grams);
+    TEST_ASSERT_EQUAL_FLOAT(plain.flow, tracked.flow);
+    TEST_ASSERT_TRUE(tracked.filtered < plain.filtered);
+}
+
+void test_held_zero_is_not_tracked(void)
+{
+    pipeline->setZeroTracking(0.1f);
+    pipeline->holdZero(true);
+    Reading r = driftedBy5Hundredths(*pipeline, 60);
+    TEST_ASSERT_FLOAT_WITHIN(0.0001, 0.05, r.filtered);
+}
+
+// a tare zeroes on its own, the first reading after it isn't tracked yet
+void test_tare_starts_zero_tracking_over(void)
+{
+    pipeline->setZeroTracking(0.1f);
+    driftedBy5Hundredths(*pipeline, 20);
+    pipeline->tare();
+    Reading r = pipeline->process({2100, 10008});
+    TEST_ASSERT_FLOAT_WITHIN(0.0001, 0.03, r.filtered);
+}
+
 int main(void)
 {
     UNITY_BEGIN();
@@ -205,5 +274,11 @@ int main(void)
     RUN_TEST(test_readings_are_new_only_once);
     RUN_TEST(test_weight_is_calibrated_and_tared);
     RUN_TEST(test_auto_averaging_threshold_in_grams_per_second);
+    RUN_TEST(test_zero_tracking_pulls_a_drift_back_to_zero);
+    RUN_TEST(test_zero_tracking_moves_no_faster_than_its_speed);
+    RUN_TEST(test_zero_tracking_is_off_by_default);
+    RUN_TEST(test_zero_tracking_leaves_grams_and_flow_alone);
+    RUN_TEST(test_held_zero_is_not_tracked);
+    RUN_TEST(test_tare_starts_zero_tracking_over);
     return UNITY_END();
 }

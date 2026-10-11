@@ -45,6 +45,17 @@ void test_stopwatch_stop_when_click_again(void)
     TEST_ASSERT_FALSE(stopwatch->isRunning());
 }
 
+void test_measures_while_the_stopwatch_runs(void)
+{
+    TEST_ASSERT_FALSE(modeScale->isMeasuring());
+    Interface::encoderClick = ClickType::SINGLE;
+    modeScale->update();
+    TEST_ASSERT_TRUE(modeScale->isMeasuring());
+    Interface::encoderClick = ClickType::SINGLE;
+    modeScale->update();
+    TEST_ASSERT_FALSE(modeScale->isMeasuring());
+}
+
 void test_loadcell_tare_when_encoder_rotated(void)
 {
     weightSource->weight = 1;
@@ -61,6 +72,26 @@ void test_display_shows_weight(void)
     modeScale->update();
     modeScale->render(Display::mockCanvas);
     TEST_ASSERT_TRUE(Display::mockCanvas.hasText("1.00g"));
+}
+
+// right at zero, the noise is either side of it
+void test_display_shows_no_minus_on_zero(void)
+{
+    weightSource->weight = -0.004f;
+
+    modeScale->update();
+    modeScale->render(Display::mockCanvas);
+    TEST_ASSERT_TRUE(Display::mockCanvas.hasText("0.00g"));
+    TEST_ASSERT_FALSE(Display::mockCanvas.hasText("-0.00g"));
+}
+
+void test_display_shows_a_minus_below_zero(void)
+{
+    weightSource->weight = -0.006f;
+
+    modeScale->update();
+    modeScale->render(Display::mockCanvas);
+    TEST_ASSERT_TRUE(Display::mockCanvas.hasText("-0.01g"));
 }
 
 void test_display_shows_time(void)
@@ -97,8 +128,11 @@ int main(void)
     RUN_TEST(test_stopwatch_start_when_click);
     RUN_TEST(test_stopwatch_stop_when_click_again);
 
+    RUN_TEST(test_measures_while_the_stopwatch_runs);
     RUN_TEST(test_loadcell_tare_when_encoder_rotated);
     RUN_TEST(test_display_shows_weight);
+    RUN_TEST(test_display_shows_no_minus_on_zero);
+    RUN_TEST(test_display_shows_a_minus_below_zero);
     RUN_TEST(test_display_shows_time);
     RUN_TEST(test_auto_tare_sees_every_reading);
     UNITY_END();

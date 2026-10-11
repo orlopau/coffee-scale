@@ -76,6 +76,7 @@
 #define SETTINGS_TARE_4 "Auto-Tare Gewicht 5"
 #define SETTINGS_TARE_TOLERANCE "Auto-Tare Toleranz"
 #define SETTINGS_AVERAGING_DELTA "Gewichts-Mittelung Schwellwert"
+#define SETTINGS_ZERO_TRACKING "Nullpunkt-Nachführung"
 //////////////////////////////////////////////
 #else
 /////////////////// ENGLISH ///////////////////
@@ -153,5 +154,6 @@
 #define SETTINGS_TARE_4 "Auto-Tare Weight 5"
 #define SETTINGS_TARE_TOLERANCE "Auto-Tare Tolerance"
 #define SETTINGS_AVERAGING_DELTA "Weight Averaging Threshold"
+#define SETTINGS_ZERO_TRACKING "Zero Tracking"
 //////////////////////////////////////////////
 #endif

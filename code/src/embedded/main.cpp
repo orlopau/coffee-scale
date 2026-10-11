@@ -101,6 +101,10 @@ void setup()
   weightPipeline.setAutoAveraging(delta, 64);
   ESP_LOGI(TAG, "Auto averaging delta: %f g/s", delta);
 
+  float zeroTracking = fabs(Settings::getFloat(Settings::floatSettings[Settings::ZERO_TRACKING]));
+  weightPipeline.setZeroTracking(zeroTracking);
+  ESP_LOGI(TAG, "Zero tracking window: %f g", zeroTracking);
+
   // tare after 32 samples
   ESP_LOGI(TAG, "Taring...");
   for (size_t readings = 0; readings < 32;)
@@ -141,6 +145,8 @@ unsigned long lastTime = millis();
 void loop()
 {
   Interface::update();
+  // from the mode's state of the last loop, see WeightPipeline::holdZero()
+  weightPipeline.holdZero(modeManager.isMeasuring());
   weightPipeline.update();
   modeManager.update();
 
