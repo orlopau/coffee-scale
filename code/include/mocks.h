@@ -6,16 +6,23 @@
 #include "display.h"
 #include <math.h>
 #include <string.h>
+#include <vector>
 
 class MockWeightSensor : public WeightSensor
 {
 public:
+    const std::vector<Reading> &newReadings() override { return readings; }
     float getWeight() override { return weight; }
-    bool isNewWeight() override { return newWeight; }
     void tare() override { weight = 0; }
     void setScale(float scale) override {}
-    float getLastWeight() override { return weight; }
-    float getLastUntaredWeight() { return -1.0f; }
+
+    /** Makes grams the only new reading, at now(), and the weight. */
+    void newReading(float grams)
+    {
+        weight = grams;
+        readings = {{static_cast<uint32_t>(now()), 0, grams, grams, grams, 0}};
+    }
+
     float weight = 0;
-    bool newWeight = false;
+    std::vector<Reading> readings;
 };

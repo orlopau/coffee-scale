@@ -3,6 +3,7 @@
 #include "modes/mode_espresso.h"
 #include "data/localization.h"
 #include "interface.h"
+#include "millis.h"
 #include "ui/widgets.h"
 
 void ModeEspresso::enter() { Interface::resetEncoderTicks(); }
@@ -37,10 +38,10 @@ void ModeEspresso::update()
         Interface::resetEncoderTicks();
     }
 
-    // new weight must be handled for regression
-    if (weightSensor.isNewWeight())
+    // every reading goes into the regression
+    for (const Reading &reading : weightSensor.newReadings())
     {
-        handleNewWeight();
+        handleReading(reading);
     }
 }
 
@@ -86,18 +87,29 @@ void ModeEspresso::render(Canvas &canvas)
     Widgets::progressBar(canvas, 0, height - BAR_HEIGHT, width, BAR_HEIGHT, currentWeightG / targetWeightG);
 }
 
-void ModeEspresso::handleNewWeight()
+void ModeEspresso::handleReading(const Reading &reading)
 {
-    if (stopwatch.isRunning())
+    if (!stopwatch.isRunning())
     {
-        int32_t lastWeightMg = weightSensor.getLastWeight() * 1000;
-        approximator.addPoint({(long)stopwatch.getTime(), (float)lastWeightMg});
-        lastEstimatedTime = approximator.getXAtY(targetWeightMg);
+        return;
+    }
 
-        if (lastWeightMg >= targetWeightMg)
-        {
-            stopwatch.stop();
-        }
+    // Readings can wait a little before they arrive, the stopwatch time when each was measured:
+    long age = (long)(now() - reading.ms);
+    long time = (long)stopwatch.getTime() - age;
+    if (time < 0)
+    {
+        // measured before the stopwatch started
+        return;
+    }
+
+    int32_t weightMg = reading.net * 1000;
+    approximator.addPoint({time, (float)weightMg});
+    lastEstimatedTime = approximator.getXAtY(targetWeightMg);
+
+    if (weightMg >= targetWeightMg)
+    {
+        stopwatch.stop();
     }
 }
 

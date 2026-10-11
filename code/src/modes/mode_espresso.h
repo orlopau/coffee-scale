@@ -41,5 +41,5 @@ private:
     int32_t targetWeightMg;
     long lastEstimatedTime;
 
-    void handleNewWeight();
+    void handleReading(const Reading &reading);
 };

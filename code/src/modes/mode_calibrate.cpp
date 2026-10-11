@@ -3,14 +3,13 @@
 #include "mode_calibrate.h"
 #include "logger.h"
 #include "data/localization.h"
-#include "loadcell.h"
 #include "interface.h"
 #include "ui/widgets.h"
 
 #define TAG "MODE-CAL"
 
-ModeCalibration::ModeCalibration(Stopwatch &stopwatch, void (*saveScaleFnc)(float))
-    : stopwatch(stopwatch),
+ModeCalibration::ModeCalibration(WeightSensor &weightSensor, Stopwatch &stopwatch, void (*saveScaleFnc)(float))
+    : weightSensor(weightSensor), stopwatch(stopwatch),
       calibrationStep(CalibrationStep::BEGIN), saveScaleFnc(saveScaleFnc) {}
 
 void ModeCalibration::update()
@@ -23,9 +22,9 @@ void ModeCalibration::update()
         sumMeasurements = 0;
         numMeasurements = 0;
 
-        if (LoadCell::isReady())
+        for (const Reading &reading : weightSensor.newReadings())
         {
-            tare = LoadCell::read();
+            tare = reading.raw;
         }
 
         if (Interface::getEncoderClick() == ClickType::SINGLE)
@@ -41,10 +40,13 @@ void ModeCalibration::update()
         }
         break;
     case CalibrationStep::CALIBRATING:
-        if (LoadCell::isReady())
+        for (const Reading &reading : weightSensor.newReadings())
         {
-            sumMeasurements += static_cast<unsigned long>(LoadCell::read());
-            numMeasurements++;
+            if (numMeasurements < CALIBRATION_SAMPLE_SIZE)
+            {
+                sumMeasurements += static_cast<unsigned long>(reading.raw);
+                numMeasurements++;
+            }
         }
 
         if (numMeasurements >= CALIBRATION_SAMPLE_SIZE)

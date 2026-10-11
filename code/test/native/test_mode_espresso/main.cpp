@@ -4,6 +4,7 @@
 #include "mocks.h"
 #include "modes/mode_espresso.h"
 #include "stopwatch.h"
+#include "millis.h"
 #include <unity.h>
 
 static MockWeightSensor *weightSensor;
@@ -112,6 +113,40 @@ void test_update_does_not_draw(void)
     TEST_ASSERT_EQUAL(0, (int)Display::mockCanvas.texts.size());
 }
 
+static Reading readingAt(unsigned long ms, float grams) { return {static_cast<uint32_t>(ms), 0, grams, grams, grams, 0}; }
+
+// Readings that waited in the queue arrive together, each must count at its own time.
+void test_estimate_uses_the_time_of_each_reading(void)
+{
+    const unsigned long start = now();
+    Interface::encoderClick = ClickType::SINGLE;
+    modeEspresso->update();
+    Interface::reset();
+
+    sleep_for(1500);
+    // 10 g/s: 36 g after 3.6 s
+    weightSensor->readings = {readingAt(start + 500, 5), readingAt(start + 1000, 10), readingAt(start + 1500, 15)};
+    modeEspresso->update();
+
+    TEST_ASSERT_FALSE(modeEspresso->isWaitingForEstimate());
+    TEST_ASSERT_INT_WITHIN(5, 2100, modeEspresso->getRemainingTimeMs());
+}
+
+void test_estimate_skips_readings_from_before_the_start(void)
+{
+    const unsigned long start = now();
+    Interface::encoderClick = ClickType::SINGLE;
+    modeEspresso->update();
+    Interface::reset();
+
+    sleep_for(1500);
+    weightSensor->readings = {readingAt(start - 500, 100), readingAt(start + 500, 5), readingAt(start + 1000, 10),
+                              readingAt(start + 1500, 15)};
+    modeEspresso->update();
+
+    TEST_ASSERT_INT_WITHIN(5, 2100, modeEspresso->getRemainingTimeMs());
+}
+
 int main(void)
 {
     UNITY_BEGIN();
@@ -121,5 +156,7 @@ int main(void)
     RUN_TEST(test_render_shows_current_and_target_weight);
     RUN_TEST(test_render_shows_only_elapsed_time_without_estimate);
     RUN_TEST(test_update_does_not_draw);
+    RUN_TEST(test_estimate_uses_the_time_of_each_reading);
+    RUN_TEST(test_estimate_skips_readings_from_before_the_start);
     UNITY_END();
 }

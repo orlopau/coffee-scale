@@ -17,7 +17,6 @@
 #include "data/recipes.h"
 #include "display.h"
 #include "interface.h"
-#include "loadcell.h"
 #include "millis.h"
 #include "mode_manager.h"
 #include "modes/mode_calibrate.h"
@@ -52,7 +51,7 @@ static const char *HELP = "Coffee Scale emulator\n"
                           "  P                save a screenshot\n"
                           "  Esc, Q           quit\n";
 
-static DefaultWeightSensor weightSensor;
+static DefaultWeightSensor weightSensor(Emulator::samples());
 static Stopwatch stopwatch;
 
 static void saveScale(float scale)
@@ -69,20 +68,15 @@ static void setup()
     Display::begin();
     weightSensor.begin();
 
-    const float scale = 1 / SimulatedScale::COUNTS_PER_GRAM;
-    weightSensor.setScale(scale);
-    const float delta = fabs(Settings::getFloat(Settings::floatSettings[Settings::AVERAGING_DELTA]) / scale);
-    weightSensor.setAutoAveraging(delta, 64);
+    weightSensor.setScale(1 / SimulatedScale::COUNTS_PER_GRAM);
+    weightSensor.setAutoAveraging(fabs(Settings::getFloat(Settings::floatSettings[Settings::AVERAGING_DELTA])), 64);
 
     // tare after 32 samples
-    for (int i = 0; i < 32;)
+    for (size_t samples = 0; samples < 32;)
     {
         sleep_for(1);
         weightSensor.update();
-        if (weightSensor.isNewWeight())
-        {
-            i++;
-        }
+        samples += weightSensor.newReadings().size();
     }
     weightSensor.tare();
 }
@@ -262,7 +256,7 @@ int main(int argc, char **argv)
 
     ModeScale modeDefault(weightSensor, stopwatch);
     ModeEspresso modeEspresso(weightSensor, stopwatch);
-    ModeCalibration modeCalibration(stopwatch, saveScale);
+    ModeCalibration modeCalibration(weightSensor, stopwatch, saveScale);
     ModeSettings modeSettings;
     ModeRecipes modeRecipes(weightSensor, RECIPES, RECIPE_COUNT);
     Mode *modes[] = {&modeDefault, &modeRecipes, &modeEspresso, &modeCalibration, &modeSettings};

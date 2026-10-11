@@ -5,7 +5,7 @@
 
 #include "constants.h"
 #include "data/recipes.h"
-#include "loadcell.h"
+#include "embedded/loadcell_task.h"
 #include "mode.h"
 #include "mode_manager.h"
 #include "modes/mode_scale.h"
@@ -22,7 +22,8 @@
 
 #define TAG "MAIN"
 
-DefaultWeightSensor weightSensor;
+LoadCellTask loadCellTask;
+DefaultWeightSensor weightSensor(loadCellTask);
 Stopwatch stopwatch;
 
 void saveScale(float scale)
@@ -36,7 +37,7 @@ void saveScale(float scale)
 
 ModeScale modeDefault(weightSensor, stopwatch);
 ModeEspresso modeEspresso(weightSensor, stopwatch);
-ModeCalibration modeCalibration(stopwatch, saveScale);
+ModeCalibration modeCalibration(weightSensor, stopwatch, saveScale);
 ModeSettings modeSettings;
 ModeRecipes modeRecipes(weightSensor, RECIPES, RECIPE_COUNT);
 Mode *modes[] = {&modeDefault, &modeRecipes, &modeEspresso, &modeCalibration, &modeSettings};
@@ -68,7 +69,7 @@ void setup()
   Display::drawOpener();
 
   //////// WEIGHT SENSOR ////////
-  LoadCell::begin();
+  loadCellTask.begin();
   weightSensor.begin();
 
   float scale;
@@ -82,19 +83,17 @@ void setup()
   weightSensor.setScale(scale);
 
 
-  float delta = abs(Settings::getFloat(Settings::floatSettings[Settings::AVERAGING_DELTA]) / scale);
+  float delta = fabs(Settings::getFloat(Settings::floatSettings[Settings::AVERAGING_DELTA]));
   weightSensor.setAutoAveraging(delta, 64);
-  ESP_LOGI(TAG, "Auto averaging delta: %f", delta);
+  ESP_LOGI(TAG, "Auto averaging delta: %f g/s", delta);
 
   // tare after 32 samples
   ESP_LOGI(TAG, "Taring...");
-  for (int i = 0; i < 32;)
+  for (size_t samples = 0; samples < 32;)
   {
+      delay(10);
       weightSensor.update();
-      if (weightSensor.isNewWeight())
-      {
-          i++;
-      }
+      samples += weightSensor.newReadings().size();
   }
   weightSensor.tare();
   ESP_LOGI(TAG, "Tared!");
@@ -107,7 +106,7 @@ void setup()
   //////// UPDATES ////////
   if (digitalRead(PIN_UPDATE_FIRMWARE) == LOW)
   {
-      Updater::update_firmware(scale);
+      Updater::update_firmware(scale, loadCellTask);
   }
 
   /// MODE MANAGER ////

@@ -6,6 +6,7 @@
 #include "stopwatch.h"
 
 #include "millis.h"
+#include "settings.h"
 
 static Stopwatch *stopwatch;
 static MockWeightSensor *weightSensor;
@@ -71,6 +72,25 @@ void test_display_shows_time(void)
     TEST_ASSERT_EQUAL_STRING("00:00.2", Display::mockCanvas.texts.back().text.c_str());
 }
 
+// Readings that waited in the queue arrive together, auto-tare must see all of them.
+void test_auto_tare_sees_every_reading(void)
+{
+    Settings::setFloat(Settings::floatSettings[Settings::AUTO_TARE_0], 36);
+    Settings::setFloat(Settings::floatSettings[Settings::AUTO_TARE_TOLERANCE], 1);
+    modeScale->enter();
+    weightSensor->weight = 136;
+
+    // the scale is steady at 100 g, then a 36 g cup is put on
+    for (int i = 0; i < 32; i++)
+    {
+        float grams = i < 16 ? 100 : 136;
+        weightSensor->readings.push_back({static_cast<uint32_t>(i * 100), 0, grams, grams, grams, 0});
+    }
+    modeScale->update();
+
+    TEST_ASSERT_EQUAL_FLOAT(0, weightSensor->getWeight());
+}
+
 int main(void)
 {
     UNITY_BEGIN();
@@ -80,5 +100,6 @@ int main(void)
     RUN_TEST(test_loadcell_tare_when_encoder_rotated);
     RUN_TEST(test_display_shows_weight);
     RUN_TEST(test_display_shows_time);
+    RUN_TEST(test_auto_tare_sees_every_reading);
     UNITY_END();
 }

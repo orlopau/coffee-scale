@@ -6,7 +6,6 @@
 #include "embedded/record.h"
 #include "display.h"
 #include "interface.h"
-#include "loadcell.h"
 #include "millis.h"
 #include "recorder.h"
 #include "recording_session.h"
@@ -109,7 +108,7 @@ namespace Recording
         canvas.flush();
     }
 
-    void run(IPAddress server, uint16_t port, const char *path, float gramsPerCount)
+    void run(SampleSource &samples, IPAddress server, uint16_t port, const char *path, float gramsPerCount)
     {
         ESP_LOGI(TAG, "Recording for http://%s:%u%s", server.toString().c_str(), port, path);
 
@@ -132,9 +131,10 @@ namespace Recording
             Interface::update();
             bool changed = false;
 
-            if (LoadCell::isReady())
+            Sample sample;
+            while (samples.next(sample))
             {
-                session.sample(now(), LoadCell::read());
+                session.sample(sample.ms, sample.raw);
                 changed = true;
             }
 

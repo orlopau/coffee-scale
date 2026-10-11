@@ -27,6 +27,8 @@ namespace Updater
 
     // calibration of the scale, written into recordings
     static float gramsPerCount = 1;
+    // the load cell's readings, for recordings
+    static SampleSource *loadCellSamples = nullptr;
 
     static void updateFromDevServer();
     static void runUpdate(WiFiClient &client, const char *url);
@@ -80,9 +82,10 @@ namespace Updater
         return true;
     }
 
-    void update_firmware(float scale)
+    void update_firmware(float scale, SampleSource &samples)
     {
         gramsPerCount = scale;
+        loadCellSamples = &samples;
         showMessage(UPDATER_UPDATING);
         ESP_LOGI(TAG, "Updating firmware...");
 
@@ -211,7 +214,7 @@ namespace Updater
 
         if (server.recordPath.length() > 0)
         {
-            Recording::run(server.ip, server.port, server.recordPath.c_str(), gramsPerCount);
+            Recording::run(*loadCellSamples, server.ip, server.port, server.recordPath.c_str(), gramsPerCount);
         }
 
         char url[128];
