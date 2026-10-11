@@ -68,6 +68,19 @@ void test_time_jump_returns_latest(void)
     TEST_ASSERT_FALSE(scale.isReady());
 }
 
+// Firmware up to v1.9.0 recorded the HX711's 24 bits unsigned, newer firmware
+// records them signed. Both replay signed.
+void test_24_bit_values_replay_signed(void)
+{
+    RecordedScale scale(fixture("unsigned_24_bit.csv"));
+    scale.update();
+    TEST_ASSERT_EQUAL(-236803, scale.read());
+    sleep_for(100);
+    TEST_ASSERT_EQUAL(5, scale.read());
+    sleep_for(100);
+    TEST_ASSERT_EQUAL(-5, scale.read());
+}
+
 void test_finished(void)
 {
     RecordedScale scale(fixture("basic.csv"));
@@ -141,9 +154,9 @@ void test_roundtrip_with_recorder(void)
     Recorder recorder;
     recorder.start(500);
     recorder.addSample(500, 0);
-    recorder.addSample(600, 16777215);
+    recorder.addSample(600, -8388608);
     recorder.addClick(650);
-    recorder.addSample(700, 8388608);
+    recorder.addSample(700, 8388607);
 
     fs::path path = fs::temp_directory_path() / "coffee-scale-roundtrip.csv";
     {
@@ -162,9 +175,9 @@ void test_roundtrip_with_recorder(void)
     scale.update();
     TEST_ASSERT_EQUAL(0, scale.read());
     sleep_for(100);
-    TEST_ASSERT_EQUAL(16777215, scale.read());
+    TEST_ASSERT_EQUAL(-8388608, scale.read());
     sleep_for(100);
-    TEST_ASSERT_EQUAL(8388608, scale.read());
+    TEST_ASSERT_EQUAL(8388607, scale.read());
     TEST_ASSERT_TRUE(scale.isFinished());
 }
 
@@ -175,6 +188,7 @@ int main(void)
     RUN_TEST(test_samples_at_recorded_times);
     RUN_TEST(test_starts_without_update);
     RUN_TEST(test_time_jump_returns_latest);
+    RUN_TEST(test_24_bit_values_replay_signed);
     RUN_TEST(test_finished);
     RUN_TEST(test_unknown_event_skipped);
     RUN_TEST(test_errors);

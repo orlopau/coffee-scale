@@ -8,6 +8,7 @@
 #include <stdexcept>
 
 #include "native/recorded_scale.h"
+#include "loadcell.h"
 #include "millis.h"
 
 static const std::string FIRST_LINE = "# coffee-scale recording";
@@ -143,7 +144,8 @@ RecordedScale::RecordedScale(const std::string &path)
             {
                 fail("sample without a numeric value");
             }
-            samples.emplace_back(ms, value);
+            // firmware up to v1.9.0 recorded the 24 bits unsigned
+            samples.emplace_back(ms, LoadCell::toSigned(static_cast<uint32_t>(value)));
         }
         else if (fields[1] == "click")
         {
