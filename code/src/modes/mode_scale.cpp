@@ -20,9 +20,9 @@ void ModeScale::update()
         stopwatch.toggle();
     }
 
-    if (weightSensor.isNewWeight())
+    for (const Reading &reading : weightSensor.newReadings())
     {
-        autoTare->update(weightSensor.getLastUntaredWeight());
+        autoTare->update(reading.grams);
         if (autoTare->shouldTare()) {
             Interface::buzzerTone(100);
             weightSensor.tare();

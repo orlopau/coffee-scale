@@ -2,9 +2,12 @@
 
 namespace Settings
 {
-    float getFloat(FloatSetting s) { return 0.0f; }
+    // like a device with no settings saved: 0 for everything not set
+    static std::array<float, FLOAT_SETTING_NUM> values = {};
 
-    void setFloat(FloatSetting s, float value) {}
+    float getFloat(FloatSetting s) { return values[s.id]; }
+
+    void setFloat(FloatSetting s, float value) { values[s.id] = value; }
 
     void commit() {}
 }

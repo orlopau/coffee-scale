@@ -1,102 +1,105 @@
 #include <unity.h>
 
-#include "millis.h"
-#include "button.h"
-#include "weighing/weight_sensor.h"
-#include "mock/mock_loadcell.h"
+#include <deque>
 
-DefaultWeightSensor *weightSensor;
+#include "weighing/weight_sensor.h"
+
+/** Hands out the samples a test queues, like the load cell task's queue. */
+class QueuedSamples : public SampleSource
+{
+public:
+    std::deque<Sample> samples;
+
+    bool next(Sample &sample) override
+    {
+        if (samples.empty())
+        {
+            return false;
+        }
+        sample = samples.front();
+        samples.pop_front();
+        return true;
+    }
+};
+
+static QueuedSamples *samples;
+static DefaultWeightSensor *weightSensor;
 
 void setUp(void)
 {
-    weightSensor = new DefaultWeightSensor();
+    samples = new QueuedSamples();
+    weightSensor = new DefaultWeightSensor(*samples);
 }
 
 void tearDown(void)
 {
     delete weightSensor;
+    delete samples;
 }
 
-void test_get_weight(void)
+void test_no_readings_without_samples(void)
 {
-    LoadCell::value = 100;
-    LoadCell::ready = true;
     weightSensor->update();
-    TEST_ASSERT_EQUAL_FLOAT(100, weightSensor->getWeight());
+    TEST_ASSERT_TRUE(weightSensor->newReadings().empty());
+    TEST_ASSERT_EQUAL_FLOAT(0, weightSensor->getWeight());
 }
 
-void test_new_weight(void)
+void test_all_waiting_samples_become_readings_in_order(void)
 {
-    LoadCell::value = 100;
-    LoadCell::ready = true;
+    samples->samples = {{100, 10}, {200, 20}, {300, 30}};
     weightSensor->update();
-    LoadCell::ready = false;
 
-    TEST_ASSERT_TRUE(weightSensor->isNewWeight());
-    TEST_ASSERT_EQUAL_FLOAT(100, weightSensor->getWeight());
-
-    weightSensor->update();
-    TEST_ASSERT_FALSE(weightSensor->isNewWeight());
-    TEST_ASSERT_EQUAL_FLOAT(100, weightSensor->getWeight());
+    const std::vector<Reading> &readings = weightSensor->newReadings();
+    TEST_ASSERT_EQUAL(3, readings.size());
+    TEST_ASSERT_EQUAL(100, readings[0].ms);
+    TEST_ASSERT_EQUAL(20, readings[1].raw);
+    TEST_ASSERT_EQUAL(300, readings[2].ms);
+    TEST_ASSERT_EQUAL_FLOAT(30, weightSensor->getWeight());
 }
 
-void setWeight(long weight)
+void test_readings_are_new_only_once(void)
 {
-    LoadCell::value = weight;
-    LoadCell::ready = true;
+    samples->samples = {{100, 10}};
     weightSensor->update();
-    LoadCell::ready = false;
+    weightSensor->update();
+
+    TEST_ASSERT_TRUE(weightSensor->newReadings().empty());
+    TEST_ASSERT_EQUAL_FLOAT(10, weightSensor->getWeight());
 }
 
-void test_weight_averaging(void)
+void test_weight_is_calibrated_and_tared(void)
 {
-    // divide all weight changes by 10 and all sleeps by 10 to make the test run
-    // faster but still resulting in the same delta weight change per second
-    const static int DIVIDER = 10;
+    weightSensor->setScale(0.5f);
+    samples->samples = {{100, 1000}};
+    weightSensor->update();
+    TEST_ASSERT_EQUAL_FLOAT(500, weightSensor->getWeight());
 
-    weightSensor->setAutoAveraging(1000, 4);
-    // when weight changes under 1000 per second, average over 4 samples
+    weightSensor->tare();
+    TEST_ASSERT_EQUAL_FLOAT(0, weightSensor->getWeight());
 
-    // change weight faster than 1000 per second
-    // start with 1000
-    setWeight(1000 / DIVIDER);
-    sleep_for(1000 / DIVIDER);
-    setWeight(3000 / DIVIDER);
+    samples->samples = {{200, 1010}};
+    weightSensor->update();
+    TEST_ASSERT_EQUAL_FLOAT(5, weightSensor->getWeight());
+    TEST_ASSERT_EQUAL_FLOAT(505, weightSensor->newReadings()[0].grams);
+}
 
-    // should return last weight
-    TEST_ASSERT_EQUAL(3000 / DIVIDER, weightSensor->getRawWeight());
-
-    // now increase slower than 1000 per second
-    setWeight(4000 / DIVIDER);
-    sleep_for(1000 / DIVIDER);
-    setWeight(4500 / DIVIDER);
-
-    // now averaging should be enabled, but it only returns the average of values
-    // that have been read after averaging was enabled, i.e. now it should return
-    // only the last value.
-    TEST_ASSERT_EQUAL(4500 / DIVIDER, weightSensor->getRawWeight());
-
-    // add some more values slowly
-    sleep_for(1000 / DIVIDER);
-    setWeight(5000 / DIVIDER);
-    // average of last 2 samples
-    TEST_ASSERT_EQUAL(4750 / DIVIDER, weightSensor->getRawWeight());
-    sleep_for(1000 / DIVIDER);
-    setWeight(5500 / DIVIDER);
-    // average of last 3 samples
-    TEST_ASSERT_EQUAL(5000 / DIVIDER, weightSensor->getRawWeight());
-    sleep_for(1000 / DIVIDER);
-    setWeight(6000 / DIVIDER);
-
-    // should return averaged weight over last 4 samples
-    TEST_ASSERT_EQUAL(5250 / DIVIDER, weightSensor->getRawWeight());
+void test_auto_averaging_threshold_in_grams_per_second(void)
+{
+    weightSensor->setScale(0.01f);
+    // 0.1 g in 100 ms is 1 g/s, under 2 g/s, so averaged
+    weightSensor->setAutoAveraging(2, 4);
+    samples->samples = {{0, 10000}, {100, 10000}, {200, 10010}};
+    weightSensor->update();
+    TEST_ASSERT_FLOAT_WITHIN(0.0001, 100.05, weightSensor->getWeight());
 }
 
 int main(void)
 {
     UNITY_BEGIN();
-    RUN_TEST(test_get_weight);
-    RUN_TEST(test_new_weight);
-    RUN_TEST(test_weight_averaging);
-    UNITY_END();
+    RUN_TEST(test_no_readings_without_samples);
+    RUN_TEST(test_all_waiting_samples_become_readings_in_order);
+    RUN_TEST(test_readings_are_new_only_once);
+    RUN_TEST(test_weight_is_calibrated_and_tared);
+    RUN_TEST(test_auto_averaging_threshold_in_grams_per_second);
+    return UNITY_END();
 }

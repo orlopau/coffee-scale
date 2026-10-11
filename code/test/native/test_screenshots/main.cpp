@@ -18,7 +18,6 @@
 #include "mocks.h"
 #include "mock/mock_battery.h"
 #include "mock/mock_interface.h"
-#include "mock/mock_loadcell.h"
 #include "millis.h"
 #include "mode_manager.h"
 #include "data/localization.h"
@@ -143,8 +142,6 @@ void setUp(void)
     set_now(1000000);
     Interface::reset();
     Battery::reset();
-    LoadCell::value = 0;
-    LoadCell::ready = true;
     weightSensor = new MockWeightSensor();
     stopwatch = new Stopwatch();
     mismatches.clear();
@@ -192,11 +189,10 @@ void test_espresso(void)
     for (int i = 1; i <= 8; i++)
     {
         sleep_for(500);
-        weightSensor->weight = 2.5f * i;
-        weightSensor->newWeight = true;
+        weightSensor->newReading(2.5f * i);
         espresso.update();
     }
-    weightSensor->newWeight = false;
+    weightSensor->readings.clear();
     show("espresso_brewing", espresso);
 }
 
@@ -331,18 +327,19 @@ void test_recipe_done(void)
     show("recipe_done", step);
 }
 
+static Reading rawReading(int32_t raw) { return {static_cast<uint32_t>(now()), raw, 0, 0, 0, 0}; }
+
 void test_calibration(void)
 {
-    LoadCell::value = 1000;
-    ModeCalibration calibration(*stopwatch, saveScale);
+    weightSensor->readings = {rawReading(1000)};
+    ModeCalibration calibration(*weightSensor, *stopwatch, saveScale);
     show("calibration_begin", calibration);
     click(calibration);
     show("calibration_add_weight", calibration);
     click(calibration);
-    LoadCell::ready = false;
+    weightSensor->readings.clear();
     show("calibration_calibrating", calibration);
-    LoadCell::ready = true;
-    LoadCell::value = 51000;
+    weightSensor->readings = {rawReading(51000)};
     for (int i = 0; i < CALIBRATION_SAMPLE_SIZE; i++)
     {
         Interface::reset();
@@ -375,7 +372,7 @@ void test_mode_switcher(void)
 {
     ModeScale scale(*weightSensor, *stopwatch);
     ModeEspresso espresso(*weightSensor, *stopwatch);
-    ModeCalibration calibration(*stopwatch, saveScale);
+    ModeCalibration calibration(*weightSensor, *stopwatch, saveScale);
     ModeSettings settings;
     ModeRecipes recipes(*weightSensor, RECIPES, RECIPE_COUNT);
     Mode *modes[] = {&scale, &recipes, &espresso, &calibration, &settings};

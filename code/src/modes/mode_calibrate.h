@@ -10,7 +10,7 @@
 class ModeCalibration : public Mode
 {
 public:
-    ModeCalibration(Stopwatch &stopwatch, void (*saveScaleFnc)(float));
+    ModeCalibration(WeightSensor &weightSensor, Stopwatch &stopwatch, void (*saveScaleFnc)(float));
     ~ModeCalibration(){};
     void update() override;
     void render(Canvas &canvas) override;
@@ -26,6 +26,7 @@ private:
         END
     };
 
+    WeightSensor &weightSensor;
     Stopwatch &stopwatch;
     void (*saveScaleFnc)(float);
 

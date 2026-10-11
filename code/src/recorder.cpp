@@ -25,7 +25,15 @@ void Recorder::start(unsigned long ms)
     clicks = 0;
 }
 
-void Recorder::addSample(unsigned long ms, long raw) { add(ms, raw); }
+void Recorder::addSample(unsigned long ms, long raw)
+{
+    // measured before the start, but taken from the load cell's queue after it
+    if (ms < startMs)
+    {
+        return;
+    }
+    add(ms, raw);
+}
 
 void Recorder::addClick(unsigned long ms)
 {

@@ -31,6 +31,7 @@ public:
 
     /** Clears the recording and starts a new one at ms. */
     void start(unsigned long ms);
+    /** Samples measured before the start are dropped. */
     void addSample(unsigned long ms, long raw);
     void addClick(unsigned long ms);
 

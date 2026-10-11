@@ -8,7 +8,6 @@
 #include "button.h"
 #include "display.h"
 #include "interface.h"
-#include "loadcell.h"
 #include "millis.h"
 #include "settings.h"
 
@@ -88,13 +87,27 @@ namespace Interface
     void buzzerTone(unsigned int durationMs) { Emulator::buzzerEndTime = now() + durationMs; }
 }
 
-namespace LoadCell
+namespace Emulator
 {
-    void begin() {}
+    class SimulatedSamples : public SampleSource
+    {
+    public:
+        bool next(Sample &sample) override
+        {
+            if (!scale.isReady())
+            {
+                return false;
+            }
+            sample = {static_cast<uint32_t>(now()), static_cast<int32_t>(scale.read())};
+            return true;
+        }
+    };
 
-    bool isReady() { return Emulator::scale.isReady(); }
-
-    long read() { return Emulator::scale.read(); }
+    SampleSource &samples()
+    {
+        static SimulatedSamples samples;
+        return samples;
+    }
 }
 
 namespace Display

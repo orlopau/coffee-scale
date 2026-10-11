@@ -183,6 +183,18 @@ void test_no_memory(void)
     TEST_ASSERT_EQUAL(Status::NoMemory, noneSession.state().status);
 }
 
+// Samples are timestamped when measured and taken a little later, so one
+// measured just before the start click can arrive after it.
+void test_sample_from_before_the_start_is_not_recorded(void)
+{
+    session->begin();
+    session->click(1000);
+    session->sample(995, 1000);
+
+    TEST_ASSERT_EQUAL(0, recorder->sampleCount());
+    TEST_ASSERT_EQUAL(Status::Recording, session->state().status);
+}
+
 int main(void)
 {
     UNITY_BEGIN();
@@ -196,5 +208,6 @@ int main(void)
     RUN_TEST(test_full_by_click);
     RUN_TEST(test_weight_shown_while_not_recording);
     RUN_TEST(test_no_memory);
+    RUN_TEST(test_sample_from_before_the_start_is_not_recorded);
     return UNITY_END();
 }
