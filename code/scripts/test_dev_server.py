@@ -154,6 +154,37 @@ class ServeModeTest(unittest.TestCase):
             server.close()
             os.remove(f.name)
 
+    def test_slow_download_outlasts_timeout(self):
+        # The scale writes the firmware to flash while downloading it, which takes
+        # far longer than UPLOAD_TIMEOUT_S, but never stalls that long.
+        firmware = os.urandom(50_000_000)
+        with tempfile.NamedTemporaryFile(suffix=".bin", delete=False) as f:
+            f.write(firmware)
+        with mock.patch.object(dev_server, "UPLOAD_TIMEOUT_S", 0.5):
+            server = Server(firmware_file=f.name)
+        try:
+            sock = socket.socket()
+            sock.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, 16384)
+            sock.settimeout(5)
+            sock.connect(("127.0.0.1", server.server.server_address[1]))
+            sock.sendall(b"GET /firmware.bin HTTP/1.1\r\nHost: scale\r\n\r\n")
+            received = bytearray()
+            started = time.monotonic()
+            while True:
+                chunk = sock.recv(1_000_000)
+                if not chunk:
+                    break
+                received += chunk
+                if time.monotonic() - started < 1.5:
+                    time.sleep(0.01)
+            sock.close()
+
+            self.assertGreater(time.monotonic() - started, 1)
+            self.assertTrue(received.endswith(firmware), f"got {len(received)} bytes")
+        finally:
+            server.close()
+            os.remove(f.name)
+
 
 if __name__ == "__main__":
     unittest.main()

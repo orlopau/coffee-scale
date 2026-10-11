@@ -33,6 +33,8 @@ RECORDING_FIRST_LINE = "# coffee-scale recording\n"
 COLUMNS_LINE = "ms,event,value"
 # an upload that stalls this long is given up, so it doesn't block a thread forever
 UPLOAD_TIMEOUT_S = 10
+# the scale reads well over this per second, see serve()
+DOWNLOAD_PIECE_BYTES = 65536
 
 
 def import_zeroconf():
@@ -167,7 +169,11 @@ def make_handler(firmware_file=None, record_dir=None):
             self.send_header("x-MD5", md5)
             self.end_headers()
             if send_body:
-                self.wfile.write(data)
+                # The timeout limits a whole write, and the scale downloads slower
+                # than UPLOAD_TIMEOUT_S allows for all of it, as it writes flash meanwhile.
+                # In pieces, only a scale that stops reading is given up.
+                for start in range(0, len(data), DOWNLOAD_PIECE_BYTES):
+                    self.wfile.write(data[start:start + DOWNLOAD_PIECE_BYTES])
 
         def log_message(self, format, *args):
             pass  # keep the output to the lines printed above
