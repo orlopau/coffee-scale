@@ -18,7 +18,7 @@ void RecipeBrewing::update()
     bool isPause = false;
 
     // tare scale on rotation
-    if (Interface::getEncoderDirection() != Interface::EncoderDirection::NONE)
+    if (Interface::getEncoderTurns() != 0)
     {
         weightSource.tare();
     }

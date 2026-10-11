@@ -2,11 +2,13 @@
 
 #include <array>
 #include <cmath>
+#include <deque>
 
 #include "emulator/emulator.h"
 #include "battery.h"
 #include "button.h"
 #include "display.h"
+#include "input/click_inbox.h"
 #include "interface.h"
 #include "millis.h"
 #include "settings.h"
@@ -23,6 +25,27 @@ namespace Emulator
     static bool buttonDown = false;
     static unsigned long pressTime = 0;
     static Button encoderButton;
+
+    /** The emulated button's clicks, like the device's click queue. */
+    class ButtonClicks : public ClickSource
+    {
+    public:
+        std::deque<ClickEvent> events;
+
+        bool next(ClickEvent &event) override
+        {
+            if (events.empty())
+            {
+                return false;
+            }
+            event = events.front();
+            events.pop_front();
+            return true;
+        }
+    };
+
+    static ButtonClicks clicks;
+    static ClickInbox clickInbox(clicks);
     static unsigned long buzzerEndTime = 0;
 
     void turnEncoder(int detents) { encoderPosition += detents; }
@@ -49,38 +72,42 @@ namespace Emulator
 
 namespace Interface
 {
-    // like the RotaryEncoder library: the direction since the last call
-    static long lastDirectionPosition = 0;
+    static long lastPosition = 0;
+    static int turns = 0;
+    static long ticks = 0;
 
     void begin() {}
 
-    void update() { Emulator::encoderButton.update(Emulator::isButtonPressed()); }
-
-    EncoderDirection getEncoderDirection()
+    void update()
     {
-        const long position = Emulator::encoderPosition;
-        const long last = lastDirectionPosition;
-        lastDirectionPosition = position;
-        if (position > last)
+        // the device's button task does this every 5 ms, here once per loop
+        Emulator::encoderButton.update(Emulator::isButtonPressed());
+        ClickType type = Emulator::encoderButton.getClickType();
+        if (type != ClickType::NONE)
         {
-            return EncoderDirection::CW;
+            Emulator::clicks.events.push_back({static_cast<uint32_t>(now()), type});
         }
-        if (position < last)
-        {
-            return EncoderDirection::CCW;
-        }
-        return EncoderDirection::NONE;
+
+        turns = static_cast<int>(Emulator::encoderPosition - lastPosition);
+        lastPosition = Emulator::encoderPosition;
+        ticks += turns;
+
+        Emulator::clickInbox.update(now());
     }
 
-    long getEncoderTicks() { return Emulator::encoderPosition; }
+    int getEncoderTurns() { return turns; }
 
-    void setEncoderTicks(long ticks) { Emulator::encoderPosition = ticks; }
+    long getEncoderTicks() { return ticks; }
 
-    void resetEncoderTicks() { Emulator::encoderPosition = 0; }
+    void setEncoderTicks(long value) { ticks = value; }
 
-    ClickType consumeEncoderClick() { return Emulator::encoderButton.consumeClickType(); }
+    void resetEncoderTicks() { ticks = 0; }
 
-    ClickType getEncoderClick() { return Emulator::encoderButton.getClickType(); }
+    ClickType consumeEncoderClick() { return Emulator::clickInbox.consume(); }
+
+    ClickType getEncoderClick() { return Emulator::clickInbox.get(); }
+
+    void discardClicks() { Emulator::clickInbox.discard(); }
 
     bool isEncoderPressed() { return Emulator::encoderButton.isPressed(); }
 

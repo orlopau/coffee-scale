@@ -119,7 +119,7 @@ namespace Recording
             Interface::update();
             delay(10);
         }
-        Interface::consumeEncoderClick();
+        Interface::discardClicks();
 
         Recorder recorder;
         RecordingSession session(recorder, gramsPerCount);

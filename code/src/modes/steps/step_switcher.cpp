@@ -20,7 +20,7 @@ RecipeSwitcherStep::RecipeSwitcherStep(RecipeStepState &state, const Recipe reci
 
 void RecipeSwitcherStep::update()
 {
-    int16_t change = static_cast<int16_t>(Interface::getEncoderDirection());
+    int16_t change = static_cast<int16_t>(Interface::getEncoderTurns());
 
     if (recipeIndex + change >= recipeCount)
     {

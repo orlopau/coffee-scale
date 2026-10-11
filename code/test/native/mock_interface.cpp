@@ -5,14 +5,14 @@ namespace Interface
     ClickType encoderClick = ClickType::NONE;
     ClickType bootClick = ClickType::NONE;
     int encoderTicks = 0;
-    EncoderDirection encoderDirection = EncoderDirection::NONE;
+    int encoderTurns = 0;
 
     void reset()
     {
         encoderClick = ClickType::NONE;
         bootClick = ClickType::NONE;
         encoderTicks = 0;
-        encoderDirection = EncoderDirection::NONE;
+        encoderTurns = 0;
     }
 
     void update() {}
@@ -25,7 +25,8 @@ namespace Interface
         return click;
     }
     ClickType getEncoderClick() { return encoderClick; }
-    EncoderDirection getEncoderDirection() { return encoderDirection; }
+    void discardClicks() { encoderClick = ClickType::NONE; }
+    int getEncoderTurns() { return encoderTurns; }
     void setEncoderTicks(long ticks) { encoderTicks = ticks; }
     ClickType getBootClick() { return bootClick; }
     void buzzerTone(unsigned int durationMs) {}

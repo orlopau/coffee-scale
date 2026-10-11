@@ -116,7 +116,7 @@ static void turn(Screen &screen, int steps)
     for (int i = 0; i < abs(steps); i++)
     {
         Interface::reset();
-        Interface::encoderDirection = steps > 0 ? Interface::EncoderDirection::CW : Interface::EncoderDirection::CCW;
+        Interface::encoderTurns = steps > 0 ? 1 : -1;
         screen.update();
     }
     Interface::reset();
