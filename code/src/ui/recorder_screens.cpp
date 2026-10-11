@@ -11,6 +11,8 @@ namespace RecorderScreens
     {
         switch (status)
         {
+        case Status::Idle:
+            return RECORDER_IDLE;
         case Status::Recording:
             return RECORDER_RECORDING;
         case Status::Uploading:

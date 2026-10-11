@@ -452,6 +452,7 @@ void test_recorder(void)
         const char *name;
         RecorderScreens::Status status;
     } states[] = {
+        {"idle", RecorderScreens::Status::Idle},
         {"recording", RecorderScreens::Status::Recording},
         {"uploading", RecorderScreens::Status::Uploading},
         {"upload_failed", RecorderScreens::Status::UploadFailed},

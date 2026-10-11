@@ -5,14 +5,20 @@ using Status = RecorderScreens::Status;
 RecordingSession::RecordingSession(Recorder &recorder, float gramsPerCount)
     : rec(recorder), gramsPerCount(gramsPerCount) {}
 
-void RecordingSession::begin(unsigned long ms)
+void RecordingSession::begin()
 {
     if (!rec.isAllocated())
     {
         status = Status::NoMemory;
         return;
     }
-    startRecording(ms);
+    becomeIdle();
+}
+
+void RecordingSession::becomeIdle()
+{
+    tared = false;
+    status = Status::Idle;
 }
 
 void RecordingSession::startRecording(unsigned long ms)
@@ -25,28 +31,33 @@ void RecordingSession::startRecording(unsigned long ms)
 void RecordingSession::sample(unsigned long ms, long raw)
 {
     lastRaw = raw;
-    if (status != Status::Recording)
-    {
-        return;
-    }
-    if (!tared)
+    if (!tared && (status == Status::Recording || status == Status::Idle))
     {
         tare = raw;
         tared = true;
+    }
+    if (status != Status::Recording)
+    {
+        return;
     }
     rec.addSample(ms, raw);
     checkFull();
 }
 
-bool RecordingSession::click(unsigned long ms)
+RecordingSession::Click RecordingSession::click(unsigned long ms)
 {
+    if (status == Status::Idle)
+    {
+        startRecording(ms);
+        return Click::Started;
+    }
     if (status != Status::Recording)
     {
-        return false;
+        return Click::Ignored;
     }
     rec.addClick(ms);
     checkFull();
-    return true;
+    return Click::Marked;
 }
 
 void RecordingSession::checkFull()
@@ -67,11 +78,11 @@ bool RecordingSession::longPress()
     return false;
 }
 
-void RecordingSession::uploadFinished(bool ok, unsigned long ms)
+void RecordingSession::uploadFinished(bool ok)
 {
     if (ok)
     {
-        startRecording(ms);
+        becomeIdle();
     }
     else
     {

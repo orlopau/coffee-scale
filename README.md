@@ -42,9 +42,9 @@ The scale can record the raw readings of its load cell, e.g. of taps or an espre
 
 1. Install a build with the recorder on the scale, see above.
 2. In `code/`, run `pio run -t record`. It does not build anything, it waits for recordings. Only one of `serve` and `record` can run at a time.
-3. Open the updater and long-press on the language screen, as for an update. The scale finds the recording server and starts recording.
+3. Open the updater and long-press on the language screen, as for an update. The scale finds the recording server and waits.
 
-While recording, the scale shows the weight, the recording time, the time left and the number of markers. **Click** to set a marker, e.g. when the pump starts. **Long-press** to send the recording to your computer and start the next one. A recording takes at most 5 minutes, then the scale waits for the long-press. If sending fails, the recording is kept and the next long-press tries again. A recording that wasn't sent is lost when the scale is switched off.
+**Click** to start a recording. While recording, the scale shows the weight, the recording time, the time left and the number of markers. **Click** again to set a marker, e.g. when the pump starts. **Long-press** to send the recording to your computer; the scale then waits for the click that starts the next one. A recording takes at most 5 minutes, then the scale waits for the long-press. If sending fails, the recording is kept and the next long-press tries again. A recording that wasn't sent is lost when the scale is switched off.
 
 The computer saves each recording as `code/test/recordings/<date>_<time>.csv`. Give the useful ones a name that says what they show, commit them, and delete the rest. A recording looks like this, with `ms` counted from its start on the scale's clock:
 
