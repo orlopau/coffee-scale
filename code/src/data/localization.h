@@ -53,6 +53,7 @@
 #define UPDATER_DEV_NOT_FOUND "Kein PC gefunden."
 #define UPDATER_WIFI_CONNECT_MANUAL "WiFi einrichten:\nMit Netzwerk\n%s\nverbinden und\n\"Configure new AP\"\nwählen."
 
+#define RECORDER_IDLE "Klick: Aufnahme"
 #define RECORDER_RECORDING "Aufnahme"
 #define RECORDER_UPLOADING "Sende..."
 #define RECORDER_UPLOAD_FAILED "Fehler. Halten: neu"
@@ -127,6 +128,7 @@
 #define UPDATER_DEV_NOT_FOUND "No PC found."
 #define UPDATER_WIFI_CONNECT_MANUAL "Setup WiFi by\nconnecting to the\nnetwork:\n%s\nand clicking\n\"Configure new AP\"."
 
+#define RECORDER_IDLE "Click: record"
 #define RECORDER_RECORDING "Recording"
 #define RECORDER_UPLOADING "Uploading..."
 #define RECORDER_UPLOAD_FAILED "Failed. Hold: retry"

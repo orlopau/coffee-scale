@@ -12,6 +12,7 @@ namespace RecorderScreens
 {
     enum class Status : uint8_t
     {
+        Idle,
         Recording,
         Uploading,
         UploadFailed,

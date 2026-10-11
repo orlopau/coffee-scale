@@ -114,7 +114,7 @@ namespace Recording
         ESP_LOGI(TAG, "Recording for http://%s:%u%s", server.toString().c_str(), port, path);
 
         // The long press that found the server may still be held. Wait until it
-        // is released, so it doesn't count as the long press that uploads.
+        // is released, so it doesn't count as a press of the recorder.
         while (Interface::isEncoderPressed())
         {
             Interface::update();
@@ -124,7 +124,7 @@ namespace Recording
 
         Recorder recorder;
         RecordingSession session(recorder, gramsPerCount);
-        session.begin(now());
+        session.begin();
         render(session);
 
         for (;;)
@@ -139,7 +139,7 @@ namespace Recording
             }
 
             ClickType click = Interface::consumeEncoderClick();
-            if (click == ClickType::SINGLE && session.click(now()))
+            if (click == ClickType::SINGLE && session.click(now()) != RecordingSession::Click::Ignored)
             {
                 Interface::buzzerTone(50);
                 changed = true;
@@ -147,7 +147,7 @@ namespace Recording
             else if (click == ClickType::LONG && session.longPress())
             {
                 render(session);
-                session.uploadFinished(upload(session.recorder(), server, port, path, gramsPerCount), now());
+                session.uploadFinished(upload(session.recorder(), server, port, path, gramsPerCount));
                 changed = true;
             }
 
