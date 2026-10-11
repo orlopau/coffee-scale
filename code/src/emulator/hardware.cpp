@@ -170,8 +170,6 @@ namespace Settings
     float getFloat(FloatSetting s) { return std::isnan(values[s.id]) ? s.def : values[s.id]; }
 
     void setFloat(FloatSetting s, float value) { values[s.id] = value; }
-
-    void commit() {}
 }
 
 #endif

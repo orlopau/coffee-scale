@@ -1,7 +1,6 @@
 #if !defined(PIO_UNIT_TESTING) && !defined(NATIVE)
 
 #include <Arduino.h>
-#include <EEPROM.h>
 
 #include "constants.h"
 #include "data/recipes.h"
@@ -19,6 +18,8 @@
 #include "update.h"
 #include "interface.h"
 #include "battery.h"
+#include "settings.h"
+#include "ui/error_screens.h"
 
 #define AVERAGING_LOOPS 100
 
@@ -32,10 +33,32 @@ Stopwatch stopwatch;
 void saveScale(float scale)
 {
   ESP_LOGI(TAG, "New scale: %f", scale);
-  ESP_LOGI(TAG, "Saving scale to EEPROM...");
-  EEPROM.put(EEPROM_ADDR_SCALE, scale);
-  EEPROM.commit();
+  Settings::setCalibration(scale);
   weightPipeline.setGramsPerCount(scale);
+}
+
+// Without its calibration the scale would weigh wrong without telling, so
+// show why and wait for a click before going on with calibration 1.0.
+void showSettingsError(const char *error)
+{
+  Canvas &canvas = Display::canvas();
+  canvas.clear();
+  ErrorScreens::settingsUnreadable(canvas, error);
+  canvas.flush();
+
+  // a press still held or queued from start-up must not dismiss it unseen
+  while (Interface::isEncoderPressed())
+  {
+    Interface::update();
+    delay(10);
+  }
+  Interface::discardClicks();
+
+  while (Interface::getEncoderClick() != ClickType::SINGLE)
+  {
+    delay(10);
+    Interface::update();
+  }
 }
 
 ModeScale modeDefault(weightPipeline, stopwatch);
@@ -51,7 +74,7 @@ void setup()
   Serial.begin(115200);
   ESP_LOGI(TAG, "CoffeeScale starting up...");
 
-  EEPROM.begin(2048);
+  const char *settingsError = Settings::begin();
   btStop();
 
   //////// INTERFACE //////
@@ -68,12 +91,7 @@ void setup()
   samples.begin();
   loadCellTask.begin();
 
-  float scale;
-  EEPROM.get(EEPROM_ADDR_SCALE, scale);
-  if (isnan(scale))
-  {
-      scale = 1.0f;
-  }
+  float scale = Settings::getCalibration();
 
   ESP_LOGI(TAG, "Existing scale: %f", scale);
   weightPipeline.setGramsPerCount(scale);
@@ -98,6 +116,13 @@ void setup()
   if (digitalRead(PIN_UPDATE_FIRMWARE) == LOW)
   {
       Updater::update_firmware(scale, samples);
+  }
+
+  //////// SETTINGS ERROR ////////
+  // after the updater, so holding the button at boot still reaches it
+  if (settingsError != nullptr)
+  {
+      showSettingsError(settingsError);
   }
 
   /// MODE MANAGER ////

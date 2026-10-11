@@ -80,7 +80,6 @@ void ModeSettings::updateFloatSetting()
     {
         modifySetting = false;
         Settings::setFloat(setting, value);
-        Settings::commit();
     }
     else if (Interface::getEncoderClick() == ClickType::LONG)
     {
