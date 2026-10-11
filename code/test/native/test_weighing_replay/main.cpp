@@ -4,7 +4,7 @@
 
 #include "millis.h"
 #include "native/recorded_scale.h"
-#include "weighing/weight_sensor.h"
+#include "weighing/weight_pipeline.h"
 
 namespace fs = std::filesystem;
 
@@ -38,26 +38,26 @@ void test_pour_of_2_grams_per_second(void)
 {
     RecordedScale scale((FIXTURES / "pour_2gs.csv").string());
     RecordedSamples samples(scale);
-    DefaultWeightSensor weightSensor(samples);
-    weightSensor.setScale(scale.gramsPerCount());
+    WeightPipeline pipeline(samples);
+    pipeline.setGramsPerCount(scale.gramsPerCount());
 
     // the empty cup for 1 s, then tare
     scale.update();
     for (int i = 0; i < 10; i++)
     {
-        weightSensor.update();
+        pipeline.update();
         sleep_for(100);
     }
-    weightSensor.tare();
+    pipeline.tare();
 
     // 4 s of pouring
     for (int i = 0; i <= 40; i++)
     {
-        weightSensor.update();
+        pipeline.update();
         sleep_for(100);
     }
 
-    const Reading &reading = weightSensor.newReadings().back();
+    const Reading &reading = pipeline.newReadings().back();
     TEST_ASSERT_FLOAT_WITHIN(0.05, 2, reading.flow);
     TEST_ASSERT_FLOAT_WITHIN(0.01, 8, reading.net);
     TEST_ASSERT_FLOAT_WITHIN(0.01, 108, reading.grams);

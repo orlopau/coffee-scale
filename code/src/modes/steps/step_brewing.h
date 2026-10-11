@@ -1,12 +1,12 @@
 #pragma once
 
-#include "weighing/weight_sensor.h"
+#include "weighing/weight_source.h"
 #include "step.h"
 
 class RecipeBrewing : public RecipeStep
 {
 public:
-    RecipeBrewing(RecipeStepState &state, WeightSensor &weightSensor);
+    RecipeBrewing(RecipeStepState &state, WeightSource &weightSource);
     void update() override;
     void render(Canvas &canvas) override;
     void enter() override;
@@ -21,7 +21,7 @@ public:
 
 private:
     RecipeStepState &state;
-    WeightSensor &weightSensor;
+    WeightSource &weightSource;
 
     unsigned long pourStartMillis = 0;
     bool pourDoneFlag;

@@ -26,7 +26,7 @@
 #include "modes/mode_settings.h"
 #include "settings.h"
 #include "stopwatch.h"
-#include "weighing/weight_sensor.h"
+#include "weighing/weight_pipeline.h"
 
 // window pixels per display pixel, and the frame around the display
 #define PIXEL_SIZE 4
@@ -51,13 +51,13 @@ static const char *HELP = "Coffee Scale emulator\n"
                           "  P                save a screenshot\n"
                           "  Esc, Q           quit\n";
 
-static DefaultWeightSensor weightSensor(Emulator::samples());
+static WeightPipeline weightPipeline(Emulator::samples());
 static Stopwatch stopwatch;
 
 static void saveScale(float scale)
 {
     printf("New scale: %f\n", scale);
-    weightSensor.setScale(scale);
+    weightPipeline.setGramsPerCount(scale);
 }
 
 /** As the device's setup() does, with the scale calibrated already. */
@@ -66,26 +66,24 @@ static void setup()
     Interface::begin();
     Battery::init();
     Display::begin();
-    weightSensor.begin();
-
-    weightSensor.setScale(1 / SimulatedScale::COUNTS_PER_GRAM);
-    weightSensor.setAutoAveraging(fabs(Settings::getFloat(Settings::floatSettings[Settings::AVERAGING_DELTA])), 64);
+    weightPipeline.setGramsPerCount(1 / SimulatedScale::COUNTS_PER_GRAM);
+    weightPipeline.setAutoAveraging(fabs(Settings::getFloat(Settings::floatSettings[Settings::AVERAGING_DELTA])), 64);
 
     // tare after 32 samples
-    for (size_t samples = 0; samples < 32;)
+    for (size_t readings = 0; readings < 32;)
     {
         sleep_for(1);
-        weightSensor.update();
-        samples += weightSensor.newReadings().size();
+        weightPipeline.update();
+        readings += weightPipeline.newReadings().size();
     }
-    weightSensor.tare();
+    weightPipeline.tare();
 }
 
 /** One pass of the device's loop(). */
 static void loop(ModeManager &modeManager)
 {
     Interface::update();
-    weightSensor.update();
+    weightPipeline.update();
     modeManager.update();
 }
 
@@ -254,11 +252,11 @@ int main(int argc, char **argv)
     setvbuf(stdout, nullptr, _IOLBF, 0);
     setup();
 
-    ModeScale modeDefault(weightSensor, stopwatch);
-    ModeEspresso modeEspresso(weightSensor, stopwatch);
-    ModeCalibration modeCalibration(weightSensor, stopwatch, saveScale);
+    ModeScale modeDefault(weightPipeline, stopwatch);
+    ModeEspresso modeEspresso(weightPipeline, stopwatch);
+    ModeCalibration modeCalibration(weightPipeline, stopwatch, saveScale);
     ModeSettings modeSettings;
-    ModeRecipes modeRecipes(weightSensor, RECIPES, RECIPE_COUNT);
+    ModeRecipes modeRecipes(weightPipeline, RECIPES, RECIPE_COUNT);
     Mode *modes[] = {&modeDefault, &modeRecipes, &modeEspresso, &modeCalibration, &modeSettings};
     ModeManager modeManager(modes, 5, Display::canvas());
     modeManager.begin();

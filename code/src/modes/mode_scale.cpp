@@ -6,13 +6,13 @@
 #include "interface.h"
 #include "logger.h"
 #include "settings.h"
-#include "weighing/weight_sensor.h"
+#include "weighing/weight_source.h"
 
 void ModeScale::update()
 {
     if (Interface::getEncoderDirection() != Interface::EncoderDirection::NONE)
     {
-        weightSensor.tare();
+        weightSource.tare();
     }
 
     if (Interface::getEncoderClick() == ClickType::SINGLE)
@@ -20,12 +20,12 @@ void ModeScale::update()
         stopwatch.toggle();
     }
 
-    for (const Reading &reading : weightSensor.newReadings())
+    for (const Reading &reading : weightSource.newReadings())
     {
         autoTare->update(reading.grams);
         if (autoTare->shouldTare()) {
             Interface::buzzerTone(100);
-            weightSensor.tare();
+            weightSource.tare();
         }
     }
 }
@@ -33,7 +33,7 @@ void ModeScale::update()
 void ModeScale::render(Canvas &canvas)
 {
     canvas.setFont(Font::Number30);
-    canvas.drawText(0, 30, formatWeight(weightSensor.getWeight()));
+    canvas.drawText(0, 30, formatWeight(weightSource.getWeight()));
     canvas.setFont(Font::Number22);
     canvas.drawText(0, 64, formatTime(stopwatch.getTime()));
 }

@@ -9,7 +9,7 @@
 #include "settings.h"
 
 static Stopwatch *stopwatch;
-static MockWeightSensor *weightSensor;
+static MockWeightSource *weightSource;
 
 ModeScale *modeScale;
 
@@ -18,15 +18,15 @@ void setUp(void)
     Interface::reset();
     Display::reset();
     stopwatch = new Stopwatch();
-    weightSensor = new MockWeightSensor();
-    modeScale = new ModeScale(*weightSensor, *stopwatch);
+    weightSource = new MockWeightSource();
+    modeScale = new ModeScale(*weightSource, *stopwatch);
 }
 
 void tearDown(void)
 {
     delete stopwatch;
     delete modeScale;
-    delete weightSensor;
+    delete weightSource;
 }
 
 void test_stopwatch_start_when_click(void)
@@ -47,16 +47,16 @@ void test_stopwatch_stop_when_click_again(void)
 
 void test_loadcell_tare_when_encoder_rotated(void)
 {
-    weightSensor->weight = 1;
+    weightSource->weight = 1;
 
     Interface::encoderDirection = Interface::EncoderDirection::CW;
     modeScale->update();
-    TEST_ASSERT_EQUAL(0, weightSensor->getWeight());
+    TEST_ASSERT_EQUAL(0, weightSource->getWeight());
 }
 
 void test_display_shows_weight(void)
 {
-    weightSensor->weight = 1;
+    weightSource->weight = 1;
 
     modeScale->update();
     modeScale->render(Display::mockCanvas);
@@ -78,17 +78,17 @@ void test_auto_tare_sees_every_reading(void)
     Settings::setFloat(Settings::floatSettings[Settings::AUTO_TARE_0], 36);
     Settings::setFloat(Settings::floatSettings[Settings::AUTO_TARE_TOLERANCE], 1);
     modeScale->enter();
-    weightSensor->weight = 136;
+    weightSource->weight = 136;
 
     // the scale is steady at 100 g, then a 36 g cup is put on
     for (int i = 0; i < 32; i++)
     {
         float grams = i < 16 ? 100 : 136;
-        weightSensor->readings.push_back({static_cast<uint32_t>(i * 100), 0, grams, grams, grams, 0});
+        weightSource->readings.push_back({static_cast<uint32_t>(i * 100), 0, grams, grams, grams, 0});
     }
     modeScale->update();
 
-    TEST_ASSERT_EQUAL_FLOAT(0, weightSensor->getWeight());
+    TEST_ASSERT_EQUAL_FLOAT(0, weightSource->getWeight());
 }
 
 int main(void)

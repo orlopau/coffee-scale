@@ -7,7 +7,7 @@
 #include "mock/mock_display.h"
 
 static Stopwatch *stopwatch;
-static MockWeightSensor *weightSensor;
+static MockWeightSource *weightSource;
 
 const Recipe RECIPES[] = {
     {"name1",
@@ -48,14 +48,14 @@ void setUp(void)
 {
     Display::reset();
     stopwatch = new Stopwatch();
-    weightSensor = new MockWeightSensor();
-    modeRecipes = new ModeRecipes(*weightSensor, RECIPES, 3);
+    weightSource = new MockWeightSource();
+    modeRecipes = new ModeRecipes(*weightSource, RECIPES, 3);
 }
 
 void tearDown(void)
 {
     delete stopwatch;
-    delete weightSensor;
+    delete weightSource;
     delete modeRecipes;
 }
 

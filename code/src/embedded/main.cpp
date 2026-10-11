@@ -6,6 +6,8 @@
 #include "constants.h"
 #include "data/recipes.h"
 #include "embedded/loadcell_task.h"
+#include "embedded/sample_queue.h"
+#include "weighing/weight_pipeline.h"
 #include "mode.h"
 #include "mode_manager.h"
 #include "modes/mode_scale.h"
@@ -22,8 +24,9 @@
 
 #define TAG "MAIN"
 
-LoadCellTask loadCellTask;
-DefaultWeightSensor weightSensor(loadCellTask);
+SampleQueue samples;
+LoadCellTask loadCellTask(samples);
+WeightPipeline weightPipeline(samples);
 Stopwatch stopwatch;
 
 void saveScale(float scale)
@@ -32,14 +35,14 @@ void saveScale(float scale)
   ESP_LOGI(TAG, "Saving scale to EEPROM...");
   EEPROM.put(EEPROM_ADDR_SCALE, scale);
   EEPROM.commit();
-  weightSensor.setScale(scale);
+  weightPipeline.setGramsPerCount(scale);
 }
 
-ModeScale modeDefault(weightSensor, stopwatch);
-ModeEspresso modeEspresso(weightSensor, stopwatch);
-ModeCalibration modeCalibration(weightSensor, stopwatch, saveScale);
+ModeScale modeDefault(weightPipeline, stopwatch);
+ModeEspresso modeEspresso(weightPipeline, stopwatch);
+ModeCalibration modeCalibration(weightPipeline, stopwatch, saveScale);
 ModeSettings modeSettings;
-ModeRecipes modeRecipes(weightSensor, RECIPES, RECIPE_COUNT);
+ModeRecipes modeRecipes(weightPipeline, RECIPES, RECIPE_COUNT);
 Mode *modes[] = {&modeDefault, &modeRecipes, &modeEspresso, &modeCalibration, &modeSettings};
 ModeManager modeManager(modes, 5, Display::canvas());
 
@@ -69,8 +72,8 @@ void setup()
   Display::drawOpener();
 
   //////// WEIGHT SENSOR ////////
+  samples.begin();
   loadCellTask.begin();
-  weightSensor.begin();
 
   float scale;
   EEPROM.get(EEPROM_ADDR_SCALE, scale);
@@ -80,22 +83,22 @@ void setup()
   }
 
   ESP_LOGI(TAG, "Existing scale: %f", scale);
-  weightSensor.setScale(scale);
+  weightPipeline.setGramsPerCount(scale);
 
 
   float delta = fabs(Settings::getFloat(Settings::floatSettings[Settings::AVERAGING_DELTA]));
-  weightSensor.setAutoAveraging(delta, 64);
+  weightPipeline.setAutoAveraging(delta, 64);
   ESP_LOGI(TAG, "Auto averaging delta: %f g/s", delta);
 
   // tare after 32 samples
   ESP_LOGI(TAG, "Taring...");
-  for (size_t samples = 0; samples < 32;)
+  for (size_t readings = 0; readings < 32;)
   {
       delay(10);
-      weightSensor.update();
-      samples += weightSensor.newReadings().size();
+      weightPipeline.update();
+      readings += weightPipeline.newReadings().size();
   }
-  weightSensor.tare();
+  weightPipeline.tare();
   ESP_LOGI(TAG, "Tared!");
 
   //////// INTERRUPTS ////////
@@ -106,7 +109,7 @@ void setup()
   //////// UPDATES ////////
   if (digitalRead(PIN_UPDATE_FIRMWARE) == LOW)
   {
-      Updater::update_firmware(scale, loadCellTask);
+      Updater::update_firmware(scale, samples);
   }
 
   /// MODE MANAGER ////
@@ -123,7 +126,7 @@ unsigned long lastTime = millis();
 void loop()
 {
   Interface::update();
-  weightSensor.update();
+  weightPipeline.update();
   modeManager.update();
 
 #ifdef PERF

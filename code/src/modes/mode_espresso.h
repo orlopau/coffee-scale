@@ -1,6 +1,6 @@
 #pragma once
 
-#include "weighing/weight_sensor.h"
+#include "weighing/weight_source.h"
 #include "mode.h"
 #include "stopwatch.h"
 #include "regression.h"
@@ -17,8 +17,8 @@
 class ModeEspresso : public Mode
 {
 public:
-    ModeEspresso(WeightSensor &weightSensor, Stopwatch &stopwatch)
-        : weightSensor(weightSensor), stopwatch(stopwatch),
+    ModeEspresso(WeightSource &weightSource, Stopwatch &stopwatch)
+        : weightSource(weightSource), stopwatch(stopwatch),
           targetWeightMg(36 * 1000), approximator(REGRESSION_BUFFER_SIZE), lastEstimatedTime(0){};
     ~ModeEspresso(){};
     void update() override;
@@ -34,7 +34,7 @@ public:
     bool isWaitingForEstimate();
 
 private:
-    WeightSensor &weightSensor;
+    WeightSource &weightSource;
     Stopwatch &stopwatch;
 
     Regression::Approximator approximator;

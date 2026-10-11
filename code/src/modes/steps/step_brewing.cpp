@@ -5,8 +5,8 @@
 #include "interface.h"
 #include "ui/widgets.h"
 
-RecipeBrewing::RecipeBrewing(RecipeStepState &state, WeightSensor &weightSensor)
-    : state(state), weightSensor(weightSensor)
+RecipeBrewing::RecipeBrewing(RecipeStepState &state, WeightSource &weightSource)
+    : state(state), weightSource(weightSource)
 {
 }
 
@@ -20,7 +20,7 @@ void RecipeBrewing::update()
     // tare scale on rotation
     if (Interface::getEncoderDirection() != Interface::EncoderDirection::NONE)
     {
-        weightSensor.tare();
+        weightSource.tare();
     }
 
     // autostart brew if enabled
@@ -89,7 +89,7 @@ void RecipeBrewing::update()
         totalPourWeightMg += pourWeightMg;
     }
 
-    remainingWeightMg = totalPourWeightMg - (weightSensor.getWeight() * 1000);
+    remainingWeightMg = totalPourWeightMg - (weightSource.getWeight() * 1000);
     remainingTimeMs = remainingTimePourMs;
     pausing = isPause;
 }

@@ -47,7 +47,7 @@ static const fs::path SCREENS_DIR = HERE / "screens";
 static const fs::path FAILED_DIR = HERE / "failed";
 
 static VirtualDisplay display;
-static MockWeightSensor *weightSensor;
+static MockWeightSource *weightSource;
 static Stopwatch *stopwatch;
 
 static bool updating = false;
@@ -142,7 +142,7 @@ void setUp(void)
     set_now(1000000);
     Interface::reset();
     Battery::reset();
-    weightSensor = new MockWeightSensor();
+    weightSource = new MockWeightSource();
     stopwatch = new Stopwatch();
     mismatches.clear();
 }
@@ -150,7 +150,7 @@ void setUp(void)
 void tearDown(void)
 {
     delete stopwatch;
-    delete weightSensor;
+    delete weightSource;
 
     std::string message = "screens differ, see " + FAILED_DIR.string() + ":";
     for (const std::string &name : mismatches)
@@ -162,26 +162,26 @@ void tearDown(void)
 
 void test_scale(void)
 {
-    ModeScale scale(*weightSensor, *stopwatch);
+    ModeScale scale(*weightSource, *stopwatch);
     scale.enter();
     show("scale_zero", scale);
 
-    weightSensor->weight = 12.34f;
+    weightSource->weight = 12.34f;
     stopwatch->start();
     sleep_for(65432);
     show("scale_running", scale);
 
-    weightSensor->weight = -1.5f;
+    weightSource->weight = -1.5f;
     show("scale_negative", scale);
 
-    weightSensor->weight = 1234.5f;
+    weightSource->weight = 1234.5f;
     sleep_for(3599999 - 65432);
     show("scale_big", scale);
 }
 
 void test_espresso(void)
 {
-    ModeEspresso espresso(*weightSensor, *stopwatch);
+    ModeEspresso espresso(*weightSource, *stopwatch);
     espresso.enter();
     show("espresso_idle", espresso);
 
@@ -189,10 +189,10 @@ void test_espresso(void)
     for (int i = 1; i <= 8; i++)
     {
         sleep_for(500);
-        weightSensor->newReading(2.5f * i);
+        weightSource->newReading(2.5f * i);
         espresso.update();
     }
-    weightSensor->readings.clear();
+    weightSource->readings.clear();
     show("espresso_brewing", espresso);
 }
 
@@ -262,14 +262,14 @@ void test_recipe_config_weight(void)
 void test_recipe_prepare(void)
 {
     RecipeStepState state = {&RECIPES[0], RECIPES[0]};
-    RecipePrepare step(state, *weightSensor);
+    RecipePrepare step(state, *weightSource);
     step.enter();
     show("recipe_prepare_empty", step);
-    weightSensor->weight = 5.678f;
+    weightSource->weight = 5.678f;
     show("recipe_prepare_some", step);
-    weightSensor->weight = 12.0f;
+    weightSource->weight = 12.0f;
     show("recipe_prepare_enough", step);
-    weightSensor->weight = -0.2f;
+    weightSource->weight = -0.2f;
     show("recipe_prepare_negative", step);
 }
 
@@ -278,22 +278,22 @@ void test_recipe_brewing(void)
     // the countdown while pouring (V60 Scott Rao)
     {
         RecipeStepState state = {&RECIPES[3], RECIPES[3]};
-        RecipeBrewing step(state, *weightSensor);
+        RecipeBrewing step(state, *weightSource);
         step.enter();
         click(step);
         sleep_for(5000);
-        weightSensor->weight = 20.5f;
+        weightSource->weight = 20.5f;
         show("recipe_brewing_pouring", step);
     }
 
     // the countdown during a pause (Aeropress)
     {
         RecipeStepState state = {&RECIPES[0], RECIPES[0]};
-        RecipeBrewing step(state, *weightSensor);
+        RecipeBrewing step(state, *weightSource);
         step.enter();
         click(step);
         sleep_for(30000);
-        weightSensor->weight = 200.4f;
+        weightSource->weight = 200.4f;
         show("recipe_brewing_pause", step);
     }
 
@@ -301,16 +301,16 @@ void test_recipe_brewing(void)
     for (int r = 0; r < RECIPE_COUNT; r++)
     {
         RecipeStepState state = {&RECIPES[r], RECIPES[r]};
-        RecipeBrewing step(state, *weightSensor);
+        RecipeBrewing step(state, *weightSource);
         step.enter();
-        weightSensor->weight = 0;
+        weightSource->weight = 0;
         for (int p = 0; p < RECIPES[r].poursCount; p++)
         {
             if (p > 0)
             {
                 click(step); // on to the next pour
             }
-            weightSensor->weight += 17.3f;
+            weightSource->weight += 17.3f;
             show("recipe_brewing_" + std::to_string(r) + "_pour_" + std::to_string(p), step);
             if (!RECIPES[r].pours[p].autoStart)
             {
@@ -331,15 +331,15 @@ static Reading rawReading(int32_t raw) { return {static_cast<uint32_t>(now()), r
 
 void test_calibration(void)
 {
-    weightSensor->readings = {rawReading(1000)};
-    ModeCalibration calibration(*weightSensor, *stopwatch, saveScale);
+    weightSource->readings = {rawReading(1000)};
+    ModeCalibration calibration(*weightSource, *stopwatch, saveScale);
     show("calibration_begin", calibration);
     click(calibration);
     show("calibration_add_weight", calibration);
     click(calibration);
-    weightSensor->readings.clear();
+    weightSource->readings.clear();
     show("calibration_calibrating", calibration);
-    weightSensor->readings = {rawReading(51000)};
+    weightSource->readings = {rawReading(51000)};
     for (int i = 0; i < CALIBRATION_SAMPLE_SIZE; i++)
     {
         Interface::reset();
@@ -370,11 +370,11 @@ void test_settings(void)
 
 void test_mode_switcher(void)
 {
-    ModeScale scale(*weightSensor, *stopwatch);
-    ModeEspresso espresso(*weightSensor, *stopwatch);
-    ModeCalibration calibration(*weightSensor, *stopwatch, saveScale);
+    ModeScale scale(*weightSource, *stopwatch);
+    ModeEspresso espresso(*weightSource, *stopwatch);
+    ModeCalibration calibration(*weightSource, *stopwatch, saveScale);
     ModeSettings settings;
-    ModeRecipes recipes(*weightSensor, RECIPES, RECIPE_COUNT);
+    ModeRecipes recipes(*weightSource, RECIPES, RECIPE_COUNT);
     Mode *modes[] = {&scale, &recipes, &espresso, &calibration, &settings};
     ModeManager manager(modes, 5, display.canvas());
     manager.begin();
