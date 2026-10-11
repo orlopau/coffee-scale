@@ -14,6 +14,10 @@
  * faster change starts over with the last sample alone. Only samples since
  * averaging started are averaged, so the weight doesn't jump back towards
  * values from before.
+ *
+ * While averaging, a single fast sample is noise more often than a change:
+ * it only starts over once the next sample confirms the change, one sample
+ * later. Otherwise it is left out.
  */
 class AdaptiveAverage
 {
@@ -40,6 +44,9 @@ private:
     float threshold = 0;
     unsigned int averaged = 0;
     bool hasLast = false;
+    /** A fast sample was left out, waiting for the next to confirm it. */
+    bool held = false;
+    uint32_t heldMs = 0;
     uint32_t lastMs = 0;
     float current = 0;
 };
