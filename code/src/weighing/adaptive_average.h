@@ -26,8 +26,12 @@ public:
      * @param samples the most samples averaged
      */
     void configure(float gramsPerSecond, uint8_t samples);
+    /** Forgets all samples, keeps the configuration. */
+    void reset();
     /** Adds a sample and returns the averaged weight. */
     float add(uint32_t ms, float grams);
+    /** True before the first sample, and after reset(). */
+    bool isEmpty() const { return !hasLast; }
     /** The averaged weight after the last sample, 0 before the first. */
     float value() const { return current; }
 

@@ -28,7 +28,8 @@ struct Reading
 class WeightPipeline
 {
 public:
-    void setGramsPerCount(float gramsPerCount) { this->gramsPerCount = gramsPerCount; }
+    /** A new calibration. The tare still holds, filter and flow start over. */
+    void setGramsPerCount(float gramsPerCount);
     /** See AdaptiveAverage::configure(). */
     void setAutoAveraging(float gramsPerSecond, uint8_t samples) { average.configure(gramsPerSecond, samples); }
 
@@ -42,7 +43,8 @@ public:
 
 private:
     float gramsPerCount = 1;
-    float offset = 0;
+    /** In counts, so a new calibration keeps the tare. */
+    float offsetCounts = 0;
     AdaptiveAverage average;
     FlowEstimator flow;
 

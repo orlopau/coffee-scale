@@ -1,9 +1,18 @@
 #include "weighing/weight_pipeline.h"
 
+void WeightPipeline::setGramsPerCount(float gramsPerCount)
+{
+    this->gramsPerCount = gramsPerCount;
+    // they hold grams of the old calibration
+    average.reset();
+    flow.reset();
+}
+
 Reading WeightPipeline::process(const Sample &sample)
 {
     const float grams = sample.raw * gramsPerCount;
     const float smoothed = average.add(sample.ms, grams);
+    const float offset = offsetCounts * gramsPerCount;
 
     last = {
         sample.ms,
@@ -20,12 +29,13 @@ Reading WeightPipeline::process(const Sample &sample)
 
 void WeightPipeline::tare()
 {
-    if (!started)
+    if (!started || gramsPerCount == 0)
     {
         return;
     }
 
-    offset = average.value();
-    last.net = last.grams - offset;
+    // right after a new calibration the filter is empty, the last sample is all there is
+    offsetCounts = average.isEmpty() ? last.raw : average.value() / gramsPerCount;
+    last.net = (last.raw - offsetCounts) * gramsPerCount;
     last.filtered = 0;
 }

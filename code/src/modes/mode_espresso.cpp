@@ -97,9 +97,10 @@ void ModeEspresso::handleReading(const Reading &reading)
     // Readings can wait a little before they arrive, the stopwatch time when each was measured:
     long age = (long)(now() - reading.ms);
     long time = (long)stopwatch.getTime() - age;
-    if (time < 0)
+    if (time <= 0)
     {
-        // measured before the stopwatch started
+        // Measured before the stopwatch started, or in the same millisecond:
+        // the readings of the loop that starts it were made before its tare.
         return;
     }
 

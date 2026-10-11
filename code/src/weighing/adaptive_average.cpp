@@ -8,8 +8,15 @@ void AdaptiveAverage::configure(float gramsPerSecond, uint8_t samples)
 {
     threshold = gramsPerSecond;
     buffer.reset(new RingBuffer<float>(samples > 0 ? samples : 1));
+    reset();
+}
+
+void AdaptiveAverage::reset()
+{
+    buffer->clear();
     averaged = 0;
     hasLast = false;
+    current = 0;
 }
 
 float AdaptiveAverage::add(uint32_t ms, float grams)

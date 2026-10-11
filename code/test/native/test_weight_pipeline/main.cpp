@@ -79,6 +79,48 @@ void test_tare_before_the_first_sample_does_nothing(void)
     TEST_ASSERT_FLOAT_WITHIN(0.0001, 5, r.net);
 }
 
+// Calibrating sets a new scale after the start-up tare, which must still hold.
+void test_tare_survives_a_new_scale(void)
+{
+    pipeline->setGramsPerCount(1);
+    pipeline->setAutoAveraging(1, 4);
+    pipeline->process({0, 84000});
+    pipeline->tare();
+
+    pipeline->setGramsPerCount(0.002f);
+    Reading r = pipeline->process({100, 134000});
+    TEST_ASSERT_FLOAT_WITHIN(0.001, 100, r.net);
+    TEST_ASSERT_FLOAT_WITHIN(0.001, 100, r.filtered);
+    TEST_ASSERT_FLOAT_WITHIN(0.001, 268, r.grams);
+}
+
+// The filter and flow hold grams of the old scale, which mean nothing in the new one.
+void test_new_scale_starts_filter_and_flow_over(void)
+{
+    pipeline->setGramsPerCount(1);
+    pipeline->setAutoAveraging(1000, 4);
+    for (int i = 0; i < 10; i++)
+    {
+        pipeline->process({(uint32_t)(i * 100), 84000});
+    }
+
+    pipeline->setGramsPerCount(0.002f);
+    Reading r = pipeline->process({1000, 84000});
+    TEST_ASSERT_FLOAT_WITHIN(0.001, 168, r.filtered);
+    TEST_ASSERT_FLOAT_WITHIN(0.001, 0, r.flow);
+}
+
+void test_tare_right_after_a_new_scale_uses_the_last_sample(void)
+{
+    pipeline->setGramsPerCount(1);
+    pipeline->process({0, 84000});
+
+    pipeline->setGramsPerCount(0.002f);
+    pipeline->tare();
+    Reading r = pipeline->process({100, 84000});
+    TEST_ASSERT_FLOAT_WITHIN(0.001, 0, r.net);
+}
+
 int main(void)
 {
     UNITY_BEGIN();
@@ -89,5 +131,8 @@ int main(void)
     RUN_TEST(test_filtered_is_averaged_net_is_not);
     RUN_TEST(test_tare_does_not_disturb_the_flow);
     RUN_TEST(test_tare_before_the_first_sample_does_nothing);
+    RUN_TEST(test_tare_survives_a_new_scale);
+    RUN_TEST(test_new_scale_starts_filter_and_flow_over);
+    RUN_TEST(test_tare_right_after_a_new_scale_uses_the_last_sample);
     return UNITY_END();
 }
