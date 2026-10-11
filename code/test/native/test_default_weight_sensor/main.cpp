@@ -1,26 +1,7 @@
 #include <unity.h>
 
-#include <deque>
-
+#include "mock/mock_sample_source.h"
 #include "weighing/weight_sensor.h"
-
-/** Hands out the samples a test queues, like the load cell task's queue. */
-class QueuedSamples : public SampleSource
-{
-public:
-    std::deque<Sample> samples;
-
-    bool next(Sample &sample) override
-    {
-        if (samples.empty())
-        {
-            return false;
-        }
-        sample = samples.front();
-        samples.pop_front();
-        return true;
-    }
-};
 
 static QueuedSamples *samples;
 static DefaultWeightSensor *weightSensor;

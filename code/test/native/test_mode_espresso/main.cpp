@@ -5,6 +5,7 @@
 #include "modes/mode_espresso.h"
 #include "stopwatch.h"
 #include "millis.h"
+#include "mock/mock_sample_source.h"
 #include <unity.h>
 
 static MockWeightSensor *weightSensor;
@@ -147,6 +148,25 @@ void test_estimate_skips_readings_from_before_the_start(void)
     TEST_ASSERT_INT_WITHIN(5, 2100, modeEspresso->getRemainingTimeMs());
 }
 
+// The click that starts the shot tares, after the readings of that loop were
+// made with the old tare. A cup on the scale must not count as espresso.
+void test_readings_from_before_the_tare_are_skipped(void)
+{
+    QueuedSamples samples;
+    DefaultWeightSensor sensor(samples);
+    ModeEspresso espresso(sensor, *stopwatch);
+    sensor.setScale(0.01f);
+
+    // a 150 g cup, measured in the same millisecond as the click
+    samples.samples = {{static_cast<uint32_t>(now()), 15000}};
+    sensor.update();
+    Interface::encoderClick = ClickType::SINGLE;
+    espresso.update();
+    Interface::reset();
+
+    TEST_ASSERT_TRUE(stopwatch->isRunning());
+}
+
 int main(void)
 {
     UNITY_BEGIN();
@@ -158,5 +178,6 @@ int main(void)
     RUN_TEST(test_update_does_not_draw);
     RUN_TEST(test_estimate_uses_the_time_of_each_reading);
     RUN_TEST(test_estimate_skips_readings_from_before_the_start);
+    RUN_TEST(test_readings_from_before_the_tare_are_skipped);
     UNITY_END();
 }
