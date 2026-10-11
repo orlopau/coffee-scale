@@ -1,6 +1,6 @@
 #include <cmath>
 
-#include "weight_sensor.h"
+#include "weighing/weight_sensor.h"
 #include "millis.h"
 #include "loadcell.h"
 
