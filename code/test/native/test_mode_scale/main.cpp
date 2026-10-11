@@ -49,7 +49,7 @@ void test_loadcell_tare_when_encoder_rotated(void)
 {
     weightSource->weight = 1;
 
-    Interface::encoderDirection = Interface::EncoderDirection::CW;
+    Interface::encoderTurns = 1;
     modeScale->update();
     TEST_ASSERT_EQUAL(0, weightSource->getWeight());
 }

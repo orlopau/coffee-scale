@@ -11,7 +11,7 @@ RecipePrepare::RecipePrepare(RecipeStepState &state, WeightSource &weightSource)
 void RecipePrepare::update()
 {
     // tare on encoder rotate
-    if (Interface::getEncoderDirection() != Interface::EncoderDirection::NONE)
+    if (Interface::getEncoderTurns() != 0)
     {
         weightSource.tare();
     }

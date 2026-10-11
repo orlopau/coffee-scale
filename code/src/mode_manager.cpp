@@ -69,7 +69,7 @@ void ModeManager::renderModeSwitcher()
 void ModeManager::updateModeChange()
 {
     int previousMode = currentMode;
-    currentMode += static_cast<int>(Interface::getEncoderDirection());
+    currentMode += Interface::getEncoderTurns();
 
     if (currentMode < 0)
     {

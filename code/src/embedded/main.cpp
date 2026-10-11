@@ -46,13 +46,6 @@ ModeRecipes modeRecipes(weightPipeline, RECIPES, RECIPE_COUNT);
 Mode *modes[] = {&modeDefault, &modeRecipes, &modeEspresso, &modeCalibration, &modeSettings};
 ModeManager modeManager(modes, 5, Display::canvas());
 
-Interface::EncoderDirection encoderDirection;
-
-void IRAM_ATTR isr_input()
-{
-  Interface::update();
-}
-
 void setup()
 {
   Serial.begin(115200);
@@ -101,11 +94,6 @@ void setup()
   weightPipeline.tare();
   ESP_LOGI(TAG, "Tared!");
 
-  //////// INTERRUPTS ////////
-  attachInterrupt(PIN_ENC_A, isr_input, CHANGE);
-  attachInterrupt(PIN_ENC_B, isr_input, CHANGE);
-  attachInterrupt(PIN_ENC_BTN, isr_input, CHANGE);
-
   //////// UPDATES ////////
   if (digitalRead(PIN_UPDATE_FIRMWARE) == LOW)
   {
@@ -113,6 +101,8 @@ void setup()
   }
 
   /// MODE MANAGER ////
+  // the button task runs since Interface::begin(), a press during start-up must not act in the first mode
+  Interface::discardClicks();
   modeManager.begin();
 
   ESP_LOGI(TAG, "Setup finished!");

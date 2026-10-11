@@ -36,29 +36,41 @@ void test_encoder_rotation_changes_chosen_recipe()
     TEST_ASSERT_EQUAL(0, switcherStep->recipeIndex);
 
     // turning encoder to left should remain at 0
-    Interface::encoderDirection = Interface::EncoderDirection::CCW;
+    Interface::encoderTurns = -1;
     switcherStep->update();
     TEST_ASSERT_EQUAL(0, switcherStep->recipeIndex);
 
     // turning encoder to right should change to 1
-    Interface::encoderDirection = Interface::EncoderDirection::CW;
+    Interface::encoderTurns = 1;
     switcherStep->update();
     TEST_ASSERT_EQUAL(1, switcherStep->recipeIndex);
 
     // turning encoder to right should change to 2
-    Interface::encoderDirection = Interface::EncoderDirection::CW;
+    Interface::encoderTurns = 1;
     switcherStep->update();
     TEST_ASSERT_EQUAL(2, switcherStep->recipeIndex);
 
     // turning encoder to right should remain at 2
-    Interface::encoderDirection = Interface::EncoderDirection::CW;
+    Interface::encoderTurns = 1;
     switcherStep->update();
     TEST_ASSERT_EQUAL(2, switcherStep->recipeIndex);
 
     // turning encoder to left should change to 1
-    Interface::encoderDirection = Interface::EncoderDirection::CCW;
+    Interface::encoderTurns = -1;
     switcherStep->update();
     TEST_ASSERT_EQUAL(1, switcherStep->recipeIndex);
+}
+
+void test_several_detents_in_one_loop_change_the_recipe_by_as_many(void)
+{
+    switcherStep->update();
+    Interface::encoderTurns = 2;
+    switcherStep->update();
+    TEST_ASSERT_EQUAL(2, switcherStep->recipeIndex);
+
+    Interface::encoderTurns = -5;
+    switcherStep->update();
+    TEST_ASSERT_EQUAL(0, switcherStep->recipeIndex);
 }
 
 void test_switcher_sets_recipe_state_to_chosen_recipe(void)
@@ -75,6 +87,7 @@ int main(void)
 {
     UNITY_BEGIN();
     RUN_TEST(test_encoder_rotation_changes_chosen_recipe);
+    RUN_TEST(test_several_detents_in_one_loop_change_the_recipe_by_as_many);
     RUN_TEST(test_switcher_sets_recipe_state_to_chosen_recipe);
     UNITY_END();
 }

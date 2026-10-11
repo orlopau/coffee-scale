@@ -10,7 +10,7 @@
 
 void ModeScale::update()
 {
-    if (Interface::getEncoderDirection() != Interface::EncoderDirection::NONE)
+    if (Interface::getEncoderTurns() != 0)
     {
         weightSource.tare();
     }

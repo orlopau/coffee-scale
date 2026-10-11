@@ -1,83 +1,64 @@
 #ifndef NATIVE
 
 #include <Arduino.h>
-#include <RotaryEncoder.h>
+
 #include "interface.h"
 #include "constants.h"
-#include "button.h"
+#include "millis.h"
+#include "embedded/button_task.h"
+#include "embedded/click_queue.h"
+#include "embedded/encoder_counter.h"
+#include "input/click_inbox.h"
+#include "input/detent_counter.h"
 
-static RotaryEncoder encoder(PIN_ENC_A, PIN_ENC_B, RotaryEncoder::LatchMode::FOUR3);
-static Button encoderButton;
-static uint64_t lastBuzzerMillis;
-static uint32_t lastBuzzerDuration;
+static EncoderCounter encoderCounter;
+static DetentCounter detentCounter;
+static ClickQueue clickQueue;
+static ButtonTask buttonTask(clickQueue);
+static ClickInbox clickInbox(clickQueue);
 
+static int32_t lastDetent = 0;
+static int turns = 0;
+static long ticks = 0;
 
-void Interface::begin() {
+void Interface::begin()
+{
     pinMode(PIN_ENC_BTN, INPUT_PULLUP);
     pinMode(PIN_BUZZER, OUTPUT);
+    digitalWrite(PIN_BUZZER, LOW);
+
+    encoderCounter.begin();
+    // without the queue the task still runs, for the buzzer and isEncoderPressed()
+    clickQueue.begin();
+    buttonTask.begin();
 }
 
 void Interface::update()
 {
-    encoder.tick();
-    encoderButton.update(digitalRead(PIN_ENC_BTN) == LOW);
+    int32_t detent = detentCounter.update(encoderCounter.read());
+    turns = detent - lastDetent;
+    lastDetent = detent;
+    ticks += turns;
 
-    if (lastBuzzerMillis + lastBuzzerDuration < millis())
-    {
-        digitalWrite(PIN_BUZZER, LOW);
-    }
+    clickInbox.update(now());
 }
 
-Interface::EncoderDirection Interface::getEncoderDirection()
-{
-    switch (encoder.getDirection())
-    {
-    case RotaryEncoder::Direction::NOROTATION:
-        return EncoderDirection::NONE;
-    case RotaryEncoder::Direction::CLOCKWISE:
-        return EncoderDirection::CW;
-    case RotaryEncoder::Direction::COUNTERCLOCKWISE:
-        return EncoderDirection::CCW;
-    default:
-        return EncoderDirection::NONE;
-    }
-}
+int Interface::getEncoderTurns() { return turns; }
 
-long Interface::getEncoderTicks()
-{
-    return encoder.getPosition();
-}
+long Interface::getEncoderTicks() { return ticks; }
 
-void Interface::setEncoderTicks(long ticks)
-{
-    encoder.setPosition(ticks);
-}
+void Interface::setEncoderTicks(long value) { ticks = value; }
 
-void Interface::resetEncoderTicks()
-{
-    encoder.setPosition(0);
-}
+void Interface::resetEncoderTicks() { ticks = 0; }
 
-ClickType Interface::consumeEncoderClick()
-{
-    return encoderButton.consumeClickType();
-}
+ClickType Interface::consumeEncoderClick() { return clickInbox.consume(); }
 
-ClickType Interface::getEncoderClick()
-{
-    return encoderButton.getClickType();
-}
+ClickType Interface::getEncoderClick() { return clickInbox.get(); }
 
-bool Interface::isEncoderPressed()
-{
-    return encoderButton.isPressed();
-}
+void Interface::discardClicks() { clickInbox.discard(); }
 
-void Interface::buzzerTone(unsigned int durationMs)
-{
-    digitalWrite(PIN_BUZZER, HIGH);
-    lastBuzzerMillis = millis();
-    lastBuzzerDuration = durationMs;
-}
+bool Interface::isEncoderPressed() { return buttonTask.isPressed(); }
+
+void Interface::buzzerTone(unsigned int durationMs) { buttonTask.buzz(durationMs); }
 
 #endif

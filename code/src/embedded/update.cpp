@@ -119,7 +119,7 @@ namespace Updater
             Interface::update();
             delay(10);
         }
-        Interface::consumeEncoderClick();
+        Interface::discardClicks();
 
         // choose firmware type
         int selectedQualifier = 0;
@@ -140,7 +140,7 @@ namespace Updater
                 updateFromDevServer(); // only returns if no server was found
             }
 
-            selectedQualifier += static_cast<int>(Interface::getEncoderDirection());
+            selectedQualifier += Interface::getEncoderTurns();
             if (selectedQualifier < 0)
             {
                 selectedQualifier = 0;

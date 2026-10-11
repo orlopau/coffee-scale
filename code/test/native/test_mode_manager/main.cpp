@@ -80,11 +80,11 @@ void test_mode_manager_shows_next_and_previous_mode_after_rotation(void)
     enterSelection();
     TEST_ASSERT_TRUE(Display::mockCanvas.hasText("Mock Mode 1"));
 
-    Interface::encoderDirection = Interface::EncoderDirection::CW;
+    Interface::encoderTurns = 1;
     modeManager->update();
     TEST_ASSERT_TRUE(Display::mockCanvas.hasText("Mock Mode 2"));
 
-    Interface::encoderDirection = Interface::EncoderDirection::CCW;
+    Interface::encoderTurns = -1;
     modeManager->update();
     TEST_ASSERT_TRUE(Display::mockCanvas.hasText("Mock Mode 1"));
 }
@@ -94,7 +94,7 @@ void test_mode_manager_modes_lower_bound(void)
     enterSelection();
     TEST_ASSERT_TRUE(Display::mockCanvas.hasText("Mock Mode 1"));
 
-    Interface::encoderDirection = Interface::EncoderDirection::CCW;
+    Interface::encoderTurns = -1;
     modeManager->update();
     TEST_ASSERT_TRUE(Display::mockCanvas.hasText("Mock Mode 1"));
 }
@@ -104,15 +104,33 @@ void test_mode_manager_modes_upper_bound(void)
     enterSelection();
     TEST_ASSERT_TRUE(Display::mockCanvas.hasText("Mock Mode 1"));
 
-    Interface::encoderDirection = Interface::EncoderDirection::CW;
+    Interface::encoderTurns = 1;
     modeManager->update();
     TEST_ASSERT_TRUE(Display::mockCanvas.hasText("Mock Mode 2"));
 
-    Interface::encoderDirection = Interface::EncoderDirection::CW;
+    Interface::encoderTurns = 1;
     modeManager->update();
     TEST_ASSERT_TRUE(Display::mockCanvas.hasText("Mock Mode 3"));
 
-    Interface::encoderDirection = Interface::EncoderDirection::CW;
+    Interface::encoderTurns = 1;
+    modeManager->update();
+    TEST_ASSERT_TRUE(Display::mockCanvas.hasText("Mock Mode 3"));
+}
+
+void test_mode_manager_moves_several_modes_in_one_loop(void)
+{
+    enterSelection();
+    TEST_ASSERT_TRUE(Display::mockCanvas.hasText("Mock Mode 1"));
+
+    Interface::encoderTurns = 2;
+    modeManager->update();
+    TEST_ASSERT_TRUE(Display::mockCanvas.hasText("Mock Mode 3"));
+
+    Interface::encoderTurns = -2;
+    modeManager->update();
+    TEST_ASSERT_TRUE(Display::mockCanvas.hasText("Mock Mode 1"));
+
+    Interface::encoderTurns = 5;
     modeManager->update();
     TEST_ASSERT_TRUE(Display::mockCanvas.hasText("Mock Mode 3"));
 }
@@ -137,9 +155,9 @@ void test_mode_manager_selects_mode_with_single_click(void)
     enterSelection();
     TEST_ASSERT_TRUE(Display::mockCanvas.hasText("Mock Mode 1"));
 
-    Interface::encoderDirection = Interface::EncoderDirection::CW;
+    Interface::encoderTurns = 1;
     modeManager->update();
-    Interface::encoderDirection = Interface::EncoderDirection::NONE;
+    Interface::encoderTurns = 0;
     TEST_ASSERT_TRUE(Display::mockCanvas.hasText("Mock Mode 2"));
 
     Interface::encoderClick = ClickType::SINGLE;
@@ -162,9 +180,9 @@ void test_mode_manager_updates_next_mode_only_at_next_tick(void)
     enterSelection();
     TEST_ASSERT_TRUE(Display::mockCanvas.hasText("Mock Mode 1"));
 
-    Interface::encoderDirection = Interface::EncoderDirection::CW;
+    Interface::encoderTurns = 1;
     modeManager->update();
-    Interface::encoderDirection = Interface::EncoderDirection::NONE;
+    Interface::encoderTurns = 0;
     TEST_ASSERT_TRUE(Display::mockCanvas.hasText("Mock Mode 2"));
 
     Interface::encoderClick = ClickType::SINGLE;
@@ -237,9 +255,9 @@ void test_mode_manager_renders_immediately_after_mode_selection(void)
     Interface::encoderClick = ClickType::LONG;
     manager.update();
     Interface::encoderClick = ClickType::NONE;
-    Interface::encoderDirection = Interface::EncoderDirection::CW;
+    Interface::encoderTurns = 1;
     manager.update();
-    Interface::encoderDirection = Interface::EncoderDirection::NONE;
+    Interface::encoderTurns = 0;
     Interface::encoderClick = ClickType::SINGLE;
     manager.update();
     Interface::encoderClick = ClickType::NONE;
@@ -260,6 +278,7 @@ int main(void)
     RUN_TEST(test_mode_manager_shows_next_and_previous_mode_after_rotation);
     RUN_TEST(test_mode_manager_modes_lower_bound);
     RUN_TEST(test_mode_manager_modes_upper_bound);
+    RUN_TEST(test_mode_manager_moves_several_modes_in_one_loop);
     RUN_TEST(test_mode_manager_does_not_call_update_when_changing);
     RUN_TEST(test_mode_manager_selects_mode_with_single_click);
     RUN_TEST(test_mode_manager_can_only_switch_when_mode_allows_it);

@@ -26,7 +26,7 @@ const char *ModeSettings::getName() { return MODE_NAME_SETTINGS; }
 
 void ModeSettings::updateSwitcher()
 {
-    selected += static_cast<int>(Interface::getEncoderDirection());
+    selected += Interface::getEncoderTurns();
     if (selected < 0)
     {
         selected = 0;
