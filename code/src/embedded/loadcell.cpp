@@ -21,7 +21,7 @@ namespace LoadCell
         portENTER_CRITICAL(&mux);
 
         // shift out bits
-        long value = 0;
+        uint32_t value = 0;
         for (int i = 0; i < 24; i++)
         {
             digitalWrite(PIN_HX711_SCK, HIGH);
@@ -42,7 +42,7 @@ namespace LoadCell
         delayMicroseconds(1);
 
         portEXIT_CRITICAL(&mux);
-        return value;
+        return toSigned(value);
     }
 }
 

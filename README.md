@@ -58,7 +58,7 @@ ms,event,value
 1234,click,
 ```
 
-`grams_per_count` is the calibration of the scale that recorded, so tests can convert the raw readings to grams.
+`grams_per_count` is the calibration of the scale that recorded, so tests can convert the raw readings to grams. A sample's `value` is the HX711's raw reading, signed. Firmware up to v1.9.0 recorded it unsigned (16540413 instead of -236803), and the replay converts those.
 
 ## Development: Emulator
 The emulator runs the firmware on your computer, in a window that shows the scale's display. It needs SDL2 (`sudo apt install libsdl2-dev` on Debian/Ubuntu).
