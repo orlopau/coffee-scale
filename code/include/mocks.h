@@ -1,7 +1,7 @@
 #pragma once
 
 #include "battery.h"
-#include "weight_sensor.h"
+#include "weighing/weight_sensor.h"
 #include "millis.h"
 #include "display.h"
 #include <math.h>

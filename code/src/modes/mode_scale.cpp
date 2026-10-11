@@ -6,7 +6,7 @@
 #include "interface.h"
 #include "logger.h"
 #include "settings.h"
-#include "weight_sensor.h"
+#include "weighing/weight_sensor.h"
 
 void ModeScale::update()
 {

@@ -27,7 +27,7 @@
 #include "modes/mode_settings.h"
 #include "settings.h"
 #include "stopwatch.h"
-#include "weight_sensor.h"
+#include "weighing/weight_sensor.h"
 
 // window pixels per display pixel, and the frame around the display
 #define PIXEL_SIZE 4

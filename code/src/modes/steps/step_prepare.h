@@ -1,7 +1,7 @@
 #pragma once
 
 #include "step.h"
-#include "weight_sensor.h"
+#include "weighing/weight_sensor.h"
 
 class RecipePrepare : public RecipeStep
 {
