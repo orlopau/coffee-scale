@@ -61,6 +61,8 @@
 #define RECORDER_NO_MEMORY "Zu wenig Speicher."
 #define RECORDER_MARKERS "Marker: %u"
 
+#define SETTINGS_UNREADABLE "Kalibrierung\nnicht lesbar:\n%s\nKlick: weiter"
+
 #define MODE_NAME_CALIBRATE "Kalibrierung"
 #define MODE_NAME_RECIPES "Rezepte"
 #define MODE_NAME_SCALE "Waage"
@@ -135,6 +137,8 @@
 #define RECORDER_FULL "Full. Hold: upload"
 #define RECORDER_NO_MEMORY "Not enough memory."
 #define RECORDER_MARKERS "Marks: %u"
+
+#define SETTINGS_UNREADABLE "Can't read\ncalibration:\n%s\nClick: continue"
 
 #define MODE_NAME_CALIBRATE "Calibration"
 #define MODE_NAME_RECIPES "Recipes"

@@ -8,6 +8,4 @@ namespace Settings
     float getFloat(FloatSetting s) { return values[s.id]; }
 
     void setFloat(FloatSetting s, float value) { values[s.id] = value; }
-
-    void commit() {}
 }

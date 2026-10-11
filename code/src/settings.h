@@ -10,6 +10,8 @@ namespace Settings
     struct FloatSetting
     {
         int id;
+        /** NVS key, at most 15 characters. Never rename it, the scales have their values stored under it. */
+        const char* key;
         const char* name;
         float def;
         float increment;
@@ -28,18 +30,34 @@ namespace Settings
     };
 
     constexpr std::array<FloatSetting, FLOAT_SETTING_NUM> floatSettings = {{
-        {AUTO_TARE_0, SETTINGS_TARE_0, NAN, 0.5f},
-        {AUTO_TARE_1, SETTINGS_TARE_1, NAN, 0.5f},
-        {AUTO_TARE_2, SETTINGS_TARE_2, NAN, 0.5f},
-        {AUTO_TARE_3, SETTINGS_TARE_3, NAN, 0.5f},
-        {AUTO_TARE_4, SETTINGS_TARE_4, NAN, 0.5f},
-        {AUTO_TARE_TOLERANCE, SETTINGS_TARE_TOLERANCE, NAN, 0.1f},
-        {AVERAGING_DELTA, SETTINGS_AVERAGING_DELTA, 1.0f, 0.1f},
+        {AUTO_TARE_0, "tare0", SETTINGS_TARE_0, NAN, 0.5f},
+        {AUTO_TARE_1, "tare1", SETTINGS_TARE_1, NAN, 0.5f},
+        {AUTO_TARE_2, "tare2", SETTINGS_TARE_2, NAN, 0.5f},
+        {AUTO_TARE_3, "tare3", SETTINGS_TARE_3, NAN, 0.5f},
+        {AUTO_TARE_4, "tare4", SETTINGS_TARE_4, NAN, 0.5f},
+        {AUTO_TARE_TOLERANCE, "tareTol", SETTINGS_TARE_TOLERANCE, NAN, 0.1f},
+        {AVERAGING_DELTA, "avgDelta", SETTINGS_AVERAGING_DELTA, 1.0f, 0.1f},
     }};
 
+    /** NVS key of the calibration, in grams per count. */
+    constexpr const char* CALIBRATION_KEY = "calibration";
+
+    /**
+     * Opens the settings, migrates the values of older firmware and reads the
+     * calibration. Returns nullptr if all went well, otherwise the name of the
+     * ESP error that kept the calibration from being read. Device only.
+     */
+    const char* begin();
+
+    /** The stored value, or the setting's default if none is stored. */
     float getFloat(FloatSetting s);
+    /** Stores the value right away. */
     void setFloat(FloatSetting s, float value);
-    void commit();
+
+    /** Grams per count, 1.0 if the scale was never calibrated. Device only. */
+    float getCalibration();
+    /** Stores the calibration right away. Device only. */
+    void setCalibration(float gramsPerCount);
 
     static inline const char** getOptions()
     {

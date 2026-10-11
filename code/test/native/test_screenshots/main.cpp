@@ -36,6 +36,7 @@
 #include "modes/steps/step_done.h"
 #include "ui/recorder_screens.h"
 #include "ui/updater_screens.h"
+#include "ui/error_screens.h"
 
 namespace fs = std::filesystem;
 
@@ -464,6 +465,21 @@ void test_recorder(void)
     }
 }
 
+void test_settings_error(void)
+{
+    Canvas &canvas = display.canvas();
+
+    // the longest NVS error name, shown without its ESP_ERR_NVS_ prefix
+    canvas.clear();
+    ErrorScreens::settingsUnreadable(canvas, "ESP_ERR_NVS_KEYS_NOT_INITIALIZED");
+    check("error_settings_nvs");
+
+    // other errors are shown in full
+    canvas.clear();
+    ErrorScreens::settingsUnreadable(canvas, "ESP_ERR_NO_MEM");
+    check("error_settings_other");
+}
+
 /** Every reference image belongs to a screen, so renamed or removed screens leave none behind. */
 void test_no_unused_references(void)
 {
@@ -507,6 +523,7 @@ int main(void)
     RUN_TEST(test_mode_switcher);
     RUN_TEST(test_updater);
     RUN_TEST(test_recorder);
+    RUN_TEST(test_settings_error);
     RUN_TEST(test_no_unused_references);
     return UNITY_END();
 }
