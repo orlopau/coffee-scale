@@ -1,10 +1,16 @@
 #include <math.h>
 #include <stdio.h>
 
-char *formatWeight(float grams)
+#include "formatters.h"
+
+char *formatWeight(float grams, int decimals)
 {
-    static char buffer[10];
-    sprintf(buffer, "%.2fg", grams);
+    if (roundf(grams * powf(10, decimals)) == 0)
+    {
+        grams = 0;
+    }
+    static char buffer[16];
+    snprintf(buffer, sizeof(buffer), "%.*fg", decimals, grams);
     return buffer;
 }
 

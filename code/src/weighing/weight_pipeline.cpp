@@ -18,12 +18,19 @@ void WeightPipeline::setGramsPerCount(float gramsPerCount)
     // they hold grams of the old calibration
     average.reset();
     flow.reset();
+    zeroTracker.reset();
 }
 
 Reading WeightPipeline::process(const Sample &sample)
 {
     const float grams = sample.raw * gramsPerCount;
     const float smoothed = average.add(sample.ms, grams);
+    // from grams, so taring doesn't look like a flow
+    const float gramsPerSecond = flow.add(sample.ms, grams);
+    if (gramsPerCount != 0)
+    {
+        offsetCounts += zeroTracker.track(sample.ms, smoothed - offsetCounts * gramsPerCount, gramsPerSecond) / gramsPerCount;
+    }
     const float offset = offsetCounts * gramsPerCount;
 
     last = {
@@ -32,8 +39,7 @@ Reading WeightPipeline::process(const Sample &sample)
         grams,
         grams - offset,
         smoothed - offset,
-        // from grams, so taring doesn't look like a flow
-        flow.add(sample.ms, grams),
+        gramsPerSecond,
     };
     started = true;
     return last;
@@ -48,6 +54,7 @@ void WeightPipeline::tare()
 
     // right after a new calibration the filter is empty, the last sample is all there is
     offsetCounts = average.isEmpty() ? last.raw : average.value() / gramsPerCount;
+    zeroTracker.reset();
     last.net = (last.raw - offsetCounts) * gramsPerCount;
     last.filtered = 0;
 }

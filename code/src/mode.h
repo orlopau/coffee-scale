@@ -17,5 +17,10 @@ public:
     virtual void render(Canvas &canvas) = 0;
     virtual void enter() {};
     virtual bool canSwitchMode() = 0;
+    /**
+     * True while the mode measures something that slowly changing weight is
+     * part of, e.g. a shot: zero tracking leaves the zero alone then.
+     */
+    virtual bool isMeasuring() { return false; }
     virtual const char* getName() = 0;
 };

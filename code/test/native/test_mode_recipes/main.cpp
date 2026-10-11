@@ -152,10 +152,28 @@ void test_issue_25(void)
     TEST_ASSERT_TRUE(Display::mockCanvas.hasText("21ml"));
 }
 
+void test_measures_only_while_brewing(void)
+{
+    // switcher, summary, ratio, weight, prepare
+    for (int step = 0; step < 5; step++)
+    {
+        TEST_ASSERT_FALSE(modeRecipes->isMeasuring());
+        nextStep();
+    }
+    TEST_ASSERT_EQUAL(5, modeRecipes->getCurrentStepIndex());
+    TEST_ASSERT_TRUE(modeRecipes->isMeasuring());
+
+    // back to prepare
+    Interface::encoderClick = ClickType::LONG;
+    modeRecipes->update();
+    TEST_ASSERT_FALSE(modeRecipes->isMeasuring());
+}
+
 int main(void)
 {
     UNITY_BEGIN();
     RUN_TEST(test_steps_forward_and_back);
     RUN_TEST(test_issue_25);
+    RUN_TEST(test_measures_only_while_brewing);
     UNITY_END();
 }

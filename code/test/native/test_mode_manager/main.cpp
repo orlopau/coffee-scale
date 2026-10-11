@@ -21,6 +21,7 @@ public:
     {
         return switchable;
     };
+    bool isMeasuring() override { return measuring; }
     const char *getName()
     {
         return name;
@@ -28,6 +29,7 @@ public:
     bool updateCalled;
     const char *name;
     bool switchable = true;
+    bool measuring = false;
 };
 
 ModeManager *modeManager;
@@ -267,6 +269,20 @@ void test_mode_manager_renders_immediately_after_mode_selection(void)
     TEST_ASSERT_TRUE(canvas.hasText("Second"));
 }
 
+void test_mode_manager_measures_when_the_current_mode_does(void)
+{
+    TEST_ASSERT_FALSE(modeManager->isMeasuring());
+    mockModes[0]->measuring = true;
+    TEST_ASSERT_TRUE(modeManager->isMeasuring());
+}
+
+void test_mode_manager_does_not_measure_while_choosing_a_mode(void)
+{
+    mockModes[0]->measuring = true;
+    enterSelection();
+    TEST_ASSERT_FALSE(modeManager->isMeasuring());
+}
+
 int main(void)
 {
     UNITY_BEGIN();
@@ -283,5 +299,7 @@ int main(void)
     RUN_TEST(test_mode_manager_selects_mode_with_single_click);
     RUN_TEST(test_mode_manager_can_only_switch_when_mode_allows_it);
     RUN_TEST(test_mode_manager_updates_next_mode_only_at_next_tick);
+    RUN_TEST(test_mode_manager_measures_when_the_current_mode_does);
+    RUN_TEST(test_mode_manager_does_not_measure_while_choosing_a_mode);
     UNITY_END();
 }

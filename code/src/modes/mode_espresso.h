@@ -25,6 +25,8 @@ public:
     void render(Canvas &canvas) override;
     void enter() override;
     bool canSwitchMode() override;
+    /** While the shot's stopwatch runs. */
+    bool isMeasuring() override { return stopwatch.isRunning(); }
     const char *getName() override;
 
     int32_t getTargetWeightMg() const { return targetWeightMg; }

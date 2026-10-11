@@ -15,6 +15,8 @@ public:
     void update() override;
     void render(Canvas &canvas) override;
     bool canSwitchMode();
+    /** While the stopwatch runs, e.g. for a pour-over by hand. */
+    bool isMeasuring() override { return stopwatch.isRunning(); }
     const char* getName();
 
 private:

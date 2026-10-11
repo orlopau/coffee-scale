@@ -68,6 +68,17 @@ void test_encoder_clamps_weight_between_min_and_max(void)
     TEST_ASSERT_EQUAL(MAX_TARGET_WEIGHT_MG, modeEspresso->getTargetWeightMg());
 }
 
+void test_measures_while_the_stopwatch_runs(void)
+{
+    TEST_ASSERT_FALSE(modeEspresso->isMeasuring());
+    Interface::encoderClick = ClickType::SINGLE;
+    modeEspresso->update();
+    TEST_ASSERT_TRUE(modeEspresso->isMeasuring());
+    Interface::encoderClick = ClickType::SINGLE;
+    modeEspresso->update();
+    TEST_ASSERT_FALSE(modeEspresso->isMeasuring());
+}
+
 void test_clicking_encoder_starts_stopwatch(void)
 {
     // initially time on watch is 0
@@ -92,6 +103,15 @@ void test_render_shows_current_and_target_weight(void)
     modeEspresso->update();
     renderFrame();
     TEST_ASSERT_TRUE(canvas->hasText("10.0g/36.0g"));
+}
+
+// right at zero, the noise is either side of it
+void test_render_shows_no_minus_on_zero(void)
+{
+    weightSource->weight = -0.04f;
+    modeEspresso->update();
+    renderFrame();
+    TEST_ASSERT_TRUE(canvas->hasText("0.0g/36.0g"));
 }
 
 void test_render_shows_only_elapsed_time_without_estimate(void)
@@ -172,9 +192,11 @@ int main(void)
 {
     UNITY_BEGIN();
     RUN_TEST(test_encoder_adjusts_target_weight);
+    RUN_TEST(test_measures_while_the_stopwatch_runs);
     RUN_TEST(test_clicking_encoder_starts_stopwatch);
     RUN_TEST(test_encoder_clamps_weight_between_min_and_max);
     RUN_TEST(test_render_shows_current_and_target_weight);
+    RUN_TEST(test_render_shows_no_minus_on_zero);
     RUN_TEST(test_render_shows_only_elapsed_time_without_estimate);
     RUN_TEST(test_update_does_not_draw);
     RUN_TEST(test_estimate_uses_the_time_of_each_reading);

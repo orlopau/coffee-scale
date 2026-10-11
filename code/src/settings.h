@@ -26,6 +26,7 @@ namespace Settings
         AUTO_TARE_4,
         AUTO_TARE_TOLERANCE,
         AVERAGING_DELTA,
+        ZERO_TRACKING,
         FLOAT_SETTING_NUM
     };
 
@@ -37,6 +38,8 @@ namespace Settings
         {AUTO_TARE_4, "tare4", SETTINGS_TARE_4, NAN, 0.5f},
         {AUTO_TARE_TOLERANCE, "tareTol", SETTINGS_TARE_TOLERANCE, NAN, 0.1f},
         {AVERAGING_DELTA, "avgDelta", SETTINGS_AVERAGING_DELTA, 1.0f, 0.1f},
+        // the window in grams around zero, 0 turns zero tracking off
+        {ZERO_TRACKING, "zeroTrack", SETTINGS_ZERO_TRACKING, 0.1f, 0.05f},
     }};
 
     /** NVS key of the calibration, in grams per count. */

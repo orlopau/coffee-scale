@@ -7,10 +7,11 @@
 #include "weighing/flow_estimator.h"
 #include "weighing/sample.h"
 #include "weighing/weight_source.h"
+#include "weighing/zero_tracker.h"
 
 /**
  * Turns the samples of the load cell into readings, stage by stage:
- * calibration, filter, tare and flow.
+ * calibration, filter, flow, zero tracking and tare.
  *
  * update() takes all samples that arrived since the loop's last pass, the
  * modes read the result through WeightSource.
@@ -34,6 +35,15 @@ public:
     void setGramsPerCount(float gramsPerCount);
     /** See AdaptiveAverage::configure(). */
     void setAutoAveraging(float gramsPerSecond, uint8_t samples) { average.configure(gramsPerSecond, samples); }
+    /** Grams around zero that zero tracking pulls back to zero, 0 (the default) turns it off. */
+    void setZeroTracking(float windowGrams) { zeroTracker.setWindow(windowGrams); }
+    /**
+     * While held, zero tracking leaves the zero alone, e.g. while a mode
+     * measures. Set once per loop, before update(). A mode that starts
+     * measuring in a loop is held from the next one on; the readings of that
+     * one loop move the zero by 0.002 g at most.
+     */
+    void holdZero(bool held) { zeroTracker.hold(held); }
 
     /** Takes one sample through the stages. update() does this for each waiting sample. */
     Reading process(const Sample &sample);
@@ -51,6 +61,7 @@ private:
     float offsetCounts = 0;
     AdaptiveAverage average;
     FlowEstimator flow;
+    ZeroTracker zeroTracker;
 
     bool started = false;
     Reading last = {};
