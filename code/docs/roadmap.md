@@ -24,8 +24,8 @@ Cleanup and tooling before new features.
   A dedicated task reads the load cell via the data-ready pin and timestamps every reading. Calibration, tare, filter and flow are separate stages. Shot, tap and auto-tare detection read this stream independently of the mode.
 - [x] **Settings in NVS** _(Firmware)_
   Settings and calibration stored under keys in NVS, via the ESP-IDF API, instead of at fixed EEPROM addresses.
-- [ ] **Improv instead of AutoConnect, then Core 3.x** _(Firmware, Web)_
-  Wi-Fi setup via Improv, right while flashing in the browser. Then the move to Arduino Core 3.x, updates with real certificate validation instead of `setInsecure()`, and rollback on broken firmware.
+- [ ] **Own Wi-Fi setup instead of AutoConnect, then Core 3.x** _(Firmware)_
+  Set up from the phone, no app: the scale opens its own access point and shows a Wi-Fi QR code; the camera joins it and the setup page opens. Built on the ESP-IDF API, so it carries over to Core 3.x. Then the move to Arduino Core 3.x, updates with real certificate validation instead of `setInsecure()`, and rollback on broken firmware.
 - [x] **Zero tracking** _(Firmware)_
   When the scale is empty and steady, it slowly pulls small deviations around zero back to zero, e.g. as it warms up. Paused during shots and recipes so slow first drops aren't tracked away.
 
