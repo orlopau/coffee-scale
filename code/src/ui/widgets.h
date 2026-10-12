@@ -39,8 +39,12 @@ namespace Widgets
      */
     void switcher(Canvas &canvas, const char *title, uint8_t index, uint8_t count, const char *const options[]);
 
-    /** Draws text as a QR code (2 px per module) with its top left at x, y. Returns its size. */
-    int qrCode(Canvas &canvas, const char *text, int x, int y);
+    /**
+     * Draws text as a QR code (2 px per module) with its top left at x, y.
+     * Returns its size. version is 1 to 3, ecc the error correction, ECC_LOW
+     * (0) to ECC_HIGH (3) of qrcode.h. The text must fit both.
+     */
+    int qrCode(Canvas &canvas, const char *text, int x, int y, uint8_t version = 2, uint8_t ecc = 2);
 
     /** Baseline that vertically centers text of the current font on y. */
     int centerBaseline(Canvas &canvas, int y);

@@ -37,6 +37,8 @@
 #include "ui/recorder_screens.h"
 #include "ui/updater_screens.h"
 #include "ui/error_screens.h"
+#include "network/setup_network.h"
+#include "ui/wifi_screens.h"
 
 namespace fs = std::filesystem;
 
@@ -351,7 +353,8 @@ void test_calibration(void)
 
 void test_settings(void)
 {
-    ModeSettings settings;
+    static const SettingsAction actions[] = {{SETTINGS_WIFI, [] {}}};
+    ModeSettings settings(actions, 1);
     settings.enter();
     show("settings_first", settings);
     turn(settings, 3);
@@ -359,8 +362,8 @@ void test_settings(void)
     turn(settings, 9);
     show("settings_last", settings);
 
-    // the last float setting, zero tracking
-    turn(settings, -1);
+    // the last float setting, zero tracking, before lift-to-tare and Wi-Fi
+    turn(settings, -2);
     click(settings);
     for (int ticks : {0, 7, -3})
     {
@@ -443,10 +446,45 @@ void test_updater(void)
     UpdaterScreens::message(canvas, text);
     check("updater_progress");
 
-    snprintf(text, sizeof(text), UPDATER_WIFI_CONNECT_MANUAL, "CoffeeScale-1234567");
+
     canvas.clear();
-    UpdaterScreens::text(canvas, text);
-    check("updater_wifi_setup");
+    UpdaterScreens::text(canvas, UPDATER_ROLLED_BACK);
+    check("updater_rolled_back");
+}
+
+void test_wifi(void)
+{
+    Canvas &canvas = display.canvas();
+
+    // the longest name there is
+    const char *name = "CoffeeScale-16777215";
+    char payload[64];
+    SetupNetwork::qrPayload(name, payload, sizeof(payload));
+    canvas.clear();
+    WifiScreens::join(canvas, payload, name, SetupNetwork::PASSWORD);
+    check("wifi_join");
+
+    for (uint8_t index = 0; index < 2; index++)
+    {
+        canvas.clear();
+        WifiScreens::ask(canvas, index);
+        check(index == 0 ? "wifi_ask_yes" : "wifi_ask_later");
+    }
+
+    const struct
+    {
+        const char *name, *text;
+    } statuses[] = {
+        {"connecting", WIFI_CONNECTING},         {"connected", WIFI_CONNECTED},
+        {"wrong_password", WIFI_WRONG_PASSWORD}, {"not_found", WIFI_NOT_FOUND},
+        {"failed", WIFI_FAILED},                 {"unavailable", WIFI_UNAVAILABLE},
+    };
+    for (const auto &status : statuses)
+    {
+        canvas.clear();
+        WifiScreens::status(canvas, status.text);
+        check("wifi_" + std::string(status.name));
+    }
 }
 
 void test_recorder(void)
@@ -530,6 +568,7 @@ int main(void)
     RUN_TEST(test_settings);
     RUN_TEST(test_mode_switcher);
     RUN_TEST(test_updater);
+    RUN_TEST(test_wifi);
     RUN_TEST(test_recorder);
     RUN_TEST(test_settings_error);
     RUN_TEST(test_no_unused_references);

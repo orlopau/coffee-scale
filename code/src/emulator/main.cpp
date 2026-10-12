@@ -270,7 +270,10 @@ int main(int argc, char **argv)
     ModeScale modeDefault(weightPipeline, stopwatch);
     ModeEspresso modeEspresso(weightPipeline, stopwatch);
     ModeCalibration modeCalibration(weightPipeline, stopwatch, saveScale);
-    ModeSettings modeSettings;
+    // the Wi-Fi setup needs the scale's radio
+    static const SettingsAction settingsActions[] = {
+        {SETTINGS_WIFI, [] { printf("The Wi-Fi setup only runs on the scale.\n"); }}};
+    ModeSettings modeSettings(settingsActions, 1);
     ModeRecipes modeRecipes(weightPipeline, RECIPES, RECIPE_COUNT);
     Mode *modes[] = {&modeDefault, &modeRecipes, &modeEspresso, &modeCalibration, &modeSettings};
     ModeManager modeManager(modes, 5, Display::canvas());

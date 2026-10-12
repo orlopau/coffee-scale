@@ -21,6 +21,11 @@
 #include "battery.h"
 #include "settings.h"
 #include "ui/error_screens.h"
+#include "ui/updater_screens.h"
+#include "firmware_probation.h"
+#include "embedded/network/firmware_check.h"
+#include "embedded/network/wifi_setup.h"
+#include "embedded/network/wifi_station.h"
 
 #define AVERAGING_LOOPS 100
 
@@ -31,6 +36,7 @@ LoadCellTask loadCellTask(samples);
 WeightPipeline weightPipeline(samples);
 LiftTare liftTare(weightPipeline);
 Stopwatch stopwatch;
+FirmwareProbation probation;
 
 void saveScale(float scale)
 {
@@ -39,15 +45,9 @@ void saveScale(float scale)
   weightPipeline.setGramsPerCount(scale);
 }
 
-// Without its calibration the scale would weigh wrong without telling, so
-// show why and wait for a click before going on with calibration 1.0.
-void showSettingsError(const char *error)
+// Waits for a click on a message shown at start.
+void waitForClick()
 {
-  Canvas &canvas = Display::canvas();
-  canvas.clear();
-  ErrorScreens::settingsUnreadable(canvas, error);
-  canvas.flush();
-
   // a press still held or queued from start-up must not dismiss it unseen
   while (Interface::isEncoderPressed())
   {
@@ -63,10 +63,39 @@ void showSettingsError(const char *error)
   }
 }
 
+// Without its calibration the scale would weigh wrong without telling, so
+// show why and wait for a click before going on with calibration 1.0.
+void showSettingsError(const char *error)
+{
+  Canvas &canvas = Display::canvas();
+  canvas.clear();
+  ErrorScreens::settingsUnreadable(canvas, error);
+  canvas.flush();
+  waitForClick();
+}
+
+// An update didn't start properly and the firmware before is back.
+void showRolledBack()
+{
+  Canvas &canvas = Display::canvas();
+  canvas.clear();
+  UpdaterScreens::text(canvas, UPDATER_ROLLED_BACK);
+  canvas.flush();
+  waitForClick();
+}
+
 ModeScale modeDefault(weightPipeline, stopwatch);
 ModeEspresso modeEspresso(weightPipeline, stopwatch);
 ModeCalibration modeCalibration(weightPipeline, stopwatch, saveScale);
-ModeSettings modeSettings;
+void runWifiSetup()
+{
+  WifiSetup::run();
+  // only the updater needs the connection, and Wi-Fi costs battery
+  WifiStation::stop();
+}
+
+const SettingsAction settingsActions[] = {{SETTINGS_WIFI, runWifiSetup}};
+ModeSettings modeSettings(settingsActions, 1);
 ModeRecipes modeRecipes(weightPipeline, RECIPES, RECIPE_COUNT);
 Mode *modes[] = {&modeDefault, &modeRecipes, &modeEspresso, &modeCalibration, &modeSettings};
 ModeManager modeManager(modes, 5, Display::canvas());
@@ -135,6 +164,15 @@ void setup()
       showSettingsError(settingsError);
   }
 
+  //////// ROLLBACK ////////
+  if (FirmwareCheck::takeRolledBack())
+  {
+      showRolledBack();
+  }
+
+  //////// WI-FI ////////
+  WifiSetup::askOnce();
+
   /// MODE MANAGER ////
   // the button task runs since Interface::begin(), a press during start-up must not act in the first mode
   Interface::discardClicks();
@@ -154,9 +192,23 @@ void loop()
   // from the mode's state of the last loop, see WeightPipeline::holdZero()
   weightPipeline.holdZero(modeManager.isMeasuring());
   weightPipeline.update();
+  // a new firmware counts as working once the loop has run a while with readings
+  if (probation.update(millis(), weightPipeline.newReadings().size() > 0))
+  {
+    FirmwareCheck::markValid();
+  }
   // locked from the mode's state of the last loop, like holdZero()
   liftTare.update(modeManager.isMeasuring());
   modeManager.update();
+
+#ifdef CRASH_AFTER_MS
+  // only for testing rollback: PLATFORMIO_BUILD_FLAGS=-DCRASH_AFTER_MS=1000 crashes in the first loop,
+  // before FirmwareProbation's 2 s are up
+  if (millis() > CRASH_AFTER_MS)
+  {
+    abort();
+  }
+#endif
 
 #ifdef PERF
   if (loops >= AVERAGING_LOOPS)

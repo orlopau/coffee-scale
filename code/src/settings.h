@@ -89,6 +89,10 @@ namespace Settings
     /** NVS key of the calibration, in grams per count. */
     constexpr const char* CALIBRATION_KEY = "calibration";
 
+    /** NVS keys of flags, at most 15 characters. Never rename them. */
+    constexpr const char *WIFI_ASKED_KEY = "wifiAsked";
+    constexpr const char *ROLLBACK_SHOWN_KEY = "rollbackShown";
+
     /**
      * Opens the settings, migrates the values of older firmware and reads the
      * calibration. Returns nullptr if all went well, otherwise the name of the
@@ -119,6 +123,14 @@ namespace Settings
     float getCalibration();
     /** Stores the calibration right away. Device only. */
     void setCalibration(float gramsPerCount);
+
+    /**
+     * True if the flag is set, and also if the settings can't be read, so a
+     * broken flash doesn't ask the same on every start. Device only.
+     */
+    bool getFlag(const char *key);
+    /** Sets or clears the flag right away. Device only. */
+    void setFlag(const char *key, bool value);
 
     /** The names of all settings, in the menu's order. */
     static inline const char** getOptions()
