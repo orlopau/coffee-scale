@@ -24,8 +24,10 @@ Cleanup and tooling before new features.
   A dedicated task reads the load cell via the data-ready pin and timestamps every reading. Calibration, tare, filter and flow are separate stages. Shot, tap and auto-tare detection read this stream independently of the mode.
 - [x] **Settings in NVS** _(Firmware)_
   Settings and calibration stored under keys in NVS, via the ESP-IDF API, instead of at fixed EEPROM addresses.
-- [ ] **Own Wi-Fi setup instead of AutoConnect, then Core 3.x** _(Firmware)_
-  Set up from the phone, no app: the scale opens its own access point and shows a Wi-Fi QR code; the camera joins it and the setup page opens. Built on the ESP-IDF API, so it carries over to Core 3.x. Then the move to Arduino Core 3.x, updates with real certificate validation instead of `setInsecure()`, and rollback on broken firmware.
+- [ ] **Own Wi-Fi setup instead of AutoConnect, and safe updates** _(Firmware)_
+  Set up from the phone, no app: the scale opens its own access point and shows a Wi-Fi QR code; the camera joins it and the setup page opens. Asked once on the first start, then in the settings menu. Built on the ESP-IDF API, so it carries over. Updates check GitHub's certificate against the CA bundle instead of `setInsecure()`, and a firmware that crashes in its first seconds rolls back to the previous one. Core 2.0.17 already has both, so the move to Core 3.x waits.
+- [ ] **Automatic updates** _(Firmware)_
+  Every once in a while the scale connects to the saved Wi-Fi by itself, checks whether a newer firmware is out, and installs it. Needs the saved network, certificate checks and rollback from the item before.
 - [x] **Zero tracking** _(Firmware)_
   When the scale is empty and steady, it slowly pulls small deviations around zero back to zero, e.g. as it warms up. Paused during shots and recipes so slow first drops aren't tracked away.
 
@@ -79,3 +81,5 @@ Collected, but not yet planned.
   The weight of the container set down picks the mode: portafilter opens espresso, V60 opens your recipe.
 - **Auto-sleep** _(Firmware)_
   Deep sleep after a few minutes without use, wake via the rotary encoder.
+- **Arduino Core 3.x** _(Firmware)_
+  IDF 5 underneath. The official PlatformIO platform still ships Core 2.0.17, Core 3.x only comes through the pioarduino fork. Waits until the platform supports it, or for the move to plain ESP-IDF.
