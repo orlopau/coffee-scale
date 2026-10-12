@@ -1,6 +1,6 @@
 #include <unity.h>
 
-#include "auto_tare.h"
+#include "detectors/auto_tare.h"
 
 AutoTare *autoTare;
 

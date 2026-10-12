@@ -46,7 +46,10 @@ namespace Emulator
 
     static ButtonClicks clicks;
     static ClickInbox clickInbox(clicks);
-    static unsigned long buzzerEndTime = 0;
+    static unsigned long buzzStart = 0;
+    static unsigned int buzzCount = 0;
+    static unsigned int buzzOnMs = 0;
+    static unsigned int buzzOffMs = 0;
 
     void turnEncoder(int detents) { encoderPosition += detents; }
 
@@ -61,7 +64,16 @@ namespace Emulator
 
     bool isButtonPressed() { return buttonDown || now() - pressTime < MIN_PRESS_MS; }
 
-    bool isBuzzing() { return now() < buzzerEndTime; }
+    bool isBuzzing()
+    {
+        if (buzzCount == 0 || buzzOnMs == 0)
+        {
+            return false;
+        }
+        const unsigned long elapsed = now() - buzzStart;
+        const unsigned long period = buzzOnMs + buzzOffMs;
+        return elapsed < period * (buzzCount - 1) + buzzOnMs && elapsed % period < buzzOnMs;
+    }
 
     VirtualDisplay &display()
     {
@@ -111,7 +123,15 @@ namespace Interface
 
     bool isEncoderPressed() { return Emulator::encoderButton.isPressed(); }
 
-    void buzzerTone(unsigned int durationMs) { Emulator::buzzerEndTime = now() + durationMs; }
+    void buzzerPattern(unsigned int count, unsigned int onMs, unsigned int offMs)
+    {
+        Emulator::buzzStart = now();
+        Emulator::buzzCount = count;
+        Emulator::buzzOnMs = onMs;
+        Emulator::buzzOffMs = offMs;
+    }
+
+    void buzzerTone(unsigned int durationMs) { buzzerPattern(1, durationMs, 0); }
 }
 
 namespace Emulator
@@ -170,6 +190,17 @@ namespace Settings
     float getFloat(FloatSetting s) { return std::isnan(values[s.id]) ? s.def : values[s.id]; }
 
     void setFloat(FloatSetting s, float value) { values[s.id] = value; }
+
+    // -1: nothing stored
+    static std::array<int, CHOICE_SETTING_NUM> choices = [] {
+        std::array<int, CHOICE_SETTING_NUM> c;
+        c.fill(-1);
+        return c;
+    }();
+
+    uint8_t getChoice(ChoiceSetting s) { return validChoice(s, choices[s.id]); }
+
+    void setChoice(ChoiceSetting s, uint8_t index) { choices[s.id] = index; }
 }
 
 #endif

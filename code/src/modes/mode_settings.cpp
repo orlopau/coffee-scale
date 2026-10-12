@@ -10,13 +10,17 @@
 
 void ModeSettings::update()
 {
-    if (modifySetting)
+    if (!modifySetting)
     {
-        updateFloatSetting();
+        updateSwitcher();
+    }
+    else if (isChoice())
+    {
+        updateChoiceSetting();
     }
     else
     {
-        updateSwitcher();
+        updateFloatSetting();
     }
 }
 
@@ -31,9 +35,9 @@ void ModeSettings::updateSwitcher()
     {
         selected = 0;
     }
-    else if (selected >= Settings::FLOAT_SETTING_NUM)
+    else if (selected >= Settings::SETTING_COUNT)
     {
-        selected = Settings::FLOAT_SETTING_NUM - 1;
+        selected = Settings::SETTING_COUNT - 1;
     }
 
     if (Interface::getEncoderClick() == ClickType::SINGLE)
@@ -41,7 +45,14 @@ void ModeSettings::updateSwitcher()
         modifySetting = true;
         Interface::resetEncoderTicks();
         // render() shows the value already in this tick
-        value = editedValue();
+        if (isChoice())
+        {
+            choice = editedChoice();
+        }
+        else
+        {
+            value = editedValue();
+        }
     }
 }
 
@@ -54,6 +65,36 @@ float ModeSettings::editedValue()
         stored = 0;
     }
     return stored + (float)Interface::getEncoderTicks() * setting.increment;
+}
+
+/** The stored level turned by the encoder, kept within the levels. */
+int ModeSettings::editedChoice()
+{
+    const Settings::ChoiceSetting &setting = selectedChoice();
+    const int stored = Settings::getChoice(setting);
+    int edited = stored + (int)Interface::getEncoderTicks();
+    if (edited < 0 || edited >= setting.count)
+    {
+        edited = edited < 0 ? 0 : setting.count - 1;
+        // turning back leaves the end right away
+        Interface::setEncoderTicks(edited - stored);
+    }
+    return edited;
+}
+
+void ModeSettings::updateChoiceSetting()
+{
+    choice = editedChoice();
+
+    if (Interface::getEncoderClick() == ClickType::SINGLE)
+    {
+        modifySetting = false;
+        Settings::setChoice(selectedChoice(), choice);
+    }
+    else if (Interface::getEncoderClick() == ClickType::LONG)
+    {
+        modifySetting = false;
+    }
 }
 
 /** As many decimals as a setting's step needs, at least one, e.g. 2 for 0.05. */
@@ -74,7 +115,12 @@ static int decimalsFor(float increment)
 
 void ModeSettings::render(Canvas &canvas)
 {
-    if (modifySetting)
+    if (modifySetting && isChoice())
+    {
+        canvas.setFont(Font::Medium);
+        Widgets::textHCentered(canvas, selectedChoice().labels[choice], 40);
+    }
+    else if (modifySetting)
     {
         char buffer[32];
         snprintf(buffer, sizeof(buffer), "%.*f", decimalsFor(Settings::floatSettings[selected].increment), value);
@@ -83,7 +129,7 @@ void ModeSettings::render(Canvas &canvas)
     }
     else
     {
-        Widgets::switcher(canvas, MODE_NAME_SETTINGS, selected, Settings::FLOAT_SETTING_NUM, Settings::getOptions());
+        Widgets::switcher(canvas, MODE_NAME_SETTINGS, selected, Settings::SETTING_COUNT, Settings::getOptions());
     }
 }
 

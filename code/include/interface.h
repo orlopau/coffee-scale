@@ -19,5 +19,8 @@ namespace Interface
     /** Clears the click of this loop and all queued clicks. */
     void discardClicks();
     bool isEncoderPressed();
+    /** One beep. */
     void buzzerTone(unsigned int durationMs);
+    /** Beeps count times, each onMs long with offMs between. Replaces a beep still running. */
+    void buzzerPattern(unsigned int count, unsigned int onMs, unsigned int offMs);
 }

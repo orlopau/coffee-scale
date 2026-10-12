@@ -1,6 +1,6 @@
 #include <math.h>
 
-#include "auto_tare.h"
+#include "detectors/auto_tare.h"
 #include "logger.h"
 
 #define TAG "Auto Tare"

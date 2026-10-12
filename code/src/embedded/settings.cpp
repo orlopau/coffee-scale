@@ -188,6 +188,43 @@ namespace Settings
 
     void setFloat(FloatSetting s, float value) { writeFloat(s.key, value); }
 
+    uint8_t getChoice(ChoiceSetting s)
+    {
+        if (!handle)
+        {
+            return s.def;
+        }
+        uint8_t index;
+        esp_err_t err = handle->get_item(s.key, index);
+        if (err != ESP_OK)
+        {
+            if (err != ESP_ERR_NVS_NOT_FOUND)
+            {
+                ESP_LOGE(TAG, "Reading %s failed: %s", s.key, esp_err_to_name(err));
+            }
+            return s.def;
+        }
+        return validChoice(s, index);
+    }
+
+    void setChoice(ChoiceSetting s, uint8_t index)
+    {
+        if (!handle)
+        {
+            ESP_LOGE(TAG, "Not saving %s, the settings aren't open", s.key);
+            return;
+        }
+        esp_err_t err = handle->set_item(s.key, index);
+        if (err == ESP_OK)
+        {
+            err = handle->commit();
+        }
+        if (err != ESP_OK)
+        {
+            ESP_LOGE(TAG, "Saving %s failed: %s", s.key, esp_err_to_name(err));
+        }
+    }
+
     float getCalibration()
     {
         float value;

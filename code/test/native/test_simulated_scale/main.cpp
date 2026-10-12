@@ -109,6 +109,16 @@ void test_noise(void)
     TEST_ASSERT_LESS_THAN(20 * SimulatedScale::NOISE_COUNTS, max - min);
 }
 
+void test_lift_lowers_the_readings_for_a_moment(void)
+{
+    scale->setWeight(10);
+    scale->lift(2, 200);
+    TEST_ASSERT_EQUAL(SimulatedScale::EMPTY_COUNTS + 8 * SimulatedScale::COUNTS_PER_GRAM, scale->read());
+    sleep_for(250);
+    TEST_ASSERT_EQUAL(SimulatedScale::EMPTY_COUNTS + 10 * SimulatedScale::COUNTS_PER_GRAM, scale->read());
+    TEST_ASSERT_EQUAL_FLOAT(10, scale->getWeight());
+}
+
 int main(void)
 {
     UNITY_BEGIN();
@@ -120,5 +130,6 @@ int main(void)
     RUN_TEST(test_shot_follows_profile);
     RUN_TEST(test_shot_ends_with_flow);
     RUN_TEST(test_noise);
+    RUN_TEST(test_lift_lowers_the_readings_for_a_moment);
     return UNITY_END();
 }

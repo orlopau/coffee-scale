@@ -29,6 +29,8 @@ public:
     void setWeight(float grams);
     /** Puts weight on the scale, or takes it off if negative. The scale never holds less than nothing. */
     void addWeight(float grams);
+    /** Lifts the platform for a moment, like a finger sliding up its side: the readings are grams lower for durationMs. */
+    void lift(float grams, unsigned long durationMs);
 
     /** Grams per second flowing onto the scale, also during a shot. */
     float getFlow() const;
@@ -56,6 +58,8 @@ public:
 
 private:
     float weight = 0;
+    float liftGrams = 0;
+    unsigned long liftEndTime = 0;
     float flow = 0;
     bool shotRunning = false;
     unsigned long shotStartTime = 0;

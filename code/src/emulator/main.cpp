@@ -15,6 +15,7 @@
 #include "emulator/emulator.h"
 #include "battery.h"
 #include "data/recipes.h"
+#include "detectors/lift_tare.h"
 #include "display.h"
 #include "interface.h"
 #include "millis.h"
@@ -34,6 +35,9 @@
 #define FRAME_MS 15
 // liquid flowing onto the scale while pouring, in g/s
 #define POUR_FLOW 2.0f
+// a lift with the L key: 2 g less for two readings, like a gentle lift on the scale
+#define LIFT_GRAMS 2.0f
+#define LIFT_MS 200
 
 static const int SPEEDS[] = {1, 2, 5, 10, 20};
 static const int SPEED_COUNT = sizeof(SPEEDS) / sizeof(SPEEDS[0]);
@@ -46,12 +50,14 @@ static const char *HELP = "Coffee Scale emulator\n"
                           "  0, Backspace     clear the scale\n"
                           "  F                pour on/off (2 g/s)\n"
                           "  S                espresso shot (6 s pre-infusion, about 38 g in 33 s)\n"
+                          "  L                lift the platform for a moment (lift-to-tare)\n"
                           "  N                noise on/off\n"
                           "  - +              slower/faster time, up to 20x (1x while the button is held)\n"
                           "  P                save a screenshot\n"
                           "  Esc, Q           quit\n";
 
 static WeightPipeline weightPipeline(Emulator::samples());
+static LiftTare liftTare(weightPipeline);
 static Stopwatch stopwatch;
 
 static void saveScale(float scale)
@@ -69,6 +75,7 @@ static void setup()
     weightPipeline.setGramsPerCount(1 / SimulatedScale::COUNTS_PER_GRAM);
     weightPipeline.setAutoAveraging(fabs(Settings::getFloat(Settings::floatSettings[Settings::AVERAGING_DELTA])), 64);
     weightPipeline.setZeroTracking(fabs(Settings::getFloat(Settings::floatSettings[Settings::ZERO_TRACKING])));
+    liftTare.setDepth(Settings::liftTareDepth());
 
     // tare after 32 samples
     for (size_t readings = 0; readings < 32;)
@@ -87,6 +94,8 @@ static void loop(ModeManager &modeManager)
     // from the mode's state of the last loop, see WeightPipeline::holdZero()
     weightPipeline.holdZero(modeManager.isMeasuring());
     weightPipeline.update();
+    // locked from the mode's state of the last loop, like holdZero()
+    liftTare.update(modeManager.isMeasuring());
     modeManager.update();
 }
 
@@ -229,6 +238,9 @@ static bool handleKey(const SDL_KeyboardEvent &key, int &speedIndex)
         break;
     case SDLK_s:
         scale.startShot();
+        break;
+    case SDLK_l:
+        scale.lift(LIFT_GRAMS, LIFT_MS);
         break;
     case SDLK_n:
         scale.setNoise(!scale.hasNoise());

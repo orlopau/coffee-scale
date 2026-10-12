@@ -58,3 +58,16 @@ void WeightPipeline::tare()
     last.net = (last.raw - offsetCounts) * gramsPerCount;
     last.filtered = 0;
 }
+
+void WeightPipeline::tareTo(float grams)
+{
+    if (!started || gramsPerCount == 0)
+    {
+        return;
+    }
+
+    offsetCounts = grams / gramsPerCount;
+    zeroTracker.reset();
+    last.net = last.grams - grams;
+    last.filtered = (average.isEmpty() ? last.grams : average.value()) - grams;
+}

@@ -30,6 +30,12 @@ public:
     float getWeight() override { return last.filtered; }
     /** Zeroes the averaged weight. Does nothing before the first sample. */
     void tare() override;
+    /**
+     * Tares to a weight in calibrated grams, like Reading::grams, instead of
+     * the averaged one, e.g. the weight from before a lift. Does nothing
+     * before the first sample.
+     */
+    void tareTo(float grams);
 
     /** A new calibration. The tare still holds, filter and flow start over. */
     void setGramsPerCount(float gramsPerCount);

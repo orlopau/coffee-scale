@@ -12,8 +12,8 @@ Cleanup and tooling before new features.
   All modes and the updater draw themselves on a canvas; frames are only sent when something changed.
 - [x] **Dev updates from the laptop** _(Firmware, Tooling)_
   `pio run -t serve`, then long-press in the updater. The scale finds the laptop via mDNS.
-- [ ] **ESP32 build in CI** _(Tooling)_
-  The firmware is only built on release so far (tags `firmware-*`). An ESP32 build on every push shows errors right away, not at the next release.
+- [x] **ESP32 build in CI** _(Tooling)_
+  Every push builds the ESP32 firmware in English and German, next to the native tests and the emulator, so errors show up right away, not at the next release.
 - [x] **Emulator and screenshot tests** _(Tooling)_
   `pio run -e emulator -t exec` shows the scale in a desktop window; arrow keys and Enter replace the rotary encoder. Simulated load cell at 10 Hz, virtual clock, and every screen is compared against a PNG in CI.
 - [x] **Raw data recorder** _(Firmware, Tooling)_
@@ -33,8 +33,8 @@ Cleanup and tooling before new features.
 
 The scale understands what happens on it.
 
-- [ ] **Tap-to-tare** _(Firmware)_
-  Tapping the platform twice tares. Uses the unsmoothed readings and is locked during a shot. The HX711 only delivers 10 readings per second, so a tap is one or two readings long. Check with real recordings whether that's enough.
+- [x] **Lift-to-tare** _(Firmware)_
+  Sliding a finger up the side of the platform, lifting it a little, tares. Taps can't be told apart at 10 readings per second, lifts can: nothing else on the counter dips below the weight and comes right back, see [ADR 1](adr/0001-tare-gesture.md). How firmly you have to lift is adjustable. Uses the unsmoothed readings and is locked during a shot.
 - [ ] **Shot detection** _(Firmware)_
   Starts at the first drop and ends when the flow drops below 0.1 g/s. Setting down the cup, bumps and false starts are ignored. With an adjustable offset between pump start and first drop.
 - [ ] **Shot graph on the display** _(Firmware)_

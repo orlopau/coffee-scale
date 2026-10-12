@@ -59,6 +59,11 @@ void Interface::discardClicks() { clickInbox.discard(); }
 
 bool Interface::isEncoderPressed() { return buttonTask.isPressed(); }
 
-void Interface::buzzerTone(unsigned int durationMs) { buttonTask.buzz(durationMs); }
+void Interface::buzzerTone(unsigned int durationMs) { buttonTask.buzz(1, durationMs, 0); }
+
+void Interface::buzzerPattern(unsigned int count, unsigned int onMs, unsigned int offMs)
+{
+    buttonTask.buzz(count, onMs, offMs);
+}
 
 #endif

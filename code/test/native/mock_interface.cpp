@@ -6,6 +6,7 @@ namespace Interface
     ClickType bootClick = ClickType::NONE;
     int encoderTicks = 0;
     int encoderTurns = 0;
+    unsigned int buzzerBeeps = 0;
 
     void reset()
     {
@@ -13,6 +14,7 @@ namespace Interface
         bootClick = ClickType::NONE;
         encoderTicks = 0;
         encoderTurns = 0;
+        buzzerBeeps = 0;
     }
 
     void update() {}
@@ -29,5 +31,6 @@ namespace Interface
     int getEncoderTurns() { return encoderTurns; }
     void setEncoderTicks(long ticks) { encoderTicks = ticks; }
     ClickType getBootClick() { return bootClick; }
-    void buzzerTone(unsigned int durationMs) {}
+    void buzzerTone(unsigned int durationMs) { buzzerBeeps = 1; }
+    void buzzerPattern(unsigned int count, unsigned int onMs, unsigned int offMs) { buzzerBeeps = count; }
 }

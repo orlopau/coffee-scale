@@ -77,6 +77,11 @@
 #define SETTINGS_TARE_TOLERANCE "Auto-Tare Toleranz"
 #define SETTINGS_AVERAGING_DELTA "Gewichts-Mittelung Schwellwert"
 #define SETTINGS_ZERO_TRACKING "Nullpunkt-Nachführung"
+#define SETTINGS_LIFT_TARE "Tara durch Anheben"
+#define SETTINGS_LIFT_TARE_OFF "Aus"
+#define SETTINGS_LIFT_TARE_GENTLE "Sanft"
+#define SETTINGS_LIFT_TARE_NORMAL "Normal"
+#define SETTINGS_LIFT_TARE_FIRM "Fest"
 //////////////////////////////////////////////
 #else
 /////////////////// ENGLISH ///////////////////
@@ -155,5 +160,10 @@
 #define SETTINGS_TARE_TOLERANCE "Auto-Tare Tolerance"
 #define SETTINGS_AVERAGING_DELTA "Weight Averaging Threshold"
 #define SETTINGS_ZERO_TRACKING "Zero Tracking"
+#define SETTINGS_LIFT_TARE "Lift-to-Tare"
+#define SETTINGS_LIFT_TARE_OFF "Off"
+#define SETTINGS_LIFT_TARE_GENTLE "Gentle"
+#define SETTINGS_LIFT_TARE_NORMAL "Normal"
+#define SETTINGS_LIFT_TARE_FIRM "Firm"
 //////////////////////////////////////////////
 #endif
