@@ -236,6 +236,44 @@ namespace Settings
     }
 
     void setCalibration(float gramsPerCount) { writeFloat(CALIBRATION_KEY, gramsPerCount); }
+
+    bool getFlag(const char *key)
+    {
+        if (!handle)
+        {
+            return true;
+        }
+        uint8_t value;
+        esp_err_t err = handle->get_item(key, value);
+        if (err == ESP_ERR_NVS_NOT_FOUND)
+        {
+            return false;
+        }
+        if (err != ESP_OK)
+        {
+            ESP_LOGE(TAG, "Reading %s failed: %s", key, esp_err_to_name(err));
+            return true;
+        }
+        return value != 0;
+    }
+
+    void setFlag(const char *key, bool value)
+    {
+        if (!handle)
+        {
+            ESP_LOGE(TAG, "Not saving %s, the settings aren't open", key);
+            return;
+        }
+        esp_err_t err = handle->set_item(key, (uint8_t)(value ? 1 : 0));
+        if (err == ESP_OK)
+        {
+            err = handle->commit();
+        }
+        if (err != ESP_OK)
+        {
+            ESP_LOGE(TAG, "Saving %s failed: %s", key, esp_err_to_name(err));
+        }
+    }
 }
 
 #endif

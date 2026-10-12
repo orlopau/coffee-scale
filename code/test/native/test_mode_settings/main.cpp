@@ -8,13 +8,18 @@
 
 static ModeSettings *modeSettings;
 
+static int actionRuns = 0;
+static void runAction() { actionRuns++; }
+static const SettingsAction ACTIONS[] = {{"Wi-Fi", runAction}};
+
 static const Settings::ChoiceSetting &liftTare() { return Settings::choiceSettings[Settings::LIFT_TARE]; }
 
 void setUp(void)
 {
     Interface::reset();
     Display::reset();
-    modeSettings = new ModeSettings();
+    modeSettings = new ModeSettings(ACTIONS, 1);
+    actionRuns = 0;
     modeSettings->enter();
 }
 
@@ -105,6 +110,41 @@ void test_long_press_keeps_the_stored_choice(void)
     TEST_ASSERT_EQUAL(liftTare().def, Settings::getChoice(liftTare()));
 }
 
+void test_actions_come_after_the_settings(void)
+{
+    Interface::encoderTurns = 100;
+    modeSettings->update();
+    Display::reset();
+    modeSettings->render(Display::mockCanvas);
+    TEST_ASSERT_TRUE(Display::mockCanvas.hasText("Wi-Fi"));
+}
+
+void test_click_runs_the_action(void)
+{
+    Interface::encoderTurns = Settings::SETTING_COUNT;
+    modeSettings->update();
+    Interface::reset();
+    Interface::encoderClick = ClickType::SINGLE;
+    modeSettings->update();
+    TEST_ASSERT_EQUAL(1, actionRuns);
+    // back in the menu, not editing a setting
+    TEST_ASSERT_TRUE(modeSettings->canSwitchMode());
+}
+
+void test_without_actions_the_menu_ends_with_the_settings(void)
+{
+    ModeSettings plain;
+    plain.enter();
+    Interface::encoderTurns = 100;
+    plain.update();
+    Interface::reset();
+    Interface::encoderClick = ClickType::SINGLE;
+    plain.update();
+    // the last entry is lift-to-tare, a choice being edited now
+    TEST_ASSERT_FALSE(plain.canSwitchMode());
+    TEST_ASSERT_EQUAL(0, actionRuns);
+}
+
 int main(void)
 {
     UNITY_BEGIN();
@@ -115,5 +155,8 @@ int main(void)
     RUN_TEST(test_choice_stops_at_the_first_label);
     RUN_TEST(test_click_stores_the_choice);
     RUN_TEST(test_long_press_keeps_the_stored_choice);
+    RUN_TEST(test_actions_come_after_the_settings);
+    RUN_TEST(test_click_runs_the_action);
+    RUN_TEST(test_without_actions_the_menu_ends_with_the_settings);
     return UNITY_END();
 }

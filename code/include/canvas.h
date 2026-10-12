@@ -9,6 +9,7 @@
 enum class Font : uint8_t
 {
     Small,       // titles, labels
+    Tiny,        // captions where 6 px wide characters don't fit, e.g. next to a QR code
     SmallMedium, // labels next to Medium values
     Body,        // running text
     Medium,      // emphasized labels

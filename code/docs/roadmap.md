@@ -24,7 +24,7 @@ Cleanup and tooling before new features.
   A dedicated task reads the load cell via the data-ready pin and timestamps every reading. Calibration, tare, filter and flow are separate stages. Shot, tap and auto-tare detection read this stream independently of the mode.
 - [x] **Settings in NVS** _(Firmware)_
   Settings and calibration stored under keys in NVS, via the ESP-IDF API, instead of at fixed EEPROM addresses.
-- [ ] **Own Wi-Fi setup instead of AutoConnect, and safe updates** _(Firmware)_
+- [x] **Own Wi-Fi setup instead of AutoConnect, and safe updates** _(Firmware)_
   Set up from the phone, no app: the scale opens its own access point and shows a Wi-Fi QR code; the camera joins it and the setup page opens. Asked once on the first start, then in the settings menu. Built on the ESP-IDF API, so it carries over. Updates check GitHub's certificate against the CA bundle instead of `setInsecure()`, and a firmware that crashes in its first seconds rolls back to the previous one. Core 2.0.17 already has both, so the move to Core 3.x waits.
 - [ ] **Automatic updates** _(Firmware)_
   Every once in a while the scale connects to the saved Wi-Fi by itself, checks whether a newer firmware is out, and installs it. Needs the saved network, certificate checks and rollback from the item before.

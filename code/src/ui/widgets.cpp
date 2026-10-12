@@ -175,19 +175,27 @@ namespace Widgets
         }
     }
 
-    int qrCode(Canvas &canvas, const char *text, int x, int y)
+    int qrCode(Canvas &canvas, const char *text, int x, int y, uint8_t version, uint8_t ecc)
     {
-        static const uint8_t VERSION = 2;
+        static const uint8_t MAX_VERSION = 3;
         static const int BORDER = 2;
         static QRCode qrcode;
-        static uint8_t *bytes = new uint8_t[qrcode_getBufferSize(VERSION)];
+        static uint8_t *bytes = new uint8_t[qrcode_getBufferSize(MAX_VERSION)];
         // encoding is the expensive part, and screens redraw every frame
-        static char encoded[32] = "";
+        static char encoded[64] = "";
+        static uint8_t encodedVersion = 0;
+        static uint8_t encodedEcc = 0;
 
-        if (strncmp(encoded, text, sizeof(encoded)) != 0)
+        if (version > MAX_VERSION)
         {
-            qrcode_initText(&qrcode, bytes, VERSION, ECC_QUARTILE, text);
+            version = MAX_VERSION;
+        }
+        if (strncmp(encoded, text, sizeof(encoded)) != 0 || version != encodedVersion || ecc != encodedEcc)
+        {
+            qrcode_initText(&qrcode, bytes, version, ecc, text);
             strncpy(encoded, text, sizeof(encoded) - 1);
+            encodedVersion = version;
+            encodedEcc = ecc;
         }
 
         // modules are drawn off on a filled box, with a border around them

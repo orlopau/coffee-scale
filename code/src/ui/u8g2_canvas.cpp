@@ -11,6 +11,8 @@ static const uint8_t *fontFor(Font font)
     {
     case Font::Small:
         return u8g2_font_profont12_tf;
+    case Font::Tiny:
+        return u8g2_font_5x7_tf;
     case Font::SmallMedium:
         return u8g2_font_profont15_tf;
     case Font::Body:

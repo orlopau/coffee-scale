@@ -1,10 +1,6 @@
 #ifndef NATIVE
 
-#include <AutoConnectCore.h>
-#include <HTTPClient.h>
-#include <HTTPUpdate.h>
-#include <WebServer.h>
-#include <WiFi.h>
+#include <Arduino.h>
 #include <ESPmDNS.h>
 
 #include "constants.h"
@@ -13,6 +9,10 @@
 #include "data/localization.h"
 #include "ui/updater_screens.h"
 #include "embedded/record.h"
+#include "embedded/network/firmware_check.h"
+#include "embedded/network/firmware_download.h"
+#include "embedded/network/wifi_setup.h"
+#include "embedded/network/wifi_station.h"
 
 #define TAG "UPDATER"
 
@@ -20,18 +20,18 @@
 #define DEV_SERVER_SERVICE "coffeescale-fw"
 // each attempt waits up to 3 s for answers
 #define DEV_SERVER_SEARCH_ATTEMPTS 3
+// how long the updater tries the saved network before it runs the setup
+#define SAVED_NETWORK_TIMEOUT_MS 15000
 
 namespace Updater
 {
-    AutoConnect portal;
-
     // calibration of the scale, written into recordings
     static float gramsPerCount = 1;
     // the load cell's readings, for recordings
     static SampleSource *loadCellSamples = nullptr;
 
     static void updateFromDevServer();
-    static void runUpdate(WiFiClient &client, const char *url);
+    static void runUpdate(const char *url);
 
     // The updater blocks the main loop, so it draws and sends frames itself.
 
@@ -43,14 +43,6 @@ namespace Updater
         canvas.flush();
     }
 
-    static void showText(const char *text)
-    {
-        Canvas &canvas = Display::canvas();
-        canvas.clear();
-        UpdaterScreens::text(canvas, text);
-        canvas.flush();
-    }
-
     static void showSwitcher(const char *title, uint8_t index, uint8_t count, const char *const options[])
     {
         Canvas &canvas = Display::canvas();
@@ -59,27 +51,43 @@ namespace Updater
         canvas.flush();
     }
 
-    void started() { ESP_LOGI(TAG, "CALLBACK:  HTTP update process started"); }
-
-    void finished() { ESP_LOGI(TAG, "CALLBACK:  HTTP update process finished"); }
-
-    void progress(int cur, int total)
+    static void progress(size_t done, size_t total)
     {
-        ESP_LOGI(TAG, "CALLBACK:  HTTP update process at %d of %d bytes...", cur, total);
-        static char progress[32];
-        sprintf(progress, UPDATER_PROGRESS, ((float)cur / (float)total) * 100);
-        showMessage(progress);
+        static char text[32];
+        if (total > 0)
+        {
+            snprintf(text, sizeof(text), UPDATER_PROGRESS, 100.0f * done / total);
+        }
+        else
+        {
+            snprintf(text, sizeof(text), "%u kB", (unsigned)(done / 1024));
+        }
+        showMessage(text);
     }
 
-    void error(int err) { ESP_LOGI(TAG, "CALLBACK:  HTTP update fatal error code %d", err); }
-
-    bool onCaptivePortalStart(IPAddress &address)
+    /** The saved network, or the setup if there is none or it can't be reached. Stays here if neither works. */
+    static void connect()
     {
-        ESP_LOGI(TAG, "Captive portal started");
-        static char text[64];
-        sprintf(text, UPDATER_WIFI_CONNECT_MANUAL, WiFi.softAPSSID().c_str());
-        showText(text);
-        return true;
+        WifiStatus status = WifiStatus::Failed;
+        if (WifiStation::begin() && WifiStation::hasSavedNetwork())
+        {
+            status = WifiStation::connect(SAVED_NETWORK_TIMEOUT_MS);
+        }
+        if (status != WifiStatus::Connected)
+        {
+            ESP_LOGI(TAG, "No saved network reachable, running the setup");
+            status = WifiSetup::run();
+        }
+        if (status != WifiStatus::Connected)
+        {
+            showMessage(UPDATER_FAILED);
+            for (;;)
+            {
+                delay(1000);
+            }
+        }
+        ESP_LOGI(TAG, "WiFi connected");
+        showMessage(UPDATER_WIFI_CONNECTED);
     }
 
     void update_firmware(float scale, SampleSource &samples)
@@ -89,26 +97,7 @@ namespace Updater
         showMessage(UPDATER_UPDATING);
         ESP_LOGI(TAG, "Updating firmware...");
 
-        uint32_t id = 0;
-        for (int i = 0; i < 17; i = i + 8)
-        {
-            id |= ((ESP.getEfuseMac() >> (40 - i)) & 0xff) << i;
-        }
-
-        char ssid[25];
-        sprintf(ssid, "CoffeeScale-%d", id);
-        AutoConnectConfig config(ssid, "");
-        config.title = "CoffeeScale";
-        config.boundaryOffset = 1024;
-        portal.config(config);
-
-        portal.onDetect(onCaptivePortalStart);
-
-        if (portal.begin())
-        {
-            ESP_LOGI(TAG, "WiFi connected");
-            showMessage(UPDATER_WIFI_CONNECTED);
-        }
+        connect();
 
         delay(1000);
 
@@ -153,12 +142,9 @@ namespace Updater
             Interface::update();
         }
 
-        WiFiClientSecure client;
-        client.setInsecure();
-
         char url[128];
-        snprintf(url, 128, UPDATE_URL, qualifiers[selectedQualifier]);
-        runUpdate(client, url);
+        snprintf(url, sizeof(url), UPDATE_URL, qualifiers[selectedQualifier]);
+        runUpdate(url);
     }
 
     struct DevServer
@@ -219,37 +205,27 @@ namespace Updater
 
         char url[128];
         snprintf(url, sizeof(url), "http://%s:%u%s", server.ip.toString().c_str(), server.port, server.firmwarePath.c_str());
-        WiFiClient client;
-        runUpdate(client, url);
+        runUpdate(url);
     }
 
-    static void runUpdate(WiFiClient &client, const char *url)
+    static void runUpdate(const char *url)
     {
-        HTTPUpdate httpUpdate;
-        httpUpdate.setFollowRedirects(HTTPC_FORCE_FOLLOW_REDIRECTS);
-        httpUpdate.onStart(started);
-        httpUpdate.onEnd(finished);
-        httpUpdate.onProgress(progress);
-        httpUpdate.onError(error);
-
         ESP_LOGI(TAG, "Update URL: %s", url);
-        t_httpUpdate_return code = httpUpdate.update(client, url);
-
-        switch (code)
+        switch (FirmwareDownload::run(url, progress, ESP.getSketchMD5().c_str()))
         {
-        case HTTP_UPDATE_FAILED:
-            ESP_LOGI(TAG, "HTTP_UPDATE_FAILED Error (%d): %s", httpUpdate.getLastError(), httpUpdate.getLastErrorString().c_str());
-            showMessage(UPDATER_FAILED);
+        case FirmwareDownload::Result::Installed:
+            ESP_LOGI(TAG, "Update installed");
+            // so the next start says so if this firmware gets rolled back
+            FirmwareCheck::expectNewFirmware();
+            showMessage(UPDATER_SUCCESS);
+            delay(2000);
+            esp_restart();
             break;
-
-        case HTTP_UPDATE_NO_UPDATES:
-            ESP_LOGI(TAG, "HTTP_UPDATE_NO_UPDATES");
+        case FirmwareDownload::Result::NoUpdate:
             showMessage(UPDATER_NO_UPDATE);
             break;
-
-        case HTTP_UPDATE_OK:
-            ESP_LOGI(TAG, "HTTP_UPDATE_OK");
-            showMessage(UPDATER_SUCCESS);
+        case FirmwareDownload::Result::Failed:
+            showMessage(UPDATER_FAILED);
             break;
         }
 

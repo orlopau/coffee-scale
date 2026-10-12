@@ -8,6 +8,17 @@
 #include "logger.h"
 #include "settings.h"
 
+ModeSettings::ModeSettings(const SettingsAction *actions, int actionCount)
+    : actions(actions), actionCount(actionCount)
+{
+    const char **settings = Settings::getOptions();
+    options.assign(settings, settings + Settings::SETTING_COUNT);
+    for (int i = 0; i < actionCount; i++)
+    {
+        options.push_back(actions[i].name);
+    }
+}
+
 void ModeSettings::update()
 {
     if (!modifySetting)
@@ -35,13 +46,20 @@ void ModeSettings::updateSwitcher()
     {
         selected = 0;
     }
-    else if (selected >= Settings::SETTING_COUNT)
+    else if (selected >= entryCount())
     {
-        selected = Settings::SETTING_COUNT - 1;
+        selected = entryCount() - 1;
     }
 
     if (Interface::getEncoderClick() == ClickType::SINGLE)
     {
+        if (isAction())
+        {
+            actions[selected - Settings::SETTING_COUNT].run();
+            // the action took the clicks it wanted, the rest were meant for it
+            Interface::discardClicks();
+            return;
+        }
         modifySetting = true;
         Interface::resetEncoderTicks();
         // render() shows the value already in this tick
@@ -129,7 +147,7 @@ void ModeSettings::render(Canvas &canvas)
     }
     else
     {
-        Widgets::switcher(canvas, MODE_NAME_SETTINGS, selected, Settings::SETTING_COUNT, Settings::getOptions());
+        Widgets::switcher(canvas, MODE_NAME_SETTINGS, selected, entryCount(), options.data());
     }
 }
 
