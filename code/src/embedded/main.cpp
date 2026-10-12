@@ -3,6 +3,7 @@
 #include <Arduino.h>
 
 #include "constants.h"
+#include "detectors/lift_tare.h"
 #include "data/recipes.h"
 #include "embedded/loadcell_task.h"
 #include "embedded/sample_queue.h"
@@ -28,6 +29,7 @@
 SampleQueue samples;
 LoadCellTask loadCellTask(samples);
 WeightPipeline weightPipeline(samples);
+LiftTare liftTare(weightPipeline);
 Stopwatch stopwatch;
 
 void saveScale(float scale)
@@ -105,6 +107,10 @@ void setup()
   weightPipeline.setZeroTracking(zeroTracking);
   ESP_LOGI(TAG, "Zero tracking window: %f g", zeroTracking);
 
+  float liftDepth = Settings::liftTareDepth();
+  liftTare.setDepth(liftDepth);
+  ESP_LOGI(TAG, "Lift-to-tare depth: %f g", liftDepth);
+
   // tare after 32 samples
   ESP_LOGI(TAG, "Taring...");
   for (size_t readings = 0; readings < 32;)
@@ -148,6 +154,8 @@ void loop()
   // from the mode's state of the last loop, see WeightPipeline::holdZero()
   weightPipeline.holdZero(modeManager.isMeasuring());
   weightPipeline.update();
+  // locked from the mode's state of the last loop, like holdZero()
+  liftTare.update(modeManager.isMeasuring());
   modeManager.update();
 
 #ifdef PERF

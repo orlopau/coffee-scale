@@ -14,6 +14,7 @@ This project contains the schematics, code and 3D models for a coffee scale base
 * Recipe-based brewing
 * Auto averaging of weight values: more values are used to determine weight when weight is relatively constant
 * Brew timer
+* Lift-to-tare: slide a finger up the side of the platform, lifting it a little, and the scale tares with a double beep. Also with a cup on it, and never during a shot. Off, Gentle, Normal or Firm in the settings.
 * USB-C charging
 * Interchangeable Load Cell
 * 3D-printable case
@@ -80,6 +81,7 @@ With `COMPILE_LANG=de` in front, it runs in German. The load cell is simulated, 
 | 0, Backspace | clear the scale |
 | F | pour on/off, 2 g/s |
 | S | espresso shot: 6 s pre-infusion, then about 38 g in 33 s |
+| L | lift the platform for a moment (lift-to-tare) |
 | N | noise on/off |
 | - / + | slower/faster time, up to 20x (1x while the button is held) |
 | P | save a screenshot to the current directory |

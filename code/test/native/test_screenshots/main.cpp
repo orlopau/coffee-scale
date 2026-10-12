@@ -359,6 +359,8 @@ void test_settings(void)
     turn(settings, 9);
     show("settings_last", settings);
 
+    // the last float setting, zero tracking
+    turn(settings, -1);
     click(settings);
     for (int ticks : {0, 7, -3})
     {
@@ -367,6 +369,12 @@ void test_settings(void)
         settings.update();
         render("settings_value_" + std::string(ticks == 0 ? "unchanged" : ticks > 0 ? "up" : "down"), settings);
     }
+
+    // lift-to-tare, the last setting, with its levels
+    click(settings, ClickType::LONG);
+    turn(settings, 1);
+    click(settings);
+    show("settings_choice", settings);
 }
 
 void test_mode_switcher(void)

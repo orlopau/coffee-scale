@@ -256,6 +256,35 @@ void test_tare_starts_zero_tracking_over(void)
     TEST_ASSERT_FLOAT_WITHIN(0.0001, 0.03, r.filtered);
 }
 
+void test_tare_to_a_weight(void)
+{
+    pipeline->process({0, 10000});
+    pipeline->tareTo(99.5f);
+    TEST_ASSERT_FLOAT_WITHIN(0.0001, 0.5, pipeline->latest().net);
+    TEST_ASSERT_FLOAT_WITHIN(0.0001, 0.5, pipeline->latest().filtered);
+
+    Reading r = pipeline->process({100, 10000});
+    TEST_ASSERT_FLOAT_WITHIN(0.0001, 100, r.grams);
+    TEST_ASSERT_FLOAT_WITHIN(0.0001, 0.5, r.net);
+    TEST_ASSERT_FLOAT_WITHIN(0.0001, 0.5, r.filtered);
+}
+
+void test_tare_to_before_the_first_sample_does_nothing(void)
+{
+    pipeline->tareTo(50);
+    Reading r = pipeline->process({0, 500});
+    TEST_ASSERT_FLOAT_WITHIN(0.0001, 5, r.net);
+}
+
+void test_tare_to_starts_zero_tracking_over(void)
+{
+    pipeline->setZeroTracking(0.1f);
+    driftedBy5Hundredths(*pipeline, 20);
+    pipeline->tareTo(100.02f);
+    Reading r = pipeline->process({2100, 10008});
+    TEST_ASSERT_FLOAT_WITHIN(0.0001, 0.06, r.filtered);
+}
+
 int main(void)
 {
     UNITY_BEGIN();
@@ -280,5 +309,8 @@ int main(void)
     RUN_TEST(test_zero_tracking_leaves_grams_and_flow_alone);
     RUN_TEST(test_held_zero_is_not_tracked);
     RUN_TEST(test_tare_starts_zero_tracking_over);
+    RUN_TEST(test_tare_to_a_weight);
+    RUN_TEST(test_tare_to_before_the_first_sample_does_nothing);
+    RUN_TEST(test_tare_to_starts_zero_tracking_over);
     return UNITY_END();
 }

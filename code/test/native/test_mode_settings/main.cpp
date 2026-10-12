@@ -8,6 +8,8 @@
 
 static ModeSettings *modeSettings;
 
+static const Settings::ChoiceSetting &liftTare() { return Settings::choiceSettings[Settings::LIFT_TARE]; }
+
 void setUp(void)
 {
     Interface::reset();
@@ -16,12 +18,30 @@ void setUp(void)
     modeSettings->enter();
 }
 
-void tearDown(void) { delete modeSettings; }
+void tearDown(void)
+{
+    delete modeSettings;
+    Settings::setChoice(liftTare(), liftTare().def);
+}
 
 /** Opens a setting and turns its value by ticks, from 0 (the mock stores nothing). */
 static void edit(Settings::FloatSettingID id, int ticks)
 {
     Interface::encoderTurns = id;
+    modeSettings->update();
+    Interface::reset();
+    Interface::encoderClick = ClickType::SINGLE;
+    modeSettings->update();
+    Interface::reset();
+    Interface::encoderTicks = ticks;
+    modeSettings->update();
+    modeSettings->render(Display::mockCanvas);
+}
+
+/** Opens a choice setting, they come after the float settings, and turns it by ticks. */
+static void editChoice(Settings::ChoiceSettingID id, int ticks)
+{
+    Interface::encoderTurns = Settings::FLOAT_SETTING_NUM + id;
     modeSettings->update();
     Interface::reset();
     Interface::encoderClick = ClickType::SINGLE;
@@ -44,10 +64,56 @@ void test_value_shows_two_decimals_for_steps_of_a_twentieth(void)
     TEST_ASSERT_TRUE(Display::mockCanvas.hasText("0.35"));
 }
 
+void test_choice_shows_its_label(void)
+{
+    editChoice(Settings::LIFT_TARE, 0);
+    TEST_ASSERT_TRUE(Display::mockCanvas.hasText(SETTINGS_LIFT_TARE_NORMAL));
+}
+
+void test_choice_stops_at_the_last_label(void)
+{
+    editChoice(Settings::LIFT_TARE, 5);
+    TEST_ASSERT_TRUE(Display::mockCanvas.hasText(SETTINGS_LIFT_TARE_FIRM));
+
+    // one detent back leaves the last label right away
+    Interface::encoderTicks -= 1;
+    modeSettings->update();
+    Display::reset();
+    modeSettings->render(Display::mockCanvas);
+    TEST_ASSERT_TRUE(Display::mockCanvas.hasText(SETTINGS_LIFT_TARE_NORMAL));
+}
+
+void test_choice_stops_at_the_first_label(void)
+{
+    editChoice(Settings::LIFT_TARE, -5);
+    TEST_ASSERT_TRUE(Display::mockCanvas.hasText(SETTINGS_LIFT_TARE_OFF));
+}
+
+void test_click_stores_the_choice(void)
+{
+    editChoice(Settings::LIFT_TARE, -1);
+    Interface::encoderClick = ClickType::SINGLE;
+    modeSettings->update();
+    TEST_ASSERT_EQUAL(1, Settings::getChoice(liftTare()));
+}
+
+void test_long_press_keeps_the_stored_choice(void)
+{
+    editChoice(Settings::LIFT_TARE, 1);
+    Interface::encoderClick = ClickType::LONG;
+    modeSettings->update();
+    TEST_ASSERT_EQUAL(liftTare().def, Settings::getChoice(liftTare()));
+}
+
 int main(void)
 {
     UNITY_BEGIN();
     RUN_TEST(test_value_shows_one_decimal_for_steps_of_a_tenth);
     RUN_TEST(test_value_shows_two_decimals_for_steps_of_a_twentieth);
+    RUN_TEST(test_choice_shows_its_label);
+    RUN_TEST(test_choice_stops_at_the_last_label);
+    RUN_TEST(test_choice_stops_at_the_first_label);
+    RUN_TEST(test_click_stores_the_choice);
+    RUN_TEST(test_long_press_keeps_the_stored_choice);
     return UNITY_END();
 }

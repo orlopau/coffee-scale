@@ -25,17 +25,23 @@ bool ButtonTask::begin()
     return true;
 }
 
-void ButtonTask::buzz(unsigned int durationMs)
+void ButtonTask::buzz(unsigned int count, unsigned int onMs, unsigned int offMs)
 {
     // without the task, nothing would switch the buzzer off again
-    if (task == nullptr)
+    if (task == nullptr || count == 0 || onMs == 0)
     {
         return;
     }
-    // the end first, so the task never sees the buzzer on with an old end
-    buzzEndMs = millis() + durationMs;
+    // all at once, so the task never finishes the old pattern with the new one's times,
+    // and the pin with it, so a late write can't switch the buzzer on after the task ended the pattern
+    taskENTER_CRITICAL(&buzzMux);
+    buzzStartMs = millis();
+    buzzCount = count;
+    buzzOnMs = onMs;
+    buzzOffMs = offMs;
     buzzing = true;
     digitalWrite(PIN_BUZZER, HIGH);
+    taskEXIT_CRITICAL(&buzzMux);
 }
 
 void ButtonTask::run(void *task) { static_cast<ButtonTask *>(task)->loop(); }
@@ -55,10 +61,27 @@ void ButtonTask::loop()
             clicks.push({millis(), type});
         }
 
-        if (buzzing && static_cast<int32_t>(millis() - buzzEndMs) >= 0)
+        bool switchBuzzer = false;
+        bool buzzerOn = false;
+        taskENTER_CRITICAL(&buzzMux);
+        if (buzzing)
         {
-            digitalWrite(PIN_BUZZER, LOW);
-            buzzing = false;
+            const uint32_t elapsed = millis() - buzzStartMs;
+            const uint32_t period = buzzOnMs + buzzOffMs;
+            if (elapsed >= period * (buzzCount - 1) + buzzOnMs)
+            {
+                buzzing = false;
+            }
+            else
+            {
+                buzzerOn = elapsed % period < buzzOnMs;
+            }
+            switchBuzzer = true;
+        }
+        taskEXIT_CRITICAL(&buzzMux);
+        if (switchBuzzer)
+        {
+            digitalWrite(PIN_BUZZER, buzzerOn ? HIGH : LOW);
         }
 
         vTaskDelayUntil(&lastWake, pdMS_TO_TICKS(PERIOD_MS));

@@ -11,6 +11,12 @@ void SimulatedScale::setWeight(float grams) { weight = grams < 0 ? 0 : grams; }
 
 void SimulatedScale::addWeight(float grams) { setWeight(weight + grams); }
 
+void SimulatedScale::lift(float grams, unsigned long durationMs)
+{
+    liftGrams = grams;
+    liftEndTime = now() + durationMs;
+}
+
 float SimulatedScale::getFlow() const { return shotRunning ? shotFlow(now() - shotStartTime) : flow; }
 
 void SimulatedScale::setFlow(float gramsPerSecond)
@@ -100,7 +106,8 @@ long SimulatedScale::read()
         nextSampleTime = now() + SAMPLE_INTERVAL_MS;
     }
 
-    float counts = EMPTY_COUNTS + weight * COUNTS_PER_GRAM;
+    const float lifted = now() < liftEndTime ? liftGrams : 0;
+    float counts = EMPTY_COUNTS + (weight - lifted) * COUNTS_PER_GRAM;
     if (noise)
     {
         counts += noiseDistribution(random);

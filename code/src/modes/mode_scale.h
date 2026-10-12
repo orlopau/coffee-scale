@@ -1,6 +1,6 @@
 #pragma once
 
-#include "auto_tare.h"
+#include "detectors/auto_tare.h"
 #include "mode.h"
 #include "stopwatch.h"
 #include "weighing/weight_source.h"
