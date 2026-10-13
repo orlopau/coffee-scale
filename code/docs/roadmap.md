@@ -26,8 +26,8 @@ Cleanup and tooling before new features.
   Settings and calibration stored under keys in NVS, via the ESP-IDF API, instead of at fixed EEPROM addresses.
 - [x] **Own Wi-Fi setup instead of AutoConnect, and safe updates** _(Firmware)_
   Set up from the phone, no app: the scale opens its own access point and shows a Wi-Fi QR code; the camera joins it and the setup page opens. Asked once on the first start, then in the settings menu. Built on the ESP-IDF API, so it carries over. Updates check GitHub's certificate against the CA bundle instead of `setInsecure()`, and a firmware that crashes in its first seconds rolls back to the previous one. Core 2.0.17 already has both, so the move to Core 3.x waits.
-- [ ] **Automatic updates** _(Firmware)_
-  Every once in a while the scale connects to the saved Wi-Fi by itself, checks whether a newer firmware is out, and installs it. Needs the saved network, certificate checks and rollback from the item before.
+- [~] **Automatic updates** _(Firmware)_
+  Every 5th start the scale checks GitHub in the background for a newer firmware, and the next start asks "Update to v1.10?". Yes installs exactly that version, Later asks again next time, and a version that was rolled back isn't offered again. Wi-Fi is shared: whoever needs internet holds a connection, the last one turns Wi-Fi off. The dev server can pose as a release, see the README. Built; waiting for the tests on the scale.
 - [x] **Zero tracking** _(Firmware)_
   When the scale is empty and steady, it slowly pulls small deviations around zero back to zero, e.g. as it warms up. Paused during shots and recipes so slow first drops aren't tracked away.
 

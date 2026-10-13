@@ -8,6 +8,7 @@
 #include <esp_wifi.h>
 #include <freertos/FreeRTOS.h>
 #include <freertos/event_groups.h>
+#include <freertos/semphr.h>
 
 #include "embedded/network/wifi_station.h"
 
@@ -22,6 +23,8 @@ namespace WifiStation
 {
     static const EventBits_t GOT_IP = BIT0;
     static const EventBits_t DISCONNECTED = BIT1;
+    // set while the station has an address, unlike the two above nobody clears it but the events
+    static const EventBits_t CONNECTED = BIT2;
     // tries per connection, one failed try can be a missed beacon
     static const int ATTEMPTS = 3;
     // more networks than this don't fit on the page anyway
@@ -31,8 +34,30 @@ namespace WifiStation
     static bool running = false;
     static bool accessPointOn = false;
     static EventGroupHandle_t events = nullptr;
+    static esp_netif_t *stationNetif = nullptr;
     static esp_netif_t *accessPointNetif = nullptr;
     static volatile uint8_t lastReason = 0;
+
+    // Two tasks use Wi-Fi, e.g. the check for updates and the setup in the loop.
+    // The count and the mode change under this, held only for a moment.
+    static SemaphoreHandle_t stateLock = xSemaphoreCreateMutex();
+    // One connection attempt at a time, see connectWithConfig().
+    static SemaphoreHandle_t connectLock = xSemaphoreCreateMutex();
+    // the Radios alive, under stateLock
+    static int users = 0;
+
+    /** Holds lock while it lives. */
+    class Locked
+    {
+    public:
+        explicit Locked(SemaphoreHandle_t lock) : lock(lock) { xSemaphoreTake(lock, portMAX_DELAY); }
+        ~Locked() { xSemaphoreGive(lock); }
+        Locked(const Locked &) = delete;
+        Locked &operator=(const Locked &) = delete;
+
+    private:
+        SemaphoreHandle_t lock;
+    };
 
     static bool check(esp_err_t err, const char *what)
     {
@@ -49,11 +74,12 @@ namespace WifiStation
         {
             lastReason = ((wifi_event_sta_disconnected_t *)data)->reason;
             ESP_LOGI(TAG, "Disconnected, reason %u", lastReason);
+            xEventGroupClearBits(events, CONNECTED);
             xEventGroupSetBits(events, DISCONNECTED);
         }
         else if (base == IP_EVENT && id == IP_EVENT_STA_GOT_IP)
         {
-            xEventGroupSetBits(events, GOT_IP);
+            xEventGroupSetBits(events, GOT_IP | CONNECTED);
         }
     }
 
@@ -73,7 +99,7 @@ namespace WifiStation
         {
             return false;
         }
-        esp_netif_create_default_wifi_sta();
+        stationNetif = esp_netif_create_default_wifi_sta();
         accessPointNetif = esp_netif_create_default_wifi_ap();
         wifi_init_config_t config = WIFI_INIT_CONFIG_DEFAULT();
         if (!check(esp_wifi_init(&config), "Starting Wi-Fi"))
@@ -82,7 +108,11 @@ namespace WifiStation
         }
         // only a network that worked gets saved, see tryNetwork()
         esp_wifi_set_storage(WIFI_STORAGE_RAM);
-        events = xEventGroupCreate();
+        // kept by end(), begin() may run again
+        if (events == nullptr)
+        {
+            events = xEventGroupCreate();
+        }
         esp_event_handler_register(WIFI_EVENT, WIFI_EVENT_STA_DISCONNECTED, onEvent, nullptr);
         esp_event_handler_register(IP_EVENT, IP_EVENT_STA_GOT_IP, onEvent, nullptr);
         started = true;
@@ -111,6 +141,7 @@ namespace WifiStation
      */
     static bool startStation()
     {
+        Locked locked(stateLock);
         if (!check(esp_wifi_set_mode(accessPointOn ? WIFI_MODE_APSTA : WIFI_MODE_STA), "Setting the mode"))
         {
             return false;
@@ -118,7 +149,11 @@ namespace WifiStation
         return startRadio();
     }
 
-    /** Connects with the station's config, up to ATTEMPTS tries within timeoutMs. */
+    /**
+     * Connects with the station's config, up to ATTEMPTS tries within
+     * timeoutMs. Callers hold connectLock: the attempts clear and wait for
+     * the same events, two at once would take each other's.
+     */
     static WifiStatus connectWithConfig(uint32_t timeoutMs)
     {
         const TickType_t deadline = xTaskGetTickCount() + pdMS_TO_TICKS(timeoutMs);
@@ -151,17 +186,26 @@ namespace WifiStation
         return result;
     }
 
-    WifiStatus connect(uint32_t timeoutMs)
+    Online::Online(uint32_t timeoutMs)
     {
-        if (!hasSavedNetwork() || !startStation())
+        if (!begin() || !hasSavedNetwork())
         {
-            return WifiStatus::Failed;
+            return;
         }
-        return connectWithConfig(timeoutMs);
+        Locked locked(connectLock);
+        if (xEventGroupGetBits(events) & CONNECTED)
+        {
+            status = WifiStatus::Connected;
+        }
+        else if (startStation())
+        {
+            status = connectWithConfig(timeoutMs);
+        }
     }
 
     WifiStatus tryNetwork(const char *ssid, const char *password, uint32_t timeoutMs)
     {
+        Locked locked(connectLock);
         if (!started || !startStation())
         {
             return WifiStatus::Failed;
@@ -251,7 +295,10 @@ namespace WifiStation
         config.ap.channel = 1;
         config.ap.max_connection = 4;
 
-        accessPointOn = true;
+        {
+            Locked locked(stateLock);
+            accessPointOn = true;
+        }
         if (!startStation() || !check(esp_wifi_set_config(WIFI_IF_AP, &config), "Setting the setup network"))
         {
             stopAccessPoint();
@@ -262,6 +309,7 @@ namespace WifiStation
 
     void stopAccessPoint()
     {
+        Locked locked(stateLock);
         if (accessPointOn)
         {
             accessPointOn = false;
@@ -279,13 +327,48 @@ namespace WifiStation
         return ip.ip;
     }
 
-    void stop()
+    /** Turns Wi-Fi off, to save the battery. The saved network stays. Under stateLock. */
+    static void stop()
     {
         accessPointOn = false;
         if (running)
         {
             esp_wifi_stop();
             running = false;
+            xEventGroupClearBits(events, CONNECTED);
+        }
+    }
+
+    void end()
+    {
+        Locked locked(stateLock);
+        if (!started || users > 0)
+        {
+            return;
+        }
+        stop();
+        esp_event_handler_unregister(WIFI_EVENT, WIFI_EVENT_STA_DISCONNECTED, onEvent);
+        esp_event_handler_unregister(IP_EVENT, IP_EVENT_STA_GOT_IP, onEvent);
+        check(esp_wifi_deinit(), "Shutting Wi-Fi down");
+        esp_netif_destroy_default_wifi(stationNetif);
+        esp_netif_destroy_default_wifi(accessPointNetif);
+        stationNetif = nullptr;
+        accessPointNetif = nullptr;
+        started = false;
+    }
+
+    Radio::Radio()
+    {
+        Locked locked(stateLock);
+        users++;
+    }
+
+    Radio::~Radio()
+    {
+        Locked locked(stateLock);
+        if (--users == 0)
+        {
+            stop();
         }
     }
 }

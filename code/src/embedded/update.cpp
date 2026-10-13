@@ -4,11 +4,12 @@
 #include <ESPmDNS.h>
 
 #include "constants.h"
-#include "display.h"
 #include "interface.h"
 #include "data/localization.h"
 #include "ui/updater_screens.h"
+#include "embedded/blocking_screens.h"
 #include "embedded/record.h"
+#include "embedded/network/auto_update.h"
 #include "embedded/network/firmware_check.h"
 #include "embedded/network/firmware_download.h"
 #include "embedded/network/wifi_setup.h"
@@ -35,23 +36,18 @@ namespace Updater
 
     // The updater blocks the main loop, so it draws and sends frames itself.
 
-    static void showMessage(const char *text)
+    void showMessage(const char *text)
     {
-        Canvas &canvas = Display::canvas();
-        canvas.clear();
-        UpdaterScreens::message(canvas, text);
-        canvas.flush();
+        BlockingScreens::show([text](Canvas &canvas) { UpdaterScreens::message(canvas, text); });
     }
 
     static void showSwitcher(const char *title, uint8_t index, uint8_t count, const char *const options[])
     {
-        Canvas &canvas = Display::canvas();
-        canvas.clear();
-        UpdaterScreens::switcher(canvas, title, index, count, options);
-        canvas.flush();
+        BlockingScreens::show(
+            [&](Canvas &canvas) { UpdaterScreens::switcher(canvas, title, index, count, options); });
     }
 
-    static void progress(size_t done, size_t total)
+    void showProgress(size_t done, size_t total)
     {
         static char text[32];
         if (total > 0)
@@ -65,14 +61,10 @@ namespace Updater
         showMessage(text);
     }
 
-    /** The saved network, or the setup if there is none or it can't be reached. Stays here if neither works. */
-    static void connect()
+    /** online, or the setup if there is no saved network or it can't be reached. Stays here if neither works. */
+    static void connect(const WifiStation::Online &online)
     {
-        WifiStatus status = WifiStatus::Failed;
-        if (WifiStation::begin() && WifiStation::hasSavedNetwork())
-        {
-            status = WifiStation::connect(SAVED_NETWORK_TIMEOUT_MS);
-        }
+        WifiStatus status = online.connected() ? WifiStatus::Connected : WifiStatus::Failed;
         if (status != WifiStatus::Connected)
         {
             ESP_LOGI(TAG, "No saved network reachable, running the setup");
@@ -97,18 +89,15 @@ namespace Updater
         showMessage(UPDATER_UPDATING);
         ESP_LOGI(TAG, "Updating firmware...");
 
-        connect();
+        // keeps Wi-Fi on until the restart: the updater doesn't return
+        WifiStation::Online online(SAVED_NETWORK_TIMEOUT_MS);
+        connect(online);
 
         delay(1000);
 
         // The button may still be held from entering the updater at boot. Wait
         // until it is released, so holding it does not count as a long press.
-        while (Interface::isEncoderPressed())
-        {
-            Interface::update();
-            delay(10);
-        }
-        Interface::discardClicks();
+        BlockingScreens::waitForRelease();
 
         // choose firmware type
         int selectedQualifier = 0;
@@ -211,10 +200,12 @@ namespace Updater
     static void runUpdate(const char *url)
     {
         ESP_LOGI(TAG, "Update URL: %s", url);
-        switch (FirmwareDownload::run(url, progress, ESP.getSketchMD5().c_str()))
+        switch (FirmwareDownload::run(url, showProgress, ESP.getSketchMD5().c_str()))
         {
         case FirmwareDownload::Result::Installed:
             ESP_LOGI(TAG, "Update installed");
+            // installed by hand: a rollback of it isn't a release to skip
+            AutoUpdate::clearInstalling();
             // so the next start says so if this firmware gets rolled back
             FirmwareCheck::expectNewFirmware();
             showMessage(UPDATER_SUCCESS);

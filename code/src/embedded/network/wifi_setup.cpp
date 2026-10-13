@@ -6,10 +6,10 @@
 
 #include <string>
 
-#include "display.h"
 #include "interface.h"
 #include "settings.h"
 #include "data/localization.h"
+#include "embedded/blocking_screens.h"
 #include "embedded/network/captive_dns.h"
 #include "embedded/network/firmware_check.h"
 #include "embedded/network/setup_portal.h"
@@ -32,18 +32,13 @@ namespace WifiSetup
 
     static void showJoin(const char *payload, const char *name)
     {
-        Canvas &canvas = Display::canvas();
-        canvas.clear();
-        WifiScreens::join(canvas, payload, name, SetupNetwork::PASSWORD);
-        canvas.flush();
+        BlockingScreens::show(
+            [&](Canvas &canvas) { WifiScreens::join(canvas, payload, name, SetupNetwork::PASSWORD); });
     }
 
     static void showStatus(const char *text)
     {
-        Canvas &canvas = Display::canvas();
-        canvas.clear();
-        WifiScreens::status(canvas, text);
-        canvas.flush();
+        BlockingScreens::show([text](Canvas &canvas) { WifiScreens::status(canvas, text); });
     }
 
     static const char *failureText(WifiStatus status)
@@ -57,17 +52,6 @@ namespace WifiSetup
         default:
             return WIFI_FAILED;
         }
-    }
-
-    /** A press still held, e.g. from entering the updater at boot, must not cancel. */
-    static void waitForRelease()
-    {
-        while (Interface::isEncoderPressed())
-        {
-            Interface::update();
-            delay(10);
-        }
-        Interface::discardClicks();
     }
 
     static void close()
@@ -86,6 +70,9 @@ namespace WifiSetup
         SetupNetwork::name(mac, name, sizeof(name));
         SetupNetwork::qrPayload(name, payload, sizeof(payload));
 
+        // the check for updates may be online meanwhile, it keeps its connection until a network is tried
+        WifiStation::Radio radio;
+
         SetupState state;
         if (!WifiStation::begin() || !WifiStation::startAccessPoint(name, SetupNetwork::PASSWORD) ||
             !CaptiveDns::start(WifiStation::accessPointIp()) || !SetupPortal::start(state))
@@ -96,7 +83,8 @@ namespace WifiSetup
             return WifiStatus::Failed;
         }
         ESP_LOGI(TAG, "Setup network %s is open", name);
-        waitForRelease();
+        // a press still held, e.g. from entering the updater at boot, must not cancel
+        BlockingScreens::waitForRelease();
         showJoin(payload, name);
 
         WifiStatus result = WifiStatus::Idle;
@@ -142,28 +130,11 @@ namespace WifiSetup
         {
             return;
         }
-        waitForRelease();
-        int index = 0;
-        for (;;)
-        {
-            Interface::update();
-            index += Interface::getEncoderTurns();
-            index = index < 0 ? 0 : index > 1 ? 1 : index;
-            Canvas &canvas = Display::canvas();
-            canvas.clear();
-            WifiScreens::ask(canvas, index);
-            canvas.flush();
-            if (Interface::getEncoderClick() == ClickType::SINGLE)
-            {
-                break;
-            }
-            delay(10);
-        }
+        const uint8_t index = BlockingScreens::choose(2, WifiScreens::ask);
         Settings::setFlag(Settings::WIFI_ASKED_KEY, true);
         if (index == 0)
         {
             run();
-            WifiStation::stop();
         }
     }
 }

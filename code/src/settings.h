@@ -4,6 +4,7 @@
 #include <vector>
 #include <cmath>
 #include <array>
+#include <stddef.h>
 #include <stdint.h>
 
 namespace Settings
@@ -93,6 +94,16 @@ namespace Settings
     constexpr const char *WIFI_ASKED_KEY = "wifiAsked";
     constexpr const char *ROLLBACK_SHOWN_KEY = "rollbackShown";
 
+    /** NVS keys of the automatic updates, at most 15 characters. Never rename them. */
+    // starts since the last successful check, a byte
+    constexpr const char *UPDATE_STARTS_KEY = "updStarts";
+    // the newer version the last check found, empty if none
+    constexpr const char *UPDATE_FOUND_KEY = "updVersion";
+    // the version an automatic update installed, until it works or is rolled back
+    constexpr const char *UPDATE_INSTALLING_KEY = "updInstalling";
+    // the version that was rolled back, never offered again
+    constexpr const char *UPDATE_ROLLED_BACK_KEY = "updRolledBack";
+
     /**
      * Opens the settings, migrates the values of older firmware and reads the
      * calibration. Returns nullptr if all went well, otherwise the name of the
@@ -131,6 +142,19 @@ namespace Settings
     bool getFlag(const char *key);
     /** Sets or clears the flag right away. Device only. */
     void setFlag(const char *key, bool value);
+
+    /** The stored number, def if none is stored or the settings can't be read. Device only. */
+    uint8_t getByte(const char *key, uint8_t def);
+    /** Stores the number right away. Device only. */
+    void setByte(const char *key, uint8_t value);
+
+    /**
+     * The stored text into out, empty if none is stored, it doesn't fit into
+     * size, or the settings can't be read. Device only.
+     */
+    void getText(const char *key, char *out, size_t size);
+    /** Stores the text right away. Device only. */
+    void setText(const char *key, const char *value);
 
     /** The names of all settings, in the menu's order. */
     static inline const char** getOptions()

@@ -24,8 +24,9 @@
 #include "ui/updater_screens.h"
 #include "firmware_probation.h"
 #include "embedded/network/firmware_check.h"
+#include "embedded/blocking_screens.h"
+#include "embedded/network/auto_update.h"
 #include "embedded/network/wifi_setup.h"
-#include "embedded/network/wifi_station.h"
 
 #define AVERAGING_LOOPS 100
 
@@ -45,43 +46,21 @@ void saveScale(float scale)
   weightPipeline.setGramsPerCount(scale);
 }
 
-// Waits for a click on a message shown at start.
-void waitForClick()
-{
-  // a press still held or queued from start-up must not dismiss it unseen
-  while (Interface::isEncoderPressed())
-  {
-    Interface::update();
-    delay(10);
-  }
-  Interface::discardClicks();
-
-  while (Interface::getEncoderClick() != ClickType::SINGLE)
-  {
-    delay(10);
-    Interface::update();
-  }
-}
-
 // Without its calibration the scale would weigh wrong without telling, so
 // show why and wait for a click before going on with calibration 1.0.
 void showSettingsError(const char *error)
 {
-  Canvas &canvas = Display::canvas();
-  canvas.clear();
-  ErrorScreens::settingsUnreadable(canvas, error);
-  canvas.flush();
-  waitForClick();
+  BlockingScreens::show([error](Canvas &canvas) { ErrorScreens::settingsUnreadable(canvas, error); });
+  // a press still held or queued from start-up must not dismiss it unseen
+  BlockingScreens::waitForClick();
 }
 
 // An update didn't start properly and the firmware before is back.
 void showRolledBack()
 {
-  Canvas &canvas = Display::canvas();
-  canvas.clear();
-  UpdaterScreens::text(canvas, UPDATER_ROLLED_BACK);
-  canvas.flush();
-  waitForClick();
+  BlockingScreens::show([](Canvas &canvas) { UpdaterScreens::text(canvas, UPDATER_ROLLED_BACK); });
+  // a press still held or queued from start-up must not dismiss it unseen
+  BlockingScreens::waitForClick();
 }
 
 ModeScale modeDefault(weightPipeline, stopwatch);
@@ -90,8 +69,6 @@ ModeCalibration modeCalibration(weightPipeline, stopwatch, saveScale);
 void runWifiSetup()
 {
   WifiSetup::run();
-  // only the updater needs the connection, and Wi-Fi costs battery
-  WifiStation::stop();
 }
 
 const SettingsAction settingsActions[] = {{SETTINGS_WIFI, runWifiSetup}};
@@ -165,10 +142,15 @@ void setup()
   }
 
   //////// ROLLBACK ////////
-  if (FirmwareCheck::takeRolledBack())
+  const bool rolledBack = FirmwareCheck::takeRolledBack();
+  if (rolledBack)
   {
       showRolledBack();
   }
+
+  //////// AUTOMATIC UPDATES ////////
+  // before anything is on the platform; "Yes" installs and restarts
+  AutoUpdate::askAtStart(rolledBack);
 
   //////// WI-FI ////////
   WifiSetup::askOnce();
@@ -177,6 +159,10 @@ void setup()
   // the button task runs since Interface::begin(), a press during start-up must not act in the first mode
   Interface::discardClicks();
   modeManager.begin();
+
+  //////// AUTOMATIC UPDATES ////////
+  // in the background, while the modes run
+  AutoUpdate::begin();
 
   ESP_LOGI(TAG, "Setup finished!");
 }
@@ -196,6 +182,8 @@ void loop()
   if (probation.update(millis(), weightPipeline.newReadings().size() > 0))
   {
     FirmwareCheck::markValid();
+    // an automatic update that got this far isn't rolled back any more
+    AutoUpdate::clearInstalling();
   }
   // locked from the mode's state of the last loop, like holdZero()
   liftTare.update(modeManager.isMeasuring());

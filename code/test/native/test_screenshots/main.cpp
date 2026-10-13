@@ -450,6 +450,14 @@ void test_updater(void)
     canvas.clear();
     UpdaterScreens::text(canvas, UPDATER_ROLLED_BACK);
     check("updater_rolled_back");
+
+    // the widest version there will be for a while
+    for (uint8_t index = 0; index < 2; index++)
+    {
+        canvas.clear();
+        UpdaterScreens::ask(canvas, "v10.10.10", index);
+        check(index == 0 ? "updater_ask_yes" : "updater_ask_later");
+    }
 }
 
 void test_wifi(void)
