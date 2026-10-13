@@ -10,6 +10,10 @@ Serve a firmware build, so the scale can update itself from this computer:
 The file is re-read on every request, so rebuilding while the server runs is
 fine. If the scale already runs exactly this build, it gets "no update".
 
+Pose as a GitHub release of a version, so the scale's automatic updates find
+it (build the scale with RELEASES_URL, see the README):
+    python scripts/dev_server.py .pio/build/esp32dev/firmware.bin --release v9.9.9 --port 8000
+
 Receive recordings of the scale's load cell, see the README:
     pio run -t record
     python scripts/dev_server.py --record test/recordings
@@ -28,6 +32,9 @@ from datetime import datetime
 
 SERVICE_TYPE = "_coffeescale-fw._tcp.local."
 FIRMWARE_PATH = "/firmware.bin"
+# like GitHub's: the latest release redirects to the release's own download
+LATEST_RELEASE_PREFIX = "/releases/latest/download/"
+RELEASE_PREFIX = "/releases/download/"
 RECORD_PATH = "/samples"
 RECORDING_FIRST_LINE = "# coffee-scale recording\n"
 COLUMNS_LINE = "ms,event,value"
@@ -101,7 +108,7 @@ def save_recording(record_dir, data):
             name = f"{stem}_{number}.csv"
 
 
-def make_handler(firmware_file=None, record_dir=None):
+def make_handler(firmware_file=None, record_dir=None, release=None):
     class DevServerHandler(http.server.BaseHTTPRequestHandler):
         timeout = UPLOAD_TIMEOUT_S
 
@@ -142,10 +149,27 @@ def make_handler(firmware_file=None, record_dir=None):
             self.end_headers()
 
         def serve(self, send_body):
-            if firmware_file is None or self.path.split("?")[0] != FIRMWARE_PATH:
+            path = self.path.split("?")[0]
+            if firmware_file is not None and release is not None:
+                if path.startswith(LATEST_RELEASE_PREFIX):
+                    name = path[len(LATEST_RELEASE_PREFIX):]
+                    print(f"{self.client_address[0]} asks for the latest release, it is {release}")
+                    self.send_response(302)
+                    self.send_header("Location", f"{RELEASE_PREFIX}firmware-{release}/{name}")
+                    self.send_header("Content-Length", "0")
+                    self.end_headers()
+                    return
+                if path.startswith(f"{RELEASE_PREFIX}firmware-{release}/"):
+                    # GitHub has no "no update" answer
+                    self.send_firmware(send_body, not_modified=False)
+                    return
+            if firmware_file is None or path != FIRMWARE_PATH:
                 self.send_error(404)
                 return
+            self.send_firmware(send_body, not_modified=True)
 
+        def send_firmware(self, send_body, not_modified):
+            """The firmware, or 304 if not_modified and the scale runs exactly this build."""
             try:
                 with open(firmware_file, "rb") as f:
                     data = f.read()
@@ -155,7 +179,7 @@ def make_handler(firmware_file=None, record_dir=None):
 
             md5 = hashlib.md5(data).hexdigest()
             running_md5 = self.headers.get("x-ESP32-sketch-md5", "")
-            if running_md5 == md5:
+            if not_modified and running_md5 == md5:
                 print(f"{self.client_address[0]} already runs this build, no update")
                 self.send_response(304)
                 self.end_headers()
@@ -187,12 +211,19 @@ def main():
     mode.add_argument("firmware", nargs="?", help="path to firmware.bin, to serve it")
     mode.add_argument("--record", metavar="DIR", help="receive recordings and save them in DIR")
     parser.add_argument("--port", type=int, default=0, help="HTTP port (default: any free port)")
+    parser.add_argument(
+        "--release",
+        metavar="VERSION",
+        help="also pose as the GitHub release VERSION, e.g. v9.9.9, for automatic updates (use with --port)",
+    )
     args = parser.parse_args()
+    if args.release and args.record:
+        parser.error("--release serves a firmware, it doesn't go with --record")
     sys.stdout.reconfigure(line_buffering=True)  # show output when piped, e.g. by pio
 
     zeroconf = import_zeroconf()
 
-    handler = make_handler(firmware_file=args.firmware, record_dir=args.record)
+    handler = make_handler(firmware_file=args.firmware, record_dir=args.record, release=args.release)
     server = http.server.ThreadingHTTPServer(("0.0.0.0", args.port), handler)
     port = server.server_address[1]
 
@@ -222,6 +253,8 @@ def main():
     else:
         print(f"Serving {args.firmware}")
         print(f"  at http://{addresses[0]}:{port}{FIRMWARE_PATH}")
+        if args.release:
+            print(f"  as release {args.release}: build the scale with RELEASES_URL=http://{addresses[0]}:{port}/releases")
     print("On the scale: hold the button while switching it on, then long-press on the language screen.")
     print("Press Ctrl+C to stop.")
     try:

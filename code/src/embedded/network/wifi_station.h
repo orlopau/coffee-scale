@@ -19,10 +19,16 @@ namespace WifiStation
 {
     /** Starts the network stack and the Wi-Fi driver, once. False, and logged, if that fails. */
     bool begin();
+    /**
+     * Shuts the Wi-Fi driver down again to free its memory, if nobody keeps
+     * Wi-Fi on; begin() starts it again. Call from the loop's task.
+     */
+    void end();
     bool hasSavedNetwork();
-    /** Connects to the saved network, for up to timeoutMs. */
-    WifiStatus connect(uint32_t timeoutMs);
-    /** Connects to ssid for up to timeoutMs, and saves it only if that worked. */
+    /**
+     * Connects to ssid for up to timeoutMs, and saves it only if that worked.
+     * Whoever was online through the station before loses that connection.
+     */
     WifiStatus tryNetwork(const char *ssid, const char *password, uint32_t timeoutMs);
     /** The networks in range, empty if scanning fails, e.g. while connecting. Takes about 2 s. */
     std::vector<SetupWeb::Network> scan();
@@ -32,8 +38,37 @@ namespace WifiStation
     void stopAccessPoint();
     /** The setup network's address, 4.3.2.1. */
     esp_ip4_addr_t accessPointIp();
-    /** Turns Wi-Fi off, to save the battery. The saved network stays. */
-    void stop();
+
+    /**
+     * Keeps Wi-Fi on while it lives; the last one to end turns it off to save
+     * the battery, the saved network stays. Whoever needs Wi-Fi holds one,
+     * e.g. the setup; nobody waits for another one.
+     */
+    class Radio
+    {
+    public:
+        Radio();
+        ~Radio();
+        Radio(const Radio &) = delete;
+        Radio &operator=(const Radio &) = delete;
+    };
+
+    /**
+     * Online through the saved network while it lives: shares the station's
+     * connection if it has one, otherwise connects, for up to timeoutMs. A
+     * second one while one connects waits for that attempt. Keeps Wi-Fi on
+     * like a Radio. Calls begin(), whose first call must be in the loop's task.
+     */
+    class Online
+    {
+    public:
+        explicit Online(uint32_t timeoutMs);
+        bool connected() const { return status == WifiStatus::Connected; }
+
+    private:
+        Radio radio;
+        WifiStatus status = WifiStatus::Failed;
+    };
 }
 
 #endif

@@ -52,6 +52,9 @@
 #define UPDATER_DEV_SEARCHING "Suche PC..."
 #define UPDATER_DEV_NOT_FOUND "Kein PC gefunden."
 #define UPDATER_ROLLED_BACK "Update gescheitert.\nVorherige Version\nwiederhergestellt."
+#define UPDATE_ASK_TITLE "Update auf %s?"
+#define UPDATE_ASK_YES "Ja"
+#define UPDATE_ASK_LATER "Später"
 
 #define WIFI_ASK_TITLE "WLAN einrichten?"
 #define WIFI_ASK_YES "Ja"
@@ -169,6 +172,9 @@
 #define UPDATER_DEV_SEARCHING "Searching PC..."
 #define UPDATER_DEV_NOT_FOUND "No PC found."
 #define UPDATER_ROLLED_BACK "Update failed.\nPrevious version\nrestored."
+#define UPDATE_ASK_TITLE "Update to %s?"
+#define UPDATE_ASK_YES "Yes"
+#define UPDATE_ASK_LATER "Later"
 
 #define WIFI_ASK_TITLE "Set up Wi-Fi?"
 #define WIFI_ASK_YES "Yes"

@@ -31,13 +31,20 @@ void test_keys_fit_nvs(void)
     assertKeyFitsNvs(Settings::CALIBRATION_KEY);
     assertKeyFitsNvs(Settings::WIFI_ASKED_KEY);
     assertKeyFitsNvs(Settings::ROLLBACK_SHOWN_KEY);
+    assertKeyFitsNvs(Settings::UPDATE_STARTS_KEY);
+    assertKeyFitsNvs(Settings::UPDATE_FOUND_KEY);
+    assertKeyFitsNvs(Settings::UPDATE_INSTALLING_KEY);
+    assertKeyFitsNvs(Settings::UPDATE_ROLLED_BACK_KEY);
 }
 
 // one namespace for both kinds
 void test_keys_unique(void)
 {
-    std::set<std::string> keys = {Settings::CALIBRATION_KEY, Settings::WIFI_ASKED_KEY, Settings::ROLLBACK_SHOWN_KEY};
-    TEST_ASSERT_EQUAL(3, keys.size());
+    std::set<std::string> keys = {Settings::CALIBRATION_KEY,       Settings::WIFI_ASKED_KEY,
+                                  Settings::ROLLBACK_SHOWN_KEY,    Settings::UPDATE_STARTS_KEY,
+                                  Settings::UPDATE_FOUND_KEY,      Settings::UPDATE_INSTALLING_KEY,
+                                  Settings::UPDATE_ROLLED_BACK_KEY};
+    TEST_ASSERT_EQUAL(7, keys.size());
     for (const auto &setting : Settings::floatSettings)
     {
         TEST_ASSERT_TRUE_MESSAGE(keys.insert(setting.key).second, setting.key);
