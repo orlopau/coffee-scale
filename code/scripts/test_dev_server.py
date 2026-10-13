@@ -186,5 +186,57 @@ class ServeModeTest(unittest.TestCase):
             os.remove(f.name)
 
 
+class ReleaseModeTest(unittest.TestCase):
+    """The dev server posing as a GitHub release, for automatic updates."""
+
+    def setUp(self):
+        with tempfile.NamedTemporaryFile(suffix=".bin", delete=False) as f:
+            f.write(b"firmware bytes")
+        self.firmware = f.name
+        self.server = Server(firmware_file=self.firmware, release="v9.9.9")
+
+    def tearDown(self):
+        self.server.close()
+        os.remove(self.firmware)
+
+    def test_latest_redirects_to_the_release(self):
+        for method in ("HEAD", "GET"):
+            response, data = self.server.request(method, "/releases/latest/download/firmware_de.bin")
+            self.assertEqual(302, response.status, method)
+            self.assertEqual("/releases/download/firmware-v9.9.9/firmware_de.bin", response.getheader("Location"))
+            self.assertEqual(b"", data)
+
+    def test_release_serves_the_firmware_like_github(self):
+        # GitHub ignores the running firmware's MD5, so does the release
+        md5 = hashlib.md5(b"firmware bytes").hexdigest()
+        response, data = self.server.request(
+            "GET", "/releases/download/firmware-v9.9.9/firmware_en.bin", headers={"x-ESP32-sketch-md5": md5}
+        )
+        self.assertEqual(200, response.status)
+        self.assertEqual(b"firmware bytes", data)
+
+    def test_other_versions_not_found(self):
+        response, _ = self.server.request("GET", "/releases/download/firmware-v1.0.0/firmware_en.bin")
+        self.assertEqual(404, response.status)
+
+    def test_dev_updates_still_work(self):
+        response, data = self.server.request("GET", "/firmware.bin")
+        self.assertEqual(200, response.status)
+        self.assertEqual(b"firmware bytes", data)
+
+
+class NoReleaseTest(unittest.TestCase):
+    def test_no_release_without_the_option(self):
+        with tempfile.NamedTemporaryFile(suffix=".bin", delete=False) as f:
+            f.write(b"firmware bytes")
+        server = Server(firmware_file=f.name)
+        try:
+            response, _ = server.request("GET", "/releases/latest/download/firmware_en.bin")
+            self.assertEqual(404, response.status)
+        finally:
+            server.close()
+            os.remove(f.name)
+
+
 if __name__ == "__main__":
     unittest.main()

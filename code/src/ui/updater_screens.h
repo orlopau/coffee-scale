@@ -15,4 +15,6 @@ namespace UpdaterScreens
     void text(Canvas &canvas, const char *text);
     /** A choice between options, e.g. of the firmware language. */
     void switcher(Canvas &canvas, const char *title, uint8_t index, uint8_t count, const char *const options[]);
+    /** The question whether to install a newer version, index 0 is "Yes", 1 "Later". */
+    void ask(Canvas &canvas, const char *version, uint8_t index);
 }

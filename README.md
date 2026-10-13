@@ -29,6 +29,11 @@ Possible adjustments include:
 - Changing the brew ratio
 - Other adjustments based on the chosen recipe
 
+## Updates
+Once Wi-Fi is set up, the scale looks for a new firmware by itself every few starts, in the background while you weigh. When it finds one, it asks "Update to v1.10?" the next time you switch it on. **Yes** installs it and restarts, **Later** asks again next time. If a new firmware doesn't start properly, the scale goes back to the one before, says so, and doesn't offer that version again.
+
+To update by hand, hold the button while switching on the scale and choose a language.
+
 ## Development: Updating From Your Computer
 During development, the scale can install a build straight from your computer over Wi-Fi, without USB and without a GitHub release.
 
@@ -37,6 +42,14 @@ During development, the scale can install a build straight from your computer ov
 3. On the language screen, **long-press** the button instead of clicking. The scale searches for your computer and installs the build.
 
 The server keeps running, so for the next build repeat steps 2 and 3 (`pio run -t serve` rebuilds when restarted). If the scale already runs the served build, it shows "No update available". Your computer and the scale must be on the same network, and the firewall must allow incoming connections for the server.
+
+## Development: Trying Automatic Updates
+The scale's automatic updates read GitHub's releases. To try them without publishing one, the dev server can pose as a release, and a build can claim to be an older version.
+
+- **Against GitHub:** build with an older version, e.g. `FIRMWARE_VERSION=v1.8.0 pio run -t upload`. The scale then sees the latest release as newer.
+- **Against your computer:** run `python scripts/dev_server.py .pio/build/esp32dev/firmware.bin --release v9.9.9 --port 8000` in `code/`. It prints the `RELEASES_URL` to build the scale with, e.g. `RELEASES_URL=http://192.168.1.20:8000/releases pio run -t upload`. Build the firmware to serve with the same `RELEASES_URL`, so it keeps asking your computer. The served build reports the last tag as its version, not `--release`, so after installing it the scale still finds v9.9.9 at every check; build it with `FIRMWARE_VERSION=v9.9.9` too to see the scale stay quiet once it's up to date.
+
+A check runs at the first start of a new firmware if Wi-Fi is set up, then every 5th start; the serial log (`AUTO_UPDATE`) says when.
 
 ## Development: Recording the Load Cell
 The scale can record the raw readings of its load cell, e.g. of taps or an espresso shot, and send them to your computer. The recordings are test data: native tests replay them with `RecordedScale` (`code/src/native/recorded_scale.h`).

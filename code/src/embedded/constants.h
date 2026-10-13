@@ -32,7 +32,22 @@
 #define PIN_UPDATE_FIRMWARE PIN_ENC_BTN
 
 // UPDATE
-#define UPDATE_URL "https://github.com/orlopau/coffee-scale/releases/latest/download/firmware%s.bin"
+// RELEASES_URL=http://<computer>:<port>/releases at build time points the scale at the dev server's release, see the README
+#ifndef RELEASES_URL
+#define RELEASES_URL "https://github.com/orlopau/coffee-scale/releases"
+#endif
+#define UPDATE_URL RELEASES_URL "/latest/download/firmware%s.bin"
+
+// the release's firmware in the language of this one
+#ifdef LANG_DE
+#define FIRMWARE_FILE "firmware_de.bin"
+#else
+#define FIRMWARE_FILE "firmware_en.bin"
+#endif
+// redirects to the latest release, whose version is in the redirect
+#define LATEST_RELEASE_URL RELEASES_URL "/latest/download/" FIRMWARE_FILE
+// one version's firmware, %s is the version
+#define RELEASE_URL RELEASES_URL "/download/firmware-%s/" FIRMWARE_FILE
 
 #ifndef FIRMWARE_VERSION
 #define FIRMWARE_VERSION "0.0.0"

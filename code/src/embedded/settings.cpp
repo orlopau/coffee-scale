@@ -4,7 +4,6 @@
 #include <stdint.h>
 #include <string.h>
 
-#include <memory>
 #include <vector>
 
 #include <esp_err.h>
@@ -12,7 +11,7 @@
 // logs of the migration would be left out
 #define LOG_LOCAL_LEVEL ESP_LOG_INFO
 #include <esp_log.h>
-#include <nvs_handle.hpp>
+#include <nvs.h>
 
 #include "settings.h"
 
@@ -30,16 +29,21 @@ namespace Settings
     static const size_t OLD_ADDR_CALIBRATION = 0;
     static const size_t OLD_ADDR_FLOAT_SETTINGS = 10;
 
-    // empty if the settings couldn't be opened: getters return defaults, setters do nothing
-    static std::unique_ptr<nvs::NVSHandle> handle;
+    // The C API, not nvs_handle.hpp: only the C functions take NVS's lock, and
+    // the settings are used from the automatic updates' task and by the Wi-Fi
+    // driver on the other core while the loop runs.
+    static nvs_handle_t handle;
+    // false if the settings couldn't be opened: getters return defaults, setters do nothing
+    static bool isOpen = false;
 
     static esp_err_t readFloat(const char *key, float &value)
     {
-        if (!handle)
+        if (!isOpen)
         {
             return ESP_ERR_NVS_INVALID_HANDLE;
         }
-        esp_err_t err = handle->get_blob(key, &value, sizeof(value));
+        size_t size = sizeof(value);
+        esp_err_t err = nvs_get_blob(handle, key, &value, &size);
         if (err != ESP_OK && err != ESP_ERR_NVS_NOT_FOUND)
         {
             ESP_LOGE(TAG, "Reading %s failed: %s", key, esp_err_to_name(err));
@@ -49,15 +53,15 @@ namespace Settings
 
     static esp_err_t writeFloat(const char *key, float value)
     {
-        if (!handle)
+        if (!isOpen)
         {
             ESP_LOGE(TAG, "Not saving %s, the settings aren't open", key);
             return ESP_ERR_NVS_INVALID_HANDLE;
         }
-        esp_err_t err = handle->set_blob(key, &value, sizeof(value));
+        esp_err_t err = nvs_set_blob(handle, key, &value, sizeof(value));
         if (err == ESP_OK)
         {
-            err = handle->commit();
+            err = nvs_commit(handle);
         }
         if (err != ESP_OK)
         {
@@ -80,18 +84,20 @@ namespace Settings
         std::vector<uint8_t> blob;
         {
             // read-only, so a scale without the old blob doesn't get the namespace created
-            std::unique_ptr<nvs::NVSHandle> old = nvs::open_nvs_handle(OLD_NAMESPACE, NVS_READONLY, &err);
-            if (!old)
+            nvs_handle_t old;
+            if (nvs_open(OLD_NAMESPACE, NVS_READONLY, &old) != ESP_OK)
             {
                 return ESP_OK;
             }
             size_t size = 0;
-            if (old->get_item_size(nvs::ItemType::BLOB, OLD_BLOB, size) != ESP_OK || size == 0)
+            if (nvs_get_blob(old, OLD_BLOB, nullptr, &size) != ESP_OK || size == 0)
             {
+                nvs_close(old);
                 return ESP_OK;
             }
             blob.resize(size);
-            err = old->get_blob(OLD_BLOB, blob.data(), size);
+            err = nvs_get_blob(old, OLD_BLOB, blob.data(), &size);
+            nvs_close(old);
             if (err != ESP_OK)
             {
                 ESP_LOGE(TAG, "Reading the old EEPROM failed: %s", esp_err_to_name(err));
@@ -129,14 +135,16 @@ namespace Settings
             }
         }
 
-        std::unique_ptr<nvs::NVSHandle> old = nvs::open_nvs_handle(OLD_NAMESPACE, NVS_READWRITE, &err);
-        if (old)
+        nvs_handle_t old;
+        err = nvs_open(OLD_NAMESPACE, NVS_READWRITE, &old);
+        if (err == ESP_OK)
         {
-            err = old->erase_item(OLD_BLOB);
+            err = nvs_erase_key(old, OLD_BLOB);
             if (err == ESP_OK)
             {
-                err = old->commit();
+                err = nvs_commit(old);
             }
+            nvs_close(old);
         }
         if (err != ESP_OK)
         {
@@ -152,9 +160,9 @@ namespace Settings
         // the runtime level is errors only, too
         esp_log_level_set(TAG, ESP_LOG_INFO);
 
-        esp_err_t err;
-        handle = nvs::open_nvs_handle(NAMESPACE, NVS_READWRITE, &err);
-        if (!handle)
+        esp_err_t err = nvs_open(NAMESPACE, NVS_READWRITE, &handle);
+        isOpen = err == ESP_OK;
+        if (!isOpen)
         {
             ESP_LOGE(TAG, "Opening the settings failed: %s", esp_err_to_name(err));
             return esp_err_to_name(err);
@@ -190,12 +198,12 @@ namespace Settings
 
     uint8_t getChoice(ChoiceSetting s)
     {
-        if (!handle)
+        if (!isOpen)
         {
             return s.def;
         }
         uint8_t index;
-        esp_err_t err = handle->get_item(s.key, index);
+        esp_err_t err = nvs_get_u8(handle, s.key, &index);
         if (err != ESP_OK)
         {
             if (err != ESP_ERR_NVS_NOT_FOUND)
@@ -207,23 +215,7 @@ namespace Settings
         return validChoice(s, index);
     }
 
-    void setChoice(ChoiceSetting s, uint8_t index)
-    {
-        if (!handle)
-        {
-            ESP_LOGE(TAG, "Not saving %s, the settings aren't open", s.key);
-            return;
-        }
-        esp_err_t err = handle->set_item(s.key, index);
-        if (err == ESP_OK)
-        {
-            err = handle->commit();
-        }
-        if (err != ESP_OK)
-        {
-            ESP_LOGE(TAG, "Saving %s failed: %s", s.key, esp_err_to_name(err));
-        }
-    }
+    void setChoice(ChoiceSetting s, uint8_t index) { setByte(s.key, index); }
 
     float getCalibration()
     {
@@ -239,12 +231,12 @@ namespace Settings
 
     bool getFlag(const char *key)
     {
-        if (!handle)
+        if (!isOpen)
         {
             return true;
         }
         uint8_t value;
-        esp_err_t err = handle->get_item(key, value);
+        esp_err_t err = nvs_get_u8(handle, key, &value);
         if (err == ESP_ERR_NVS_NOT_FOUND)
         {
             return false;
@@ -257,17 +249,78 @@ namespace Settings
         return value != 0;
     }
 
-    void setFlag(const char *key, bool value)
+    void setFlag(const char *key, bool value) { setByte(key, value ? 1 : 0); }
+
+    uint8_t getByte(const char *key, uint8_t def)
     {
-        if (!handle)
+        if (!isOpen)
+        {
+            return def;
+        }
+        uint8_t value;
+        esp_err_t err = nvs_get_u8(handle, key, &value);
+        if (err != ESP_OK)
+        {
+            if (err != ESP_ERR_NVS_NOT_FOUND)
+            {
+                ESP_LOGE(TAG, "Reading %s failed: %s", key, esp_err_to_name(err));
+            }
+            return def;
+        }
+        return value;
+    }
+
+    void setByte(const char *key, uint8_t value)
+    {
+        if (!isOpen)
         {
             ESP_LOGE(TAG, "Not saving %s, the settings aren't open", key);
             return;
         }
-        esp_err_t err = handle->set_item(key, (uint8_t)(value ? 1 : 0));
+        esp_err_t err = nvs_set_u8(handle, key, value);
         if (err == ESP_OK)
         {
-            err = handle->commit();
+            err = nvs_commit(handle);
+        }
+        if (err != ESP_OK)
+        {
+            ESP_LOGE(TAG, "Saving %s failed: %s", key, esp_err_to_name(err));
+        }
+    }
+
+    void getText(const char *key, char *out, size_t size)
+    {
+        if (size == 0)
+        {
+            return;
+        }
+        out[0] = '\0';
+        if (!isOpen)
+        {
+            return;
+        }
+        esp_err_t err = nvs_get_str(handle, key, out, &size);
+        if (err != ESP_OK)
+        {
+            out[0] = '\0';
+            if (err != ESP_ERR_NVS_NOT_FOUND)
+            {
+                ESP_LOGE(TAG, "Reading %s failed: %s", key, esp_err_to_name(err));
+            }
+        }
+    }
+
+    void setText(const char *key, const char *value)
+    {
+        if (!isOpen)
+        {
+            ESP_LOGE(TAG, "Not saving %s, the settings aren't open", key);
+            return;
+        }
+        esp_err_t err = nvs_set_str(handle, key, value);
+        if (err == ESP_OK)
+        {
+            err = nvs_commit(handle);
         }
         if (err != ESP_OK)
         {
