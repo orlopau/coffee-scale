@@ -188,6 +188,70 @@ void test_readings_from_before_the_tare_are_skipped(void)
     TEST_ASSERT_TRUE(stopwatch->isRunning());
 }
 
+// a detected shot: first drop 2.4 s ago, the rise readings since then, 10 g/s
+void test_start_shot_backdates_time_and_estimate(void)
+{
+    const unsigned long t = now();
+    sleep_for(2400);
+    modeEspresso->startShot(t, ShotStartSource::FirstDrop, t,
+                            {readingAt(t + 400, 4), readingAt(t + 1400, 14), readingAt(t + 2400, 24)});
+    TEST_ASSERT_TRUE(modeEspresso->isMeasuring());
+    TEST_ASSERT_UINT32_WITHIN(1, 2400, stopwatch->getTime());
+    TEST_ASSERT_FALSE(modeEspresso->isWaitingForEstimate());
+    // 36 g at 3.6 s
+    TEST_ASSERT_INT_WITHIN(5, 1200, modeEspresso->getRemainingTimeMs());
+    TEST_ASSERT_TRUE(ShotStartSource::FirstDrop == modeEspresso->getStartSource());
+    TEST_ASSERT_EQUAL(t, modeEspresso->getFirstDropMs());
+}
+
+void test_start_shot_does_not_tare(void)
+{
+    weightSource->weight = 5;
+    modeEspresso->startShot(now(), ShotStartSource::FirstDrop, now(), {});
+    TEST_ASSERT_EQUAL_FLOAT(5, weightSource->getWeight());
+}
+
+void test_start_shot_over_the_target_stops_right_away(void)
+{
+    const unsigned long t = now();
+    sleep_for(1000);
+    modeEspresso->startShot(t, ShotStartSource::FirstDrop, t, {readingAt(t + 1000, 40)});
+    TEST_ASSERT_FALSE(modeEspresso->isMeasuring());
+}
+
+// the loop that confirms a shot passes its readings to startShot(), then update() gets them again
+void test_readings_already_fed_are_skipped(void)
+{
+    const unsigned long t = now();
+    sleep_for(1500);
+    std::vector<Reading> rise = {readingAt(t + 500, 5), readingAt(t + 1000, 10), readingAt(t + 1500, 15)};
+    modeEspresso->startShot(t, ShotStartSource::FirstDrop, t, rise);
+    const int32_t remaining = modeEspresso->getRemainingTimeMs();
+    // a later reading on the same line, after the same ones again: only the new one may count
+    weightSource->readings = rise;
+    weightSource->readings.push_back(readingAt(t + 1500, 30));
+    modeEspresso->update();
+    TEST_ASSERT_EQUAL(remaining, modeEspresso->getRemainingTimeMs());
+}
+
+void test_click_start_has_source_click(void)
+{
+    Interface::encoderClick = ClickType::SINGLE;
+    modeEspresso->update();
+    TEST_ASSERT_TRUE(ShotStartSource::Click == modeEspresso->getStartSource());
+    TEST_ASSERT_EQUAL(0, modeEspresso->getFirstDropMs());
+}
+
+// e.g. a detected shot that wasn't one: going back must not leave the timer running
+void test_leaving_stops_the_shot(void)
+{
+    Interface::encoderClick = ClickType::SINGLE;
+    modeEspresso->update();
+    TEST_ASSERT_TRUE(modeEspresso->isMeasuring());
+    modeEspresso->leave();
+    TEST_ASSERT_FALSE(modeEspresso->isMeasuring());
+}
+
 int main(void)
 {
     UNITY_BEGIN();
@@ -202,5 +266,11 @@ int main(void)
     RUN_TEST(test_estimate_uses_the_time_of_each_reading);
     RUN_TEST(test_estimate_skips_readings_from_before_the_start);
     RUN_TEST(test_readings_from_before_the_tare_are_skipped);
+    RUN_TEST(test_start_shot_backdates_time_and_estimate);
+    RUN_TEST(test_start_shot_does_not_tare);
+    RUN_TEST(test_start_shot_over_the_target_stops_right_away);
+    RUN_TEST(test_readings_already_fed_are_skipped);
+    RUN_TEST(test_click_start_has_source_click);
+    RUN_TEST(test_leaving_stops_the_shot);
     UNITY_END();
 }

@@ -19,13 +19,21 @@ struct SettingsAction
 class ModeSettings : public Mode
 {
 public:
-    explicit ModeSettings(const SettingsAction *actions = nullptr, int actionCount = 0);
+    /** @param onLeave runs when the mode is left, so changed settings apply without a restart */
+    explicit ModeSettings(const SettingsAction *actions = nullptr, int actionCount = 0, void (*onLeave)() = nullptr);
     void update() override;
     void render(Canvas &canvas) override;
     void enter() {
         selected = 0;
         modifySetting = false;
     };
+    void leave() override
+    {
+        if (onLeave != nullptr)
+        {
+            onLeave();
+        }
+    }
     bool canSwitchMode();
     const char* getName();
 private:
@@ -50,6 +58,7 @@ private:
     int choice = 0;
     const SettingsAction *actions;
     int actionCount;
+    void (*onLeave)();
     /** The names of the settings, then of the actions. */
     std::vector<const char *> options;
 };

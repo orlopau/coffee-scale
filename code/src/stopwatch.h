@@ -4,6 +4,9 @@ class Stopwatch
 {
     public:
         void start();
+        /** Starts running as if started at startMs, a now() time in the past. */
+        void startAt(unsigned long startMs);
+        /** Does nothing if it isn't running. */
         void stop();
         void toggle();
         void reset();

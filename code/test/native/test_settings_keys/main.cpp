@@ -6,6 +6,8 @@
 #include "unity.h"
 #include "settings.h"
 
+#include <math.h>
+
 void setUp(void) {}
 
 void tearDown(void) {}
@@ -93,6 +95,37 @@ void test_choice_out_of_range_is_the_default(void)
     TEST_ASSERT_EQUAL(3, Settings::validChoice(lift, 3));
 }
 
+void test_typical_shot_time_defaults_outside_its_range(void)
+{
+    Settings::setFloat(Settings::floatSettings[Settings::SHOT_TIME], 0);
+    TEST_ASSERT_EQUAL_FLOAT(30, Settings::typicalShotSeconds());
+    Settings::setFloat(Settings::floatSettings[Settings::SHOT_TIME], 61);
+    TEST_ASSERT_EQUAL_FLOAT(30, Settings::typicalShotSeconds());
+    Settings::setFloat(Settings::floatSettings[Settings::SHOT_TIME], NAN);
+    TEST_ASSERT_EQUAL_FLOAT(30, Settings::typicalShotSeconds());
+    Settings::setFloat(Settings::floatSettings[Settings::SHOT_TIME], 15);
+    TEST_ASSERT_EQUAL_FLOAT(15, Settings::typicalShotSeconds());
+}
+
+void test_shot_offset_is_clamped(void)
+{
+    Settings::setFloat(Settings::floatSettings[Settings::SHOT_OFFSET], -2);
+    TEST_ASSERT_EQUAL(0, Settings::shotOffsetMs());
+    Settings::setFloat(Settings::floatSettings[Settings::SHOT_OFFSET], NAN);
+    TEST_ASSERT_EQUAL(0, Settings::shotOffsetMs());
+    Settings::setFloat(Settings::floatSettings[Settings::SHOT_OFFSET], 4.5f);
+    TEST_ASSERT_EQUAL(4500, Settings::shotOffsetMs());
+    Settings::setFloat(Settings::floatSettings[Settings::SHOT_OFFSET], 99);
+    TEST_ASSERT_EQUAL(10000, Settings::shotOffsetMs());
+}
+
+void test_auto_switch_is_on_by_default(void)
+{
+    TEST_ASSERT_TRUE(Settings::shotAutoSwitch());
+    Settings::setChoice(Settings::choiceSettings[Settings::SHOT_AUTO], 0);
+    TEST_ASSERT_FALSE(Settings::shotAutoSwitch());
+}
+
 int main(void)
 {
     UNITY_BEGIN();
@@ -101,5 +134,8 @@ int main(void)
     RUN_TEST(test_ids_match_positions);
     RUN_TEST(test_choices_have_labels_and_a_valid_default);
     RUN_TEST(test_choice_out_of_range_is_the_default);
+    RUN_TEST(test_typical_shot_time_defaults_outside_its_range);
+    RUN_TEST(test_shot_offset_is_clamped);
+    RUN_TEST(test_auto_switch_is_on_by_default);
     UNITY_END();
 }

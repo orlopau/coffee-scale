@@ -362,8 +362,8 @@ void test_settings(void)
     turn(settings, 9);
     show("settings_last", settings);
 
-    // the last float setting, zero tracking, before lift-to-tare and Wi-Fi
-    turn(settings, -2);
+    // the last float setting, the typical shot time, before the two choices and Wi-Fi
+    turn(settings, -3);
     click(settings);
     for (int ticks : {0, 7, -3})
     {
@@ -373,9 +373,9 @@ void test_settings(void)
         render("settings_value_" + std::string(ticks == 0 ? "unchanged" : ticks > 0 ? "up" : "down"), settings);
     }
 
-    // lift-to-tare, the last setting, with its levels
+    // auto espresso, the last setting, with its levels
     click(settings, ClickType::LONG);
-    turn(settings, 1);
+    turn(settings, 2);
     click(settings);
     show("settings_choice", settings);
 }

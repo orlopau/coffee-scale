@@ -1,14 +1,21 @@
 #include "stopwatch.h"
 #include "millis.h"
 
-void Stopwatch::start()
+void Stopwatch::start() { startAt(now()); }
+
+void Stopwatch::startAt(unsigned long startMs)
 {
-    startTime = now();
+    startTime = startMs;
     running = true;
 }
 
 void Stopwatch::stop()
 {
+    // stopped already, the time stays
+    if (!running)
+    {
+        return;
+    }
     stopTime = now();
     running = false;
 }
