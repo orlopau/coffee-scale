@@ -18,6 +18,8 @@ Cleanup and tooling before new features.
   `pio run -e emulator -t exec` shows the scale in a desktop window; arrow keys and Enter replace the rotary encoder. Simulated load cell at 10 Hz, virtual clock, and every screen is compared against a PNG in CI.
 - [x] **Raw data recorder** _(Firmware, Tooling)_
   The scale records readings and uploads them to the dev server; native tests replay them. Next: record real taps, shots and cups.
+- [ ] **Record without the laptop** _(Firmware, Tooling)_
+  The recorder saves to flash with a long-press, with or without the laptop; a long-press while idle sends them all to `pio run -t record`.
 - [x] **Fix the inputs** _(Firmware)_
   The ESP32's pulse counter counts the rotary encoder instead of an interrupt; clicks go into a queue as events. Fixes lost or doubled clicks and possible crashes while writing to flash.
 - [x] **Load cell task and weight pipeline** _(Firmware)_

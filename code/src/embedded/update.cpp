@@ -115,7 +115,7 @@ namespace Updater
             if (click == ClickType::LONG)
             {
                 Interface::consumeEncoderClick();
-                updateFromDevServer(); // only returns if no server was found
+                updateFromDevServer(); // records or installs, then restarts or waits for the switch-off
             }
 
             selectedQualifier += Interface::getEncoderTurns();
@@ -181,15 +181,14 @@ namespace Updater
         DevServer server;
         if (!findDevServer(server))
         {
-            ESP_LOGI(TAG, "No dev firmware server found");
-            showMessage(UPDATER_DEV_NOT_FOUND);
-            delay(2000);
-            return;
+            ESP_LOGI(TAG, "No dev firmware server found, recording without one");
+            Recording::run(*loadCellSamples, nullptr, gramsPerCount);
         }
 
         if (server.recordPath.length() > 0)
         {
-            Recording::run(*loadCellSamples, server.ip, server.port, server.recordPath.c_str(), gramsPerCount);
+            Recording::Server recordServer{server.ip, server.port, server.recordPath.c_str()};
+            Recording::run(*loadCellSamples, &recordServer, gramsPerCount);
         }
 
         char url[128];

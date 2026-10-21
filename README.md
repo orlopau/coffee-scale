@@ -39,7 +39,7 @@ During development, the scale can install a build straight from your computer ov
 
 1. In `code/`, run `pio run -t serve`. This builds the firmware and serves it on your network. It is found by the scale via mDNS, so your computer's IP does not matter. The first run installs the Python package `zeroconf`.
 2. Hold the button while switching on the scale to open the updater. It connects to the Wi-Fi saved in the updater.
-3. On the language screen, **long-press** the button instead of clicking. The scale searches for your computer and installs the build.
+3. On the language screen, **long-press** the button instead of clicking. The scale searches for your computer and installs the build. (If it finds no server, it opens the recorder, see below.)
 
 The server keeps running, so for the next build repeat steps 2 and 3 (`pio run -t serve` rebuilds when restarted). If the scale already runs the served build, it shows "No update available". Your computer and the scale must be on the same network, and the firewall must allow incoming connections for the server.
 
@@ -52,13 +52,14 @@ The scale's automatic updates read GitHub's releases. To try them without publis
 A check runs at the first start of a new firmware if Wi-Fi is set up, then every 5th start; the serial log (`AUTO_UPDATE`) says when.
 
 ## Development: Recording the Load Cell
-The scale can record the raw readings of its load cell, e.g. of taps or an espresso shot, and send them to your computer. The recordings are test data: native tests replay them with `RecordedScale` (`code/src/native/recorded_scale.h`).
+The scale can record the raw readings of its load cell, e.g. of taps or an espresso shot, and save them in its flash. The recordings are test data: native tests replay them with `RecordedScale` (`code/src/native/recorded_scale.h`). You don't need your computer while recording.
 
 1. Install a build with the recorder on the scale, see above.
-2. In `code/`, run `pio run -t record`. It does not build anything, it waits for recordings. Only one of `serve` and `record` can run at a time.
-3. Open the updater and long-press on the language screen, as for an update. The scale finds the recording server and waits.
+2. Open the updater and long-press on the language screen, as for an update. If no server is found, the scale opens the recorder by itself. It shows how many recordings are saved, and "No server".
 
-**Click** to start a recording. While recording, the scale shows the weight, the recording time, the time left and the number of markers. **Click** again to set a marker, e.g. when the pump starts. **Turn** the knob to tare the shown weight, e.g. after putting the cup on; while recording, the tare is saved in the recording too. **Long-press** to send the recording to your computer; the scale then waits for the click that starts the next one. A recording takes at most 5 minutes, then the scale waits for the long-press. If sending fails, the recording is kept and the next long-press tries again. A recording that wasn't sent is lost when the scale is switched off.
+**Click** to start a recording. While recording, the scale shows the weight, the recording time, the time left and the number of markers. **Click** again to set a marker, e.g. when the pump starts. **Turn** the knob to tare the shown weight, e.g. after putting the cup on; while recording, the tare is saved in the recording too. **Long-press** to save the recording in the scale's flash; the scale then waits for the click that starts the next one. A recording takes at most 5 minutes, then the scale waits for the long-press. About 50 recordings fit. If saving fails, the recording is kept and the next long-press tries again. A recording that wasn't saved is lost when the scale is switched off.
+
+To get the recordings to your computer, run `pio run -t record` in `code/`. It does not build anything, it waits for recordings. Only one of `serve` and `record` can run at a time. Open the recorder as above; the scale now finds the server and no longer says "No server". **Long-press** while idle to send all saved recordings, oldest first. Each one is deleted from the scale after it arrived, so if sending fails, the rest stays and the next long-press tries again.
 
 The computer saves each recording as `code/test/recordings/<date>_<time>.csv`. Give the useful ones a name that says what they show, commit them, and delete the rest. A recording looks like this, with `ms` counted from its start on the scale's clock:
 

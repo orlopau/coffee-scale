@@ -2,14 +2,20 @@
 
 using Status = RecorderScreens::Status;
 
-RecordingSession::RecordingSession(Recorder &recorder, float gramsPerCount)
-    : rec(recorder), gramsPerCount(gramsPerCount) {}
+RecordingSession::RecordingSession(Recorder &recorder, float gramsPerCount, bool hasServer)
+    : rec(recorder), gramsPerCount(gramsPerCount), hasServer(hasServer) {}
 
-void RecordingSession::begin()
+void RecordingSession::begin(size_t savedCount, bool storageReady)
 {
+    saved = savedCount;
     if (!rec.isAllocated())
     {
         status = Status::NoMemory;
+        return;
+    }
+    if (!storageReady)
+    {
+        status = Status::NoStorage;
         return;
     }
     becomeIdle();
@@ -47,7 +53,7 @@ void RecordingSession::sample(unsigned long ms, long raw)
 
 RecordingSession::Click RecordingSession::click(unsigned long ms)
 {
-    if (status == Status::Idle)
+    if (status == Status::Idle || status == Status::SendFailed)
     {
         startRecording(ms);
         return Click::Started;
@@ -63,7 +69,7 @@ RecordingSession::Click RecordingSession::click(unsigned long ms)
 
 void RecordingSession::tare(unsigned long ms)
 {
-    if (status == Status::NoMemory)
+    if (status == Status::NoMemory || status == Status::NoStorage)
     {
         return;
     }
@@ -85,17 +91,46 @@ void RecordingSession::checkFull()
     }
 }
 
-bool RecordingSession::longPress()
+RecordingSession::Action RecordingSession::longPress()
 {
-    if (status == Status::Recording || status == Status::Full || status == Status::UploadFailed)
+    if (status == Status::Recording || status == Status::Full || status == Status::SaveFailed)
     {
-        status = Status::Uploading;
-        return true;
+        status = Status::Saving;
+        return Action::Save;
     }
-    return false;
+    if ((status == Status::Idle || status == Status::SendFailed) && hasServer && saved > 0)
+    {
+        status = Status::Sending;
+        sendingTotal = saved;
+        sendingIndex = 1;
+        return Action::Send;
+    }
+    return Action::None;
 }
 
-void RecordingSession::uploadFinished(bool ok)
+void RecordingSession::saveFinished(bool ok)
+{
+    if (ok)
+    {
+        saved++;
+        becomeIdle();
+    }
+    else
+    {
+        status = Status::SaveFailed;
+    }
+}
+
+void RecordingSession::sent()
+{
+    if (saved > 0)
+    {
+        saved--;
+    }
+    sendingIndex++;
+}
+
+void RecordingSession::sendFinished(bool ok)
 {
     if (ok)
     {
@@ -103,12 +138,13 @@ void RecordingSession::uploadFinished(bool ok)
     }
     else
     {
-        status = Status::UploadFailed;
+        status = Status::SendFailed;
     }
 }
 
 RecorderScreens::State RecordingSession::state() const
 {
     float grams = tared ? (lastRaw - tareRaw) * gramsPerCount : 0;
-    return {status, grams, rec.durationMs(), rec.remainingMs(), static_cast<unsigned int>(rec.clickCount())};
+    return {status, grams, rec.durationMs(), rec.remainingMs(), static_cast<unsigned int>(rec.clickCount()),
+            saved, hasServer, sendingIndex, sendingTotal};
 }
