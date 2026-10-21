@@ -31,9 +31,10 @@ void RecordingSession::startRecording(unsigned long ms)
 void RecordingSession::sample(unsigned long ms, long raw)
 {
     lastRaw = raw;
+    hasSample = true;
     if (!tared && (status == Status::Recording || status == Status::Idle))
     {
-        tare = raw;
+        tareRaw = raw;
         tared = true;
     }
     if (status != Status::Recording)
@@ -58,6 +59,22 @@ RecordingSession::Click RecordingSession::click(unsigned long ms)
     rec.addClick(ms);
     checkFull();
     return Click::Marked;
+}
+
+void RecordingSession::tare(unsigned long ms)
+{
+    if (status == Status::NoMemory)
+    {
+        return;
+    }
+    // before any sample, the next one is the tare
+    tared = hasSample;
+    tareRaw = lastRaw;
+    if (status == Status::Recording)
+    {
+        rec.addTare(ms);
+        checkFull();
+    }
 }
 
 void RecordingSession::checkFull()
@@ -92,6 +109,6 @@ void RecordingSession::uploadFinished(bool ok)
 
 RecorderScreens::State RecordingSession::state() const
 {
-    float grams = tared ? (lastRaw - tare) * gramsPerCount : 0;
+    float grams = tared ? (lastRaw - tareRaw) * gramsPerCount : 0;
     return {status, grams, rec.durationMs(), rec.remainingMs(), static_cast<unsigned int>(rec.clickCount())};
 }

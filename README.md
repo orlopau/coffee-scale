@@ -58,7 +58,7 @@ The scale can record the raw readings of its load cell, e.g. of taps or an espre
 2. In `code/`, run `pio run -t record`. It does not build anything, it waits for recordings. Only one of `serve` and `record` can run at a time.
 3. Open the updater and long-press on the language screen, as for an update. The scale finds the recording server and waits.
 
-**Click** to start a recording. While recording, the scale shows the weight, the recording time, the time left and the number of markers. **Click** again to set a marker, e.g. when the pump starts. **Long-press** to send the recording to your computer; the scale then waits for the click that starts the next one. A recording takes at most 5 minutes, then the scale waits for the long-press. If sending fails, the recording is kept and the next long-press tries again. A recording that wasn't sent is lost when the scale is switched off.
+**Click** to start a recording. While recording, the scale shows the weight, the recording time, the time left and the number of markers. **Click** again to set a marker, e.g. when the pump starts. **Turn** the knob to tare the shown weight, e.g. after putting the cup on; while recording, the tare is saved in the recording too. **Long-press** to send the recording to your computer; the scale then waits for the click that starts the next one. A recording takes at most 5 minutes, then the scale waits for the long-press. If sending fails, the recording is kept and the next long-press tries again. A recording that wasn't sent is lost when the scale is switched off.
 
 The computer saves each recording as `code/test/recordings/<date>_<time>.csv`. Give the useful ones a name that says what they show, commit them, and delete the rest. A recording looks like this, with `ms` counted from its start on the scale's clock:
 
@@ -70,9 +70,10 @@ ms,event,value
 0,sample,84012
 101,sample,84020
 1234,click,
+1500,tare,
 ```
 
-`grams_per_count` is the calibration of the scale that recorded, so tests can convert the raw readings to grams. A sample's `value` is the HX711's raw reading, signed. Firmware up to v1.9.0 recorded it unsigned (16540413 instead of -236803), and the replay converts those.
+`grams_per_count` is the calibration of the scale that recorded, so tests can convert the raw readings to grams. A sample's `value` is the HX711's raw reading, signed. The samples stay raw after a tare, a `tare` row only says when it happened (`RecordedScale::tares()`). Firmware up to v1.9.0 recorded it unsigned (16540413 instead of -236803), and the replay converts those.
 
 ## Development: Emulator
 The emulator runs the firmware on your computer, in a window that shows the scale's display. It needs SDL2 (`sudo apt install libsdl2-dev` on Debian/Ubuntu).

@@ -156,6 +156,7 @@ void test_roundtrip_with_recorder(void)
     recorder.addSample(500, 0);
     recorder.addSample(600, -8388608);
     recorder.addClick(650);
+    recorder.addTare(680);
     recorder.addSample(700, 8388607);
 
     fs::path path = fs::temp_directory_path() / "coffee-scale-roundtrip.csv";
@@ -171,6 +172,8 @@ void test_roundtrip_with_recorder(void)
     TEST_ASSERT_EQUAL_FLOAT(0.002381f, scale.gramsPerCount());
     TEST_ASSERT_EQUAL(1, scale.clicks().size());
     TEST_ASSERT_EQUAL(150, scale.clicks()[0]);
+    TEST_ASSERT_EQUAL(1, scale.tares().size());
+    TEST_ASSERT_EQUAL(180, scale.tares()[0]);
 
     scale.update();
     TEST_ASSERT_EQUAL(0, scale.read());

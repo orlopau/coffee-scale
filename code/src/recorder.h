@@ -5,7 +5,7 @@
 #include <functional>
 
 /**
- * Raw load cell samples and button clicks of one recording, kept in RAM until
+ * Raw load cell samples, button clicks and tares of one recording, kept in RAM until
  * they are uploaded. The buffer is allocated once and never grows: when it is
  * full, or the recording reaches MAX_DURATION_MS, further events are dropped.
  *
@@ -34,9 +34,11 @@ public:
     /** Samples measured before the start are dropped. */
     void addSample(unsigned long ms, long raw);
     void addClick(unsigned long ms);
+    /** The shown weight was tared, so a replay knows where the shot's weight starts. */
+    void addTare(unsigned long ms);
 
     bool isFull() const;
-    size_t sampleCount() const { return count - clicks; }
+    size_t sampleCount() const { return count - clicks - tares; }
     size_t clickCount() const { return clicks; }
     /** Time of the last event since the start, 0 if there is none. */
     unsigned long durationMs() const;
@@ -62,5 +64,6 @@ private:
     size_t capacity = 0;
     size_t count = 0;
     size_t clicks = 0;
+    size_t tares = 0;
     unsigned long startMs = 0;
 };

@@ -1,5 +1,7 @@
 #include <unity.h>
 
+#include <string>
+
 #include "recorder.h"
 #include "recording_session.h"
 
@@ -195,6 +197,74 @@ void test_sample_from_before_the_start_is_not_recorded(void)
     TEST_ASSERT_EQUAL(Status::Recording, session->state().status);
 }
 
+void test_tare_while_idle(void)
+{
+    session->begin();
+    session->sample(0, 1000);
+    session->sample(100, 1300);
+    session->tare(150);
+
+    TEST_ASSERT_EQUAL_FLOAT(0, session->state().grams);
+    session->sample(200, 1400);
+    TEST_ASSERT_EQUAL_FLOAT(1.0f, session->state().grams);
+    TEST_ASSERT_EQUAL(Status::Idle, session->state().status);
+    TEST_ASSERT_EQUAL(0, recorder->sampleCount());
+}
+
+void test_tare_while_recording_is_recorded(void)
+{
+    startRecording(*session);
+    session->sample(0, 1000);
+    session->sample(100, 16000); // a cup
+    session->tare(150);
+
+    TEST_ASSERT_EQUAL_FLOAT(0, session->state().grams);
+    session->sample(200, 16500);
+    TEST_ASSERT_EQUAL_FLOAT(5.0f, session->state().grams);
+    TEST_ASSERT_EQUAL(3, recorder->sampleCount());
+    TEST_ASSERT_EQUAL(0, session->state().clicks);
+
+    std::string csv;
+    recorder->writeCsv("v1.9.0", 0.01f, [&](const char *data, size_t length) { csv.append(data, length); });
+    TEST_ASSERT_NOT_EQUAL(std::string::npos, csv.find("150,tare,\n"));
+}
+
+void test_tare_not_recorded_while_not_recording(void)
+{
+    startRecording(*session);
+    session->sample(0, 1000);
+    session->longPress();
+    session->uploadFinished(false);
+
+    session->sample(100, 1500);
+    session->tare(150);
+    TEST_ASSERT_EQUAL_FLOAT(0, session->state().grams);
+
+    std::string csv;
+    recorder->writeCsv("v1.9.0", 0.01f, [&](const char *data, size_t length) { csv.append(data, length); });
+    TEST_ASSERT_EQUAL(std::string::npos, csv.find("tare"));
+}
+
+void test_tare_before_any_sample(void)
+{
+    session->begin();
+    session->tare(0);
+    session->sample(100, 1300);
+
+    TEST_ASSERT_EQUAL_FLOAT(0, session->state().grams);
+}
+
+void test_tare_fills_up(void)
+{
+    Recorder small(2);
+    RecordingSession smallSession(small, 0.01f);
+    startRecording(smallSession);
+    smallSession.sample(0, 1000);
+    smallSession.tare(50);
+
+    TEST_ASSERT_EQUAL(Status::Full, smallSession.state().status);
+}
+
 int main(void)
 {
     UNITY_BEGIN();
@@ -209,5 +279,10 @@ int main(void)
     RUN_TEST(test_weight_shown_while_not_recording);
     RUN_TEST(test_no_memory);
     RUN_TEST(test_sample_from_before_the_start_is_not_recorded);
+    RUN_TEST(test_tare_while_idle);
+    RUN_TEST(test_tare_while_recording_is_recorded);
+    RUN_TEST(test_tare_not_recorded_while_not_recording);
+    RUN_TEST(test_tare_before_any_sample);
+    RUN_TEST(test_tare_fills_up);
     return UNITY_END();
 }

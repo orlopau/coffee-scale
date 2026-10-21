@@ -5,8 +5,8 @@
 
 /**
  * What the recorder does with the scale's inputs: a click starts a recording,
- * samples and further clicks go into the Recorder while it records, and a long
- * press asks for an upload. After a successful upload it waits for the click
+ * samples and further clicks go into the Recorder while it records, a turn
+ * tares the shown weight, and a long press asks for an upload. After a successful upload it waits for the click
  * that starts the next recording. The device only
  * passes the inputs in and does the upload, so this logic runs in native
  * tests.
@@ -32,6 +32,8 @@ public:
     void sample(unsigned long ms, long raw);
     /** Starts a recording at ms while waiting, places a marker while recording. The caller beeps unless ignored. */
     Click click(unsigned long ms);
+    /** Tares the shown weight, and records the tare while recording. */
+    void tare(unsigned long ms);
     /** Returns true if the caller must upload the recording now. */
     bool longPress();
     /** On success it waits for the next recording, otherwise the recording is kept for a retry. */
@@ -49,6 +51,7 @@ private:
     float gramsPerCount;
     RecorderScreens::Status status = RecorderScreens::Status::Idle;
     bool tared = false;
-    long tare = 0;
+    long tareRaw = 0;
     long lastRaw = 0;
+    bool hasSample = false;
 };

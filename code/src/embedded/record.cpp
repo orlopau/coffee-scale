@@ -138,6 +138,12 @@ namespace Recording
                 changed = true;
             }
 
+            if (Interface::getEncoderTurns() != 0)
+            {
+                session.tare(now());
+                changed = true;
+            }
+
             ClickType click = Interface::consumeEncoderClick();
             if (click == ClickType::SINGLE && session.click(now()) != RecordingSession::Click::Ignored)
             {
