@@ -56,6 +56,15 @@ void test_measures_while_the_stopwatch_runs(void)
     TEST_ASSERT_FALSE(modeScale->isMeasuring());
 }
 
+// the stopwatch is shared with the espresso mode
+void test_leaving_stops_the_stopwatch(void)
+{
+    Interface::encoderClick = ClickType::SINGLE;
+    modeScale->update();
+    modeScale->leave();
+    TEST_ASSERT_FALSE(stopwatch->isRunning());
+}
+
 void test_loadcell_tare_when_encoder_rotated(void)
 {
     weightSource->weight = 1;
@@ -129,6 +138,7 @@ int main(void)
     RUN_TEST(test_stopwatch_stop_when_click_again);
 
     RUN_TEST(test_measures_while_the_stopwatch_runs);
+    RUN_TEST(test_leaving_stops_the_stopwatch);
     RUN_TEST(test_loadcell_tare_when_encoder_rotated);
     RUN_TEST(test_display_shows_weight);
     RUN_TEST(test_display_shows_no_minus_on_zero);

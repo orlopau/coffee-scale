@@ -20,6 +20,10 @@ void ModeEspresso::update()
         {
             weightSource.tare();
             approximator.reset();
+            startSource = ShotStartSource::Click;
+            accepted = false;
+            firstDropMs = 0;
+            lastReadingMs = now();
         }
     }
 
@@ -41,6 +45,21 @@ void ModeEspresso::update()
 
     // every reading goes into the regression
     for (const Reading &reading : weightSource.newReadings())
+    {
+        handleReading(reading);
+    }
+}
+
+void ModeEspresso::startShot(unsigned long startMs, ShotStartSource source, uint32_t firstDropMs,
+                             const std::vector<Reading> &readings)
+{
+    stopwatch.startAt(startMs);
+    approximator.reset();
+    startSource = source;
+    accepted = true;
+    this->firstDropMs = firstDropMs;
+    lastReadingMs = startMs;
+    for (const Reading &reading : readings)
     {
         handleReading(reading);
     }
@@ -90,10 +109,12 @@ void ModeEspresso::render(Canvas &canvas)
 
 void ModeEspresso::handleReading(const Reading &reading)
 {
-    if (!stopwatch.isRunning())
+    // the readings that started a detected shot come again in that loop's update()
+    if (!stopwatch.isRunning() || (int32_t)(reading.ms - lastReadingMs) <= 0)
     {
         return;
     }
+    lastReadingMs = reading.ms;
 
     // Readings can wait a little before they arrive, the stopwatch time when each was measured:
     long age = (long)(now() - reading.ms);
@@ -109,7 +130,7 @@ void ModeEspresso::handleReading(const Reading &reading)
     approximator.addPoint({time, (float)weightMg});
     lastEstimatedTime = approximator.getXAtY(targetWeightMg);
 
-    if (weightMg >= targetWeightMg)
+    if (!accepted && weightMg >= targetWeightMg)
     {
         stopwatch.stop();
     }

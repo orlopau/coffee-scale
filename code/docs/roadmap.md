@@ -18,6 +18,8 @@ Cleanup and tooling before new features.
   `pio run -e emulator -t exec` shows the scale in a desktop window; arrow keys and Enter replace the rotary encoder. Simulated load cell at 10 Hz, virtual clock, and every screen is compared against a PNG in CI.
 - [x] **Raw data recorder** _(Firmware, Tooling)_
   The scale records readings and uploads them to the dev server; native tests replay them. Next: record real taps, shots and cups.
+- [x] **Record without the laptop** _(Firmware, Tooling)_
+  The recorder saves to flash with a long-press, with or without the laptop; a long-press while idle sends them all to `pio run -t record`.
 - [x] **Fix the inputs** _(Firmware)_
   The ESP32's pulse counter counts the rotary encoder instead of an interrupt; clicks go into a queue as events. Fixes lost or doubled clicks and possible crashes while writing to flash.
 - [x] **Load cell task and weight pipeline** _(Firmware)_
@@ -38,7 +40,7 @@ The scale understands what happens on it.
 - [x] **Lift-to-tare** _(Firmware)_
   Sliding a finger up the side of the platform, lifting it a little, tares. Taps can't be told apart at 10 readings per second, lifts can: nothing else on the counter dips below the weight and comes right back, see [ADR 1](adr/0001-tare-gesture.md). How firmly you have to lift is adjustable. Uses the unsmoothed readings and is locked during a shot.
 - [ ] **Shot detection** _(Firmware)_
-  Starts at the first drop and ends when the flow drops below 0.1 g/s. Setting down the cup, bumps and false starts are ignored. With an adjustable offset between pump start and first drop.
+  With shot detection on, the scale notices a shot after a tare by how smoothly it flows, switches from the scale mode to the espresso screen, times it from the pump start (the first drop minus an adjustable offset) and stops the time when the pump stops. Off by default; the click works as before. See [ADR 2](adr/0002-shot-detection/README.md).
 - [ ] **Shot graph on the display** _(Firmware)_
   Live curve with target line and flow in g/s. After the shot, a summary with yield, time and ratio.
 

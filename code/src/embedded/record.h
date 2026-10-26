@@ -7,13 +7,20 @@
 #include "weighing/sample.h"
 
 /**
- * Records the load cell for the dev server's recording mode (see the README),
- * entered from the updater.
+ * Records the load cell and saves the recordings to flash, with or without the
+ * dev server's recording mode (see the README), entered from the updater.
  */
 namespace Recording
 {
-    /** Records samples and uploads to http://server:port/path until the scale is switched off. */
-    [[noreturn]] void run(SampleSource &samples, IPAddress server, uint16_t port, const char *path, float gramsPerCount);
+    struct Server
+    {
+        IPAddress ip;
+        uint16_t port;
+        const char *path;
+    };
+
+    /** Records samples, saves them to flash and sends them to server, if there is one, until the scale is switched off. */
+    [[noreturn]] void run(SampleSource &samples, const Server *server, float gramsPerCount);
 }
 
 #endif

@@ -55,6 +55,64 @@ void test_stopwatch_getTime(void)
     stopwatch.start();
 }
 
+void test_stopwatch_start_at_counts_from_the_past(void)
+{
+    set_now(10000);
+    Stopwatch stopwatch;
+    stopwatch.startAt(7600);
+    TEST_ASSERT_TRUE(stopwatch.isRunning());
+    TEST_ASSERT_EQUAL(2400, stopwatch.getTime());
+}
+
+// e.g. leaving the espresso mode after the shot reached its target
+void test_stopwatch_stop_again_keeps_the_time(void)
+{
+    set_now(10000);
+    Stopwatch stopwatch;
+    stopwatch.start();
+    set_now(13000);
+    stopwatch.stop();
+    set_now(20000);
+    stopwatch.stop();
+    TEST_ASSERT_EQUAL(3000, stopwatch.getTime());
+}
+
+void test_stopwatch_stop_at_backdates_the_stop(void)
+{
+    set_now(1000);
+    Stopwatch stopwatch;
+    stopwatch.start();
+    set_now(5000);
+    stopwatch.stopAt(4000);
+    TEST_ASSERT_FALSE(stopwatch.isRunning());
+    TEST_ASSERT_EQUAL(3000, stopwatch.getTime());
+    set_now(9000);
+    TEST_ASSERT_EQUAL(3000, stopwatch.getTime());
+}
+
+void test_stopwatch_stop_at_before_the_start_stops_at_zero(void)
+{
+    set_now(1000);
+    Stopwatch stopwatch;
+    stopwatch.start();
+    set_now(5000);
+    stopwatch.stopAt(500);
+    TEST_ASSERT_FALSE(stopwatch.isRunning());
+    TEST_ASSERT_EQUAL(0, stopwatch.getTime());
+}
+
+void test_stopwatch_stop_at_on_a_stopped_stopwatch_keeps_its_time(void)
+{
+    set_now(10000);
+    Stopwatch stopwatch;
+    stopwatch.start();
+    set_now(13000);
+    stopwatch.stop();
+    set_now(20000);
+    stopwatch.stopAt(15000);
+    TEST_ASSERT_EQUAL(3000, stopwatch.getTime());
+}
+
 int main(void)
 {
     UNITY_BEGIN();
@@ -63,5 +121,10 @@ int main(void)
     RUN_TEST(test_stopwatch_toggle);
     RUN_TEST(test_stopwatch_reset);
     RUN_TEST(test_stopwatch_getTime);
+    RUN_TEST(test_stopwatch_start_at_counts_from_the_past);
+    RUN_TEST(test_stopwatch_stop_again_keeps_the_time);
+    RUN_TEST(test_stopwatch_stop_at_backdates_the_stop);
+    RUN_TEST(test_stopwatch_stop_at_before_the_start_stops_at_zero);
+    RUN_TEST(test_stopwatch_stop_at_on_a_stopped_stopwatch_keeps_its_time);
     UNITY_END();
 }
