@@ -132,6 +132,34 @@ void test_start_clears(void)
     TEST_ASSERT_FALSE(small.isFull());
 }
 
+void test_tares_are_recorded_but_not_counted(void)
+{
+    recorder->start(1000);
+    recorder->addSample(1000, 84000);
+    recorder->addTare(1050);
+    recorder->addClick(1080);
+    recorder->addSample(1100, 84010);
+
+    TEST_ASSERT_EQUAL(2, recorder->sampleCount());
+    TEST_ASSERT_EQUAL(1, recorder->clickCount());
+
+    recorder->writeCsv("v1.9.0", 0.5f, collect);
+    TEST_ASSERT_NOT_EQUAL(std::string::npos, csv.find("0,sample,84000\n"
+                                                      "50,tare,\n"
+                                                      "80,click,\n"
+                                                      "100,sample,84010\n"));
+}
+
+void test_start_clears_tares(void)
+{
+    recorder->start(0);
+    recorder->addTare(10);
+    recorder->start(1000);
+    recorder->addSample(1000, 1);
+
+    TEST_ASSERT_EQUAL(1, recorder->sampleCount());
+}
+
 void test_allocation(void)
 {
     TEST_ASSERT_TRUE(recorder->isAllocated());
@@ -148,6 +176,8 @@ int main(void)
     RUN_TEST(test_full_drops_further_events);
     RUN_TEST(test_full_after_five_minutes);
     RUN_TEST(test_start_clears);
+    RUN_TEST(test_tares_are_recorded_but_not_counted);
+    RUN_TEST(test_start_clears_tares);
     RUN_TEST(test_allocation);
     return UNITY_END();
 }

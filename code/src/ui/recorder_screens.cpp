@@ -7,24 +7,40 @@
 
 namespace RecorderScreens
 {
-    static const char *statusText(Status status)
+    static void statusText(char *buffer, size_t size, const State &state)
     {
-        switch (status)
+        const char *text = "";
+        switch (state.status)
         {
         case Status::Idle:
-            return RECORDER_IDLE;
+            text = RECORDER_IDLE;
+            break;
         case Status::Recording:
-            return RECORDER_RECORDING;
-        case Status::Uploading:
-            return RECORDER_UPLOADING;
-        case Status::UploadFailed:
-            return RECORDER_UPLOAD_FAILED;
+            text = RECORDER_RECORDING;
+            break;
+        case Status::Saving:
+            text = RECORDER_SAVING;
+            break;
+        case Status::SaveFailed:
+            text = RECORDER_SAVE_FAILED;
+            break;
+        case Status::Sending:
+            snprintf(buffer, size, RECORDER_SENDING, state.sendingIndex, state.sendingTotal);
+            return;
+        case Status::SendFailed:
+            text = RECORDER_SEND_FAILED;
+            break;
         case Status::Full:
-            return RECORDER_FULL;
+            text = RECORDER_FULL;
+            break;
         case Status::NoMemory:
-            return RECORDER_NO_MEMORY;
+            text = RECORDER_NO_MEMORY;
+            break;
+        case Status::NoStorage:
+            text = RECORDER_NO_STORAGE;
+            break;
         }
-        return "";
+        snprintf(buffer, size, "%s", text);
     }
 
     /** m:ss, formatTime() with its tenths is too wide here. */
@@ -41,6 +57,11 @@ namespace RecorderScreens
             UpdaterScreens::message(canvas, RECORDER_NO_MEMORY);
             return;
         }
+        if (state.status == Status::NoStorage)
+        {
+            UpdaterScreens::message(canvas, RECORDER_NO_STORAGE);
+            return;
+        }
 
         canvas.setFont(Font::Number22);
         canvas.drawText(0, 22, formatWeight(state.grams));
@@ -52,10 +73,16 @@ namespace RecorderScreens
         formatDuration(text, sizeof(text), "-", state.remainingMs);
         canvas.drawText(canvas.width() - canvas.textWidth(text), 36, text);
 
-        snprintf(text, sizeof(text), RECORDER_MARKERS, state.clicks);
+        bool showSaved = state.status == Status::Idle || state.status == Status::SendFailed || state.status == Status::Sending;
+        snprintf(text, sizeof(text), showSaved ? RECORDER_SAVED : RECORDER_MARKERS, showSaved ? state.saved : state.clicks);
         canvas.drawText(0, 48, text);
+        if (showSaved && !state.hasServer)
+        {
+            canvas.drawText(canvas.width() - canvas.textWidth(RECORDER_NO_SERVER), 48, RECORDER_NO_SERVER);
+        }
 
         canvas.drawHLine(0, 51, canvas.width());
-        canvas.drawText(0, 61, statusText(state.status));
+        statusText(text, sizeof(text), state);
+        canvas.drawText(0, 61, text);
     }
 }

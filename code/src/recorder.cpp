@@ -4,8 +4,9 @@
 
 #include "recorder.h"
 
-// HX711 readings are 24 bit, so this value can't be a sample
+// HX711 readings are 24 bit, so these values can't be samples
 static const int32_t CLICK = INT32_MIN;
+static const int32_t TARE = INT32_MIN + 1;
 
 Recorder::Recorder(size_t capacity)
 {
@@ -23,6 +24,7 @@ void Recorder::start(unsigned long ms)
     startMs = ms;
     count = 0;
     clicks = 0;
+    tares = 0;
 }
 
 void Recorder::addSample(unsigned long ms, long raw)
@@ -42,6 +44,15 @@ void Recorder::addClick(unsigned long ms)
         clicks++;
     }
     add(ms, CLICK);
+}
+
+void Recorder::addTare(unsigned long ms)
+{
+    if (!isFull())
+    {
+        tares++;
+    }
+    add(ms, TARE);
 }
 
 void Recorder::add(unsigned long ms, int32_t value)
@@ -83,6 +94,10 @@ size_t Recorder::writeCsv(const char *firmware, float gramsPerCount, const Sink 
         if (event.value == CLICK)
         {
             write(line, snprintf(line, sizeof(line), "%lu,click,\n", (unsigned long)event.ms));
+        }
+        else if (event.value == TARE)
+        {
+            write(line, snprintf(line, sizeof(line), "%lu,tare,\n", (unsigned long)event.ms));
         }
         else
         {

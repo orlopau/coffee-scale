@@ -14,10 +14,13 @@ namespace RecorderScreens
     {
         Idle,
         Recording,
-        Uploading,
-        UploadFailed,
+        Saving,
+        SaveFailed,
+        Sending,
+        SendFailed,
         Full,
         NoMemory,
+        NoStorage,
     };
 
     struct State
@@ -28,6 +31,12 @@ namespace RecorderScreens
         unsigned long recordedMs;
         unsigned long remainingMs;
         unsigned int clicks;
+        /** Recordings saved in flash. */
+        unsigned int saved;
+        bool hasServer;
+        /** While sending: the recording on its way, and how many there were when it started. */
+        unsigned int sendingIndex;
+        unsigned int sendingTotal;
     };
 
     void recording(Canvas &canvas, const State &state);

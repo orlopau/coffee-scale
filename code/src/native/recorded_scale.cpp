@@ -151,6 +151,10 @@ RecordedScale::RecordedScale(const std::string &path)
         {
             clickTimes.push_back(ms);
         }
+        else if (fields[1] == "tare")
+        {
+            tareTimes.push_back(ms);
+        }
         // other events are from newer recordings, they are skipped
     }
 
