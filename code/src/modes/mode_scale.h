@@ -12,6 +12,8 @@ public:
         : weightSource(weightSource), stopwatch(stopwatch){};
     ~ModeScale(){};
     void enter() override;
+    /** Stops the stopwatch, the espresso mode shares it. */
+    void leave() override { stopwatch.stop(); }
     void update() override;
     void render(Canvas &canvas) override;
     bool canSwitchMode();

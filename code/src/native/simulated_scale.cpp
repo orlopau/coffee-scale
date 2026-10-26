@@ -51,7 +51,7 @@ float SimulatedScale::shotFlow(unsigned long shotTime) const
     }
     if (t < SHOT_DURATION_MS / 1000.0f)
     {
-        return MAX_FLOW * (SHOT_DURATION_MS / 1000.0f - t) / 3; // the pump stopped, the last drops
+        return MAX_FLOW * (SHOT_DURATION_MS / 1000.0f - t); // the pump stopped, the last drops: within 1 s
     }
     return 0;
 }

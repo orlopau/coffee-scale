@@ -19,6 +19,13 @@ public:
     void begin();
     /** The current mode's isMeasuring(), false while the mode switcher is shown. */
     bool isMeasuring() { return !inModeChange && modes[currentMode]->isMeasuring(); }
+    /** The current mode, nullptr while the mode switcher is shown. */
+    Mode *activeMode() { return inModeChange ? nullptr : modes[currentMode]; }
+    /**
+     * Shows mode, e.g. when a shot is detected, and closes the mode switcher.
+     * Leaves the mode before. Does nothing if mode isn't one of the modes.
+     */
+    void switchTo(Mode *mode);
 
 private:
     const int modeCount;

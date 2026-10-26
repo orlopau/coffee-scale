@@ -30,6 +30,10 @@ public:
     const char *name;
     bool switchable = true;
     bool measuring = false;
+    bool entered = false;
+    void enter() override { entered = true; }
+    int left = 0;
+    void leave() override { left++; }
 };
 
 ModeManager *modeManager;
@@ -283,10 +287,76 @@ void test_mode_manager_does_not_measure_while_choosing_a_mode(void)
     TEST_ASSERT_FALSE(modeManager->isMeasuring());
 }
 
+void test_active_mode_is_the_current_one(void)
+{
+    TEST_ASSERT_EQUAL_PTR(modes[0], modeManager->activeMode());
+}
+
+void test_no_active_mode_while_the_switcher_is_shown(void)
+{
+    enterSelection();
+    TEST_ASSERT_NULL(modeManager->activeMode());
+}
+
+void test_switch_to_changes_the_mode_and_enters_it(void)
+{
+    modeManager->switchTo(modes[2]);
+    TEST_ASSERT_EQUAL_PTR(modes[2], modeManager->activeMode());
+    TEST_ASSERT_TRUE(mockModes[2]->entered);
+    modeManager->update();
+    TEST_ASSERT_TRUE(mockModes[2]->updateCalled);
+}
+
+void test_switch_to_closes_the_switcher(void)
+{
+    enterSelection();
+    modeManager->switchTo(modes[1]);
+    TEST_ASSERT_EQUAL_PTR(modes[1], modeManager->activeMode());
+}
+
+void test_switch_to_an_unknown_mode_does_nothing(void)
+{
+    MockMode other("Other");
+    modeManager->switchTo(&other);
+    TEST_ASSERT_EQUAL_PTR(modes[0], modeManager->activeMode());
+}
+
+void test_opening_the_switcher_leaves_the_mode(void)
+{
+    Interface::encoderClick = ClickType::LONG;
+    modeManager->update();
+    TEST_ASSERT_EQUAL(1, mockModes[0]->left);
+}
+
+void test_switch_to_leaves_the_mode_before(void)
+{
+    modeManager->switchTo(modes[2]);
+    TEST_ASSERT_EQUAL(1, mockModes[0]->left);
+    TEST_ASSERT_EQUAL(0, mockModes[2]->left);
+}
+
+void test_switch_to_the_same_mode_does_not_leave_it(void)
+{
+    modeManager->switchTo(modes[0]);
+    TEST_ASSERT_EQUAL(0, mockModes[0]->left);
+}
+
+// it was left when the switcher opened
+void test_switch_to_from_the_switcher_leaves_nothing_again(void)
+{
+    enterSelection();
+    modeManager->switchTo(modes[1]);
+    TEST_ASSERT_EQUAL(1, mockModes[0]->left);
+}
+
 int main(void)
 {
     UNITY_BEGIN();
     RUN_TEST(test_mode_manager_renders_canvas_mode_after_update);
+    RUN_TEST(test_opening_the_switcher_leaves_the_mode);
+    RUN_TEST(test_switch_to_leaves_the_mode_before);
+    RUN_TEST(test_switch_to_the_same_mode_does_not_leave_it);
+    RUN_TEST(test_switch_to_from_the_switcher_leaves_nothing_again);
     RUN_TEST(test_mode_manager_caps_render_rate);
     RUN_TEST(test_mode_manager_renders_immediately_after_mode_selection);
     RUN_TEST(test_mode_manager_updates_current_mode_by_default);
@@ -301,5 +371,10 @@ int main(void)
     RUN_TEST(test_mode_manager_updates_next_mode_only_at_next_tick);
     RUN_TEST(test_mode_manager_measures_when_the_current_mode_does);
     RUN_TEST(test_mode_manager_does_not_measure_while_choosing_a_mode);
+    RUN_TEST(test_active_mode_is_the_current_one);
+    RUN_TEST(test_no_active_mode_while_the_switcher_is_shown);
+    RUN_TEST(test_switch_to_changes_the_mode_and_enters_it);
+    RUN_TEST(test_switch_to_closes_the_switcher);
+    RUN_TEST(test_switch_to_an_unknown_mode_does_nothing);
     UNITY_END();
 }
