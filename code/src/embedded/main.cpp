@@ -4,6 +4,7 @@
 
 #include "constants.h"
 #include "detectors/lift_tare.h"
+#include "detectors/shot_auto_start.h"
 #include "data/recipes.h"
 #include "embedded/loadcell_task.h"
 #include "embedded/sample_queue.h"
@@ -71,11 +72,21 @@ void runWifiSetup()
   WifiSetup::run();
 }
 
+void applyShotSettings();
 const SettingsAction settingsActions[] = {{SETTINGS_WIFI, runWifiSetup}};
-ModeSettings modeSettings(settingsActions, 1);
+ModeSettings modeSettings(settingsActions, 1, applyShotSettings);
 ModeRecipes modeRecipes(weightPipeline, RECIPES, RECIPE_COUNT);
 Mode *modes[] = {&modeDefault, &modeRecipes, &modeEspresso, &modeCalibration, &modeSettings};
 ModeManager modeManager(modes, 5, Display::canvas());
+ShotAutoStart shotAutoStart(weightPipeline, modeManager, modeDefault, modeEspresso);
+
+// at the start, and when leaving the settings, so a change needs no restart
+void applyShotSettings()
+{
+  shotAutoStart.setEnabled(Settings::shotDetection());
+  shotAutoStart.setOffsetMs(Settings::shotOffsetMs());
+  ESP_LOGI(TAG, "Shot detection: %d, offset %u ms", Settings::shotDetection(), (unsigned)Settings::shotOffsetMs());
+}
 
 void setup()
 {
@@ -116,6 +127,8 @@ void setup()
   float liftDepth = Settings::liftTareDepth();
   liftTare.setDepth(liftDepth);
   ESP_LOGI(TAG, "Lift-to-tare depth: %f g", liftDepth);
+
+  applyShotSettings();
 
   // tare after 32 samples
   ESP_LOGI(TAG, "Taring...");
@@ -187,6 +200,8 @@ void loop()
   }
   // locked from the mode's state of the last loop, like holdZero()
   liftTare.update(modeManager.isMeasuring());
+  // from the mode's state of the last loop, like liftTare
+  shotAutoStart.update();
   modeManager.update();
 
 #ifdef CRASH_AFTER_MS

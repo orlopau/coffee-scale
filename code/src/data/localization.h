@@ -122,6 +122,10 @@
 #define SETTINGS_LIFT_TARE_GENTLE "Sanft"
 #define SETTINGS_LIFT_TARE_NORMAL "Normal"
 #define SETTINGS_LIFT_TARE_FIRM "Fest"
+#define SETTINGS_SHOT_OFFSET "Shot-Vorlauf"
+#define SETTINGS_SHOT_DETECTION "Shot-Erkennung"
+#define SETTINGS_SHOT_AUTO_OFF "Aus"
+#define SETTINGS_SHOT_AUTO_ON "An"
 #define SETTINGS_WIFI "WLAN"
 //////////////////////////////////////////////
 #else
@@ -246,6 +250,10 @@
 #define SETTINGS_LIFT_TARE_GENTLE "Gentle"
 #define SETTINGS_LIFT_TARE_NORMAL "Normal"
 #define SETTINGS_LIFT_TARE_FIRM "Firm"
+#define SETTINGS_SHOT_OFFSET "Shot Offset"
+#define SETTINGS_SHOT_DETECTION "Shot Detection"
+#define SETTINGS_SHOT_AUTO_OFF "Off"
+#define SETTINGS_SHOT_AUTO_ON "On"
 #define SETTINGS_WIFI "Wi-Fi"
 //////////////////////////////////////////////
 #endif

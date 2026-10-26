@@ -16,6 +16,7 @@
 #include "battery.h"
 #include "data/recipes.h"
 #include "detectors/lift_tare.h"
+#include "detectors/shot_auto_start.h"
 #include "display.h"
 #include "interface.h"
 #include "millis.h"
@@ -49,7 +50,8 @@ static const char *HELP = "Coffee Scale emulator\n"
                           "  PageUp/PageDown  10 g, Home 100 g (e.g. for calibration)\n"
                           "  0, Backspace     clear the scale\n"
                           "  F                pour on/off (2 g/s)\n"
-                          "  S                espresso shot (6 s pre-infusion, about 38 g in 33 s)\n"
+                          "  S                espresso shot (6 s pre-infusion, about 38 g in 33 s),\n"
+                          "                   the scale mode switches to espresso on its own\n"
                           "  L                lift the platform for a moment (lift-to-tare)\n"
                           "  N                noise on/off\n"
                           "  - +              slower/faster time, up to 20x (1x while the button is held)\n"
@@ -87,8 +89,17 @@ static void setup()
     weightPipeline.tare();
 }
 
+static ShotAutoStart *autoStart = nullptr;
+
+// at the start, and when leaving the settings, as on the scale
+static void applyShotSettings()
+{
+    autoStart->setEnabled(Settings::shotDetection());
+    autoStart->setOffsetMs(Settings::shotOffsetMs());
+}
+
 /** One pass of the device's loop(). */
-static void loop(ModeManager &modeManager)
+static void loop(ModeManager &modeManager, ShotAutoStart &shotAutoStart)
 {
     Interface::update();
     // from the mode's state of the last loop, see WeightPipeline::holdZero()
@@ -96,6 +107,8 @@ static void loop(ModeManager &modeManager)
     weightPipeline.update();
     // locked from the mode's state of the last loop, like holdZero()
     liftTare.update(modeManager.isMeasuring());
+    // from the mode's state of the last loop, like liftTare
+    shotAutoStart.update();
     modeManager.update();
 }
 
@@ -273,10 +286,13 @@ int main(int argc, char **argv)
     // the Wi-Fi setup needs the scale's radio
     static const SettingsAction settingsActions[] = {
         {SETTINGS_WIFI, [] { printf("The Wi-Fi setup only runs on the scale.\n"); }}};
-    ModeSettings modeSettings(settingsActions, 1);
+    ModeSettings modeSettings(settingsActions, 1, applyShotSettings);
     ModeRecipes modeRecipes(weightPipeline, RECIPES, RECIPE_COUNT);
     Mode *modes[] = {&modeDefault, &modeRecipes, &modeEspresso, &modeCalibration, &modeSettings};
     ModeManager modeManager(modes, 5, Display::canvas());
+    ShotAutoStart shotAutoStart(weightPipeline, modeManager, modeDefault, modeEspresso);
+    autoStart = &shotAutoStart;
+    applyShotSettings();
     modeManager.begin();
 
     SDL_SetMainReady();
@@ -331,7 +347,7 @@ int main(int argc, char **argv)
         {
             sleep_for(1);
             Emulator::scale.update();
-            loop(modeManager);
+            loop(modeManager, shotAutoStart);
         }
 
         updateTitle(window, SPEEDS[speedIndex]);

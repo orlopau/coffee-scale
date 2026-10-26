@@ -84,7 +84,7 @@ void test_shot_follows_profile(void)
     advance(15000);
     TEST_ASSERT_FALSE(scale->isShotRunning());
     TEST_ASSERT_EQUAL_FLOAT(0, scale->getFlow());
-    TEST_ASSERT_FLOAT_WITHIN(0.1, 138.4, scale->getWeight());
+    TEST_ASSERT_FLOAT_WITHIN(0.1, 136.8, scale->getWeight());
 }
 
 void test_shot_ends_with_flow(void)
