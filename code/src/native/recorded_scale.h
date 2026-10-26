@@ -37,12 +37,15 @@ public:
     unsigned long elapsed() const;
     /** Times of the clicks, since the start of the recording. */
     const std::vector<unsigned long> &clicks() const { return clickTimes; }
+    /** Times of the tares, since the start of the recording. */
+    const std::vector<unsigned long> &tares() const { return tareTimes; }
     float gramsPerCount() const { return scale; }
     const std::string &firmware() const { return firmwareVersion; }
 
 private:
     std::vector<std::pair<unsigned long, long>> samples;
     std::vector<unsigned long> clickTimes;
+    std::vector<unsigned long> tareTimes;
     float scale = 0;
     std::string firmwareVersion;
 

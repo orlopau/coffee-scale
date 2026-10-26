@@ -429,7 +429,7 @@ void test_updater(void)
         const char *name, *text;
     } messages[] = {
         {"updating", UPDATER_UPDATING},       {"wifi_connected", UPDATER_WIFI_CONNECTED},
-        {"dev_searching", UPDATER_DEV_SEARCHING}, {"dev_not_found", UPDATER_DEV_NOT_FOUND},
+        {"dev_searching", UPDATER_DEV_SEARCHING},
         {"failed", UPDATER_FAILED},           {"no_update", UPDATER_NO_UPDATE},
         {"success", UPDATER_SUCCESS},
     };
@@ -499,22 +499,28 @@ void test_recorder(void)
 {
     Canvas &canvas = display.canvas();
 
+    using Status = RecorderScreens::Status;
     const struct
     {
         const char *name;
-        RecorderScreens::Status status;
+        Status status;
+        bool hasServer;
     } states[] = {
-        {"idle", RecorderScreens::Status::Idle},
-        {"recording", RecorderScreens::Status::Recording},
-        {"uploading", RecorderScreens::Status::Uploading},
-        {"upload_failed", RecorderScreens::Status::UploadFailed},
-        {"full", RecorderScreens::Status::Full},
-        {"no_memory", RecorderScreens::Status::NoMemory},
+        {"idle", Status::Idle, true},
+        {"idle_no_server", Status::Idle, false},
+        {"recording", Status::Recording, true},
+        {"saving", Status::Saving, true},
+        {"save_failed", Status::SaveFailed, true},
+        {"sending", Status::Sending, true},
+        {"send_failed", Status::SendFailed, true},
+        {"full", Status::Full, true},
+        {"no_memory", Status::NoMemory, true},
+        {"no_storage", Status::NoStorage, true},
     };
     for (const auto &state : states)
     {
         canvas.clear();
-        RecorderScreens::recording(canvas, {state.status, 12.34f, 83000, 217000, 3});
+        RecorderScreens::recording(canvas, {state.status, 12.34f, 83000, 217000, 3, 3, state.hasServer, 2, 5});
         check("recorder_" + std::string(state.name));
     }
 }
