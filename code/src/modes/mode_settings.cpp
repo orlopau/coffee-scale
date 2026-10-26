@@ -8,8 +8,8 @@
 #include "logger.h"
 #include "settings.h"
 
-ModeSettings::ModeSettings(const SettingsAction *actions, int actionCount)
-    : actions(actions), actionCount(actionCount)
+ModeSettings::ModeSettings(const SettingsAction *actions, int actionCount, void (*onLeave)())
+    : actions(actions), actionCount(actionCount), onLeave(onLeave)
 {
     const char **settings = Settings::getOptions();
     options.assign(settings, settings + Settings::SETTING_COUNT);

@@ -6,6 +6,8 @@
 #include "unity.h"
 #include "settings.h"
 
+#include <math.h>
+
 void setUp(void) {}
 
 void tearDown(void) {}
@@ -93,6 +95,49 @@ void test_choice_out_of_range_is_the_default(void)
     TEST_ASSERT_EQUAL(3, Settings::validChoice(lift, 3));
 }
 
+// the first version's setting is gone, its key stays in NVS unused
+void test_the_typical_shot_time_is_gone(void)
+{
+    for (const auto &setting : Settings::floatSettings)
+    {
+        TEST_ASSERT_NOT_EQUAL(0, strcmp("shotTime", setting.key));
+    }
+}
+
+void test_shot_offset_defaults_to_seven_seconds(void)
+{
+    const auto &offset = Settings::floatSettings[Settings::SHOT_OFFSET];
+    TEST_ASSERT_EQUAL_STRING("shotOffset", offset.key);
+    TEST_ASSERT_EQUAL_FLOAT(7.0f, offset.def);
+    TEST_ASSERT_EQUAL_FLOAT(0.5f, offset.increment);
+}
+
+void test_shot_offset_is_clamped(void)
+{
+    Settings::setFloat(Settings::floatSettings[Settings::SHOT_OFFSET], -2);
+    TEST_ASSERT_EQUAL(0, Settings::shotOffsetMs());
+    Settings::setFloat(Settings::floatSettings[Settings::SHOT_OFFSET], NAN);
+    TEST_ASSERT_EQUAL(0, Settings::shotOffsetMs());
+    Settings::setFloat(Settings::floatSettings[Settings::SHOT_OFFSET], 4.5f);
+    TEST_ASSERT_EQUAL(4500, Settings::shotOffsetMs());
+    Settings::setFloat(Settings::floatSettings[Settings::SHOT_OFFSET], 99);
+    TEST_ASSERT_EQUAL(10000, Settings::shotOffsetMs());
+}
+
+// the key of the first version's Auto Espresso stays, a scale that stored On keeps it
+void test_shot_detection_is_off_by_default(void)
+{
+    const auto &detection = Settings::choiceSettings[Settings::SHOT_AUTO];
+    TEST_ASSERT_EQUAL_STRING("shotAuto", detection.key);
+    TEST_ASSERT_EQUAL_STRING(SETTINGS_SHOT_DETECTION, detection.name);
+    TEST_ASSERT_EQUAL_STRING(SETTINGS_SHOT_AUTO_OFF, detection.labels[detection.def]);
+    TEST_ASSERT_FALSE(Settings::shotDetection());
+    Settings::setChoice(detection, 1);
+    TEST_ASSERT_TRUE(Settings::shotDetection());
+    Settings::setChoice(detection, 0);
+    TEST_ASSERT_FALSE(Settings::shotDetection());
+}
+
 int main(void)
 {
     UNITY_BEGIN();
@@ -101,5 +146,9 @@ int main(void)
     RUN_TEST(test_ids_match_positions);
     RUN_TEST(test_choices_have_labels_and_a_valid_default);
     RUN_TEST(test_choice_out_of_range_is_the_default);
+    RUN_TEST(test_the_typical_shot_time_is_gone);
+    RUN_TEST(test_shot_offset_defaults_to_seven_seconds);
+    RUN_TEST(test_shot_offset_is_clamped);
+    RUN_TEST(test_shot_detection_is_off_by_default);
     UNITY_END();
 }

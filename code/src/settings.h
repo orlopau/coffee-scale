@@ -29,6 +29,7 @@ namespace Settings
         AUTO_TARE_TOLERANCE,
         AVERAGING_DELTA,
         ZERO_TRACKING,
+        SHOT_OFFSET,
         FLOAT_SETTING_NUM
     };
 
@@ -42,6 +43,8 @@ namespace Settings
         {AVERAGING_DELTA, "avgDelta", SETTINGS_AVERAGING_DELTA, 1.0f, 0.1f},
         // the window in grams around zero, 0 turns zero tracking off
         {ZERO_TRACKING, "zeroTrack", SETTINGS_ZERO_TRACKING, 0.1f, 0.05f},
+        // seconds from the pump start to the first drop, a detected shot starts that much earlier
+        {SHOT_OFFSET, "shotOffset", SETTINGS_SHOT_OFFSET, 7.0f, 0.5f},
     }};
 
     /** A setting with a few named levels, stored as the level's index. */
@@ -61,6 +64,7 @@ namespace Settings
     enum ChoiceSettingID
     {
         LIFT_TARE = 0,
+        SHOT_AUTO,
         CHOICE_SETTING_NUM
     };
 
@@ -80,8 +84,15 @@ namespace Settings
                       sizeof(LIFT_TARE_LABELS) / sizeof(LIFT_TARE_LABELS[0]),
                   "one depth per label");
 
+    /** Whether shots are detected, on the espresso screen and from the scale mode. */
+    constexpr const char *SHOT_AUTO_LABELS[] = {
+        SETTINGS_SHOT_AUTO_OFF,
+        SETTINGS_SHOT_AUTO_ON,
+    };
+
     constexpr std::array<ChoiceSetting, CHOICE_SETTING_NUM> choiceSettings = {{
         {LIFT_TARE, "liftTare", SETTINGS_LIFT_TARE, 2, 4, LIFT_TARE_LABELS},
+        {SHOT_AUTO, "shotAuto", SETTINGS_SHOT_DETECTION, 0, 2, SHOT_AUTO_LABELS},
     }};
 
     /** Entries of the settings menu: the float settings, then the choice settings. */
@@ -129,6 +140,20 @@ namespace Settings
 
     /** Grams a lift has to dip for the stored level, 0 if lift-to-tare is off. */
     static inline float liftTareDepth() { return LIFT_TARE_DEPTHS[getChoice(choiceSettings[LIFT_TARE])]; }
+
+    /** The shot offset in ms, within 0–10 s, 0 if none is stored. */
+    static inline uint32_t shotOffsetMs()
+    {
+        float seconds = getFloat(floatSettings[SHOT_OFFSET]);
+        if (std::isnan(seconds) || seconds < 0)
+        {
+            return 0;
+        }
+        return (uint32_t)(std::fmin(seconds, 10.0f) * 1000);
+    }
+
+    /** True if shots are detected. */
+    static inline bool shotDetection() { return getChoice(choiceSettings[SHOT_AUTO]) == 1; }
 
     /** Grams per count, 1.0 if the scale was never calibrated. Device only. */
     float getCalibration();

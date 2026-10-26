@@ -103,6 +103,26 @@ void ModeManager::updateModeChange()
     }
 }
 
+void ModeManager::switchTo(Mode *mode)
+{
+    for (int i = 0; i < modeCount; i++)
+    {
+        if (modes[i] == mode)
+        {
+            // from the switcher, the mode was left when it opened
+            if (!inModeChange && i != currentMode)
+            {
+                modes[currentMode]->leave();
+            }
+            currentMode = i;
+            inModeChange = false;
+            mode->enter();
+            renderNow = true;
+            return;
+        }
+    }
+}
+
 void ModeManager::update()
 {
     if (inModeChange)
@@ -117,6 +137,7 @@ void ModeManager::update()
     else if (Interface::getEncoderClick() == ClickType::LONG && modes[currentMode]->canSwitchMode())
     {
         // the switcher is shown from the next update() on
+        modes[currentMode]->leave();
         inModeChange = true;
         renderNow = true;
         return;

@@ -22,7 +22,7 @@ public:
     /** Standard deviation of the noise, when enabled. */
     static constexpr float NOISE_COUNTS = 25;
     /** How long an espresso shot started with startShot() runs, in ms. */
-    static constexpr unsigned long SHOT_DURATION_MS = 33000;
+    static constexpr unsigned long SHOT_DURATION_MS = 31000;
 
     /** Grams on the scale, without noise. */
     float getWeight() const { return weight; }
@@ -40,8 +40,8 @@ public:
     /**
      * Starts an espresso shot: the first drops come after 6 s of
      * pre-infusion, the flow rises to 1.6 g/s, and stops when the pump stops
-     * at 30 s. About 38 g end up in the cup, a little more than the espresso
-     * mode's default target.
+     * at 30 s, falling to 0 within 1 s like a real shot's. About 37 g end up
+     * in the cup, a little more than the espresso mode's default target.
      */
     void startShot();
     bool isShotRunning() const { return shotRunning; }

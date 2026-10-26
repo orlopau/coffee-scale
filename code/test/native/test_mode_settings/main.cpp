@@ -10,6 +10,8 @@ static ModeSettings *modeSettings;
 
 static int actionRuns = 0;
 static void runAction() { actionRuns++; }
+static int leaves = 0;
+static void onLeave() { leaves++; }
 static const SettingsAction ACTIONS[] = {{"Wi-Fi", runAction}};
 
 static const Settings::ChoiceSetting &liftTare() { return Settings::choiceSettings[Settings::LIFT_TARE]; }
@@ -145,6 +147,21 @@ void test_without_actions_the_menu_ends_with_the_settings(void)
     TEST_ASSERT_EQUAL(0, actionRuns);
 }
 
+// the changed settings apply without a restart
+void test_leaving_tells_that_the_settings_may_have_changed(void)
+{
+    ModeSettings settings(ACTIONS, 1, onLeave);
+    leaves = 0;
+    settings.leave();
+    TEST_ASSERT_EQUAL(1, leaves);
+}
+
+void test_leaving_without_a_callback_does_nothing(void)
+{
+    ModeSettings settings(ACTIONS, 1);
+    settings.leave();
+}
+
 int main(void)
 {
     UNITY_BEGIN();
@@ -158,5 +175,7 @@ int main(void)
     RUN_TEST(test_actions_come_after_the_settings);
     RUN_TEST(test_click_runs_the_action);
     RUN_TEST(test_without_actions_the_menu_ends_with_the_settings);
+    RUN_TEST(test_leaving_tells_that_the_settings_may_have_changed);
+    RUN_TEST(test_leaving_without_a_callback_does_nothing);
     return UNITY_END();
 }

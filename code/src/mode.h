@@ -16,6 +16,8 @@ public:
     virtual void update() = 0;
     virtual void render(Canvas &canvas) = 0;
     virtual void enter() {};
+    /** Before another mode is shown, e.g. when the mode switcher opens. */
+    virtual void leave() {}
     virtual bool canSwitchMode() = 0;
     /**
      * True while the mode measures something that slowly changing weight is
