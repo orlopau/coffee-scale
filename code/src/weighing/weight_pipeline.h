@@ -36,6 +36,7 @@ public:
      * before the first sample.
      */
     void tareTo(float grams);
+    uint32_t tareCount() override { return tares; }
 
     /** A new calibration. The tare still holds, filter and flow start over. */
     void setGramsPerCount(float gramsPerCount);
@@ -65,6 +66,7 @@ private:
     float gramsPerCount = 1;
     /** In counts, so a new calibration keeps the tare. */
     float offsetCounts = 0;
+    uint32_t tares = 0;
     AdaptiveAverage average;
     FlowEstimator flow;
     ZeroTracker zeroTracker;

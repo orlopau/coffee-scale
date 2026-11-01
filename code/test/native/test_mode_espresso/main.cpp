@@ -135,7 +135,10 @@ void test_update_does_not_draw(void)
     TEST_ASSERT_EQUAL(0, (int)Display::mockCanvas.texts.size());
 }
 
-static Reading readingAt(unsigned long ms, float grams) { return {static_cast<uint32_t>(ms), 0, grams, grams, grams, 0}; }
+static Reading readingAt(unsigned long ms, float grams, float flow = 0)
+{
+    return {static_cast<uint32_t>(ms), 0, grams, grams, grams, flow};
+}
 
 // Readings that waited in the queue arrive together, each must count at its own time.
 void test_estimate_uses_the_time_of_each_reading(void)
@@ -319,6 +322,202 @@ void test_leaving_stops_the_shot(void)
     TEST_ASSERT_FALSE(modeEspresso->isMeasuring());
 }
 
+/** A click on the espresso screen, alone in its update. */
+static void clickOnce()
+{
+    weightSource->readings.clear();
+    Interface::encoderClick = ClickType::SINGLE;
+    modeEspresso->update();
+    Interface::reset();
+}
+
+/** seconds updates 1 s apart, each with one reading at now(), gramsPerSecond since start. */
+static void flowFor(int seconds, float gramsPerSecond, unsigned long start)
+{
+    for (int i = 0; i < seconds; i++)
+    {
+        sleep_for(1000);
+        weightSource->readings = {readingAt(now(), gramsPerSecond * (now() - start) / 1000)};
+        modeEspresso->update();
+    }
+    weightSource->readings.clear();
+}
+
+/** A 6 s shot, started and ended by a click: 12 g at 2 g/s. */
+static void clickShot(float gramsPerSecond = 2)
+{
+    const unsigned long start = now();
+    clickOnce();
+    flowFor(6, gramsPerSecond, start);
+    clickOnce();
+}
+
+static bool hasTextContaining(const char *part)
+{
+    for (const RecordingCanvas::Text &t : canvas->texts)
+    {
+        if (strstr(t.text.c_str(), part))
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
+void test_a_click_ends_on_the_finished_shot(void)
+{
+    clickShot();
+    TEST_ASSERT_TRUE(modeEspresso->isShowingShot());
+    renderFrame();
+    TEST_ASSERT_TRUE(canvas->hasText("6.0s"));
+    TEST_ASSERT_TRUE(canvas->hasText("12.0g"));
+    TEST_ASSERT_FALSE(hasTextContaining("/36.0g"));
+}
+
+void test_the_target_weight_ends_on_the_finished_shot(void)
+{
+    Interface::encoderTicks = -240;
+    modeEspresso->update();
+    Interface::reset();
+    TEST_ASSERT_EQUAL(12000, modeEspresso->getTargetWeightMg());
+
+    const unsigned long start = now();
+    clickOnce();
+    flowFor(6, 2, start);
+    TEST_ASSERT_FALSE(modeEspresso->isMeasuring());
+    TEST_ASSERT_TRUE(modeEspresso->isShowingShot());
+    TEST_ASSERT_TRUE(modeEspresso->currentShot().yieldGrams() >= 12);
+}
+
+void test_a_pump_stop_ends_on_the_finished_shot(void)
+{
+    const unsigned long start = now();
+    sleep_for(8000);
+    std::vector<Reading> readings;
+    for (int s = 1; s <= 8; s++)
+    {
+        readings.push_back(readingAt(start + s * 1000, 2.0f * s));
+    }
+    modeEspresso->startShot(start, ShotStartSource::FirstDrop, start, readings);
+    modeEspresso->stopShotAt(start + 6000);
+    TEST_ASSERT_TRUE(modeEspresso->isShowingShot());
+    TEST_ASSERT_EQUAL(6000, modeEspresso->currentShot().durationMs());
+    TEST_ASSERT_FLOAT_WITHIN(0.001f, 12.0f, modeEspresso->currentShot().yieldGrams());
+}
+
+void test_a_click_on_the_finished_shot_only_goes_back(void)
+{
+    clickShot();
+    const uint32_t tares = weightSource->tares;
+    clickOnce();
+    TEST_ASSERT_FALSE(modeEspresso->isShowingShot());
+    TEST_ASSERT_FALSE(modeEspresso->isMeasuring());
+    TEST_ASSERT_EQUAL(6000, stopwatch->getTime());
+    TEST_ASSERT_EQUAL(tares, weightSource->tares);
+
+    clickOnce();
+    TEST_ASSERT_TRUE(modeEspresso->isMeasuring());
+}
+
+// e.g. lift-to-tare for the next cup
+void test_a_tare_goes_back(void)
+{
+    clickShot();
+    weightSource->tares++;
+    modeEspresso->update();
+    TEST_ASSERT_FALSE(modeEspresso->isShowingShot());
+}
+
+void test_turning_the_knob_goes_back_and_changes_the_target(void)
+{
+    clickShot();
+    Interface::encoderTicks = 5;
+    modeEspresso->update();
+    Interface::reset();
+    TEST_ASSERT_FALSE(modeEspresso->isShowingShot());
+    TEST_ASSERT_EQUAL(36500, modeEspresso->getTargetWeightMg());
+}
+
+void test_start_shot_goes_back_and_starts(void)
+{
+    clickShot();
+    modeEspresso->startShot(now(), ShotStartSource::FirstDrop, now(), {});
+    TEST_ASSERT_FALSE(modeEspresso->isShowingShot());
+    TEST_ASSERT_TRUE(modeEspresso->isMeasuring());
+    TEST_ASSERT_FLOAT_WITHIN(0.001f, 12.0f, modeEspresso->lastShot().yieldGrams());
+}
+
+void test_leaving_hides_the_finished_shot(void)
+{
+    clickShot();
+    modeEspresso->leave();
+    modeEspresso->enter();
+    modeEspresso->update();
+    TEST_ASSERT_FALSE(modeEspresso->isShowingShot());
+
+    clickShot(3);
+    TEST_ASSERT_TRUE(modeEspresso->isShowingShot());
+    TEST_ASSERT_FLOAT_WITHIN(0.001f, 12.0f, modeEspresso->lastShot().yieldGrams());
+}
+
+void test_a_shot_stopped_by_leaving_is_dropped(void)
+{
+    clickShot();
+    clickOnce();
+    const unsigned long start = now();
+    clickOnce();
+    flowFor(6, 2.5f, start);
+    modeEspresso->leave();
+    TEST_ASSERT_FALSE(modeEspresso->isShowingShot());
+    TEST_ASSERT_FALSE(modeEspresso->isMeasuring());
+
+    clickShot(3);
+    TEST_ASSERT_FLOAT_WITHIN(0.001f, 18.0f, modeEspresso->currentShot().yieldGrams());
+    TEST_ASSERT_FLOAT_WITHIN(0.001f, 12.0f, modeEspresso->lastShot().yieldGrams());
+}
+
+// two clicks in a row right after going back
+void test_a_short_shot_keeps_the_last_shot(void)
+{
+    clickShot();
+    clickOnce();
+    clickOnce();
+    sleep_for(1000);
+    clickOnce();
+    TEST_ASSERT_FALSE(modeEspresso->isShowingShot());
+
+    clickShot(3);
+    TEST_ASSERT_FLOAT_WITHIN(0.001f, 12.0f, modeEspresso->lastShot().yieldGrams());
+}
+
+void test_flow_shows_while_the_shot_runs(void)
+{
+    clickOnce();
+    sleep_for(500);
+    weightSource->readings = {readingAt(now(), 1, 1.8f)};
+    modeEspresso->update();
+    renderFrame();
+    TEST_ASSERT_TRUE(canvas->hasText("1.8g/s"));
+
+    // under 5 s, so the progress screen stays
+    sleep_for(500);
+    clickOnce();
+    TEST_ASSERT_FALSE(modeEspresso->isShowingShot());
+    renderFrame();
+    TEST_ASSERT_FALSE(hasTextContaining("g/s"));
+}
+
+// a lifted cup
+void test_flow_never_shows_below_zero(void)
+{
+    clickOnce();
+    sleep_for(500);
+    weightSource->readings = {readingAt(now(), 1, -12.3f)};
+    modeEspresso->update();
+    renderFrame();
+    TEST_ASSERT_TRUE(canvas->hasText("0.0g/s"));
+}
+
 int main(void)
 {
     UNITY_BEGIN();
@@ -344,5 +543,17 @@ int main(void)
     RUN_TEST(test_readings_already_fed_are_skipped);
     RUN_TEST(test_click_start_has_source_click);
     RUN_TEST(test_leaving_stops_the_shot);
+    RUN_TEST(test_a_click_ends_on_the_finished_shot);
+    RUN_TEST(test_the_target_weight_ends_on_the_finished_shot);
+    RUN_TEST(test_a_pump_stop_ends_on_the_finished_shot);
+    RUN_TEST(test_a_click_on_the_finished_shot_only_goes_back);
+    RUN_TEST(test_a_tare_goes_back);
+    RUN_TEST(test_turning_the_knob_goes_back_and_changes_the_target);
+    RUN_TEST(test_start_shot_goes_back_and_starts);
+    RUN_TEST(test_leaving_hides_the_finished_shot);
+    RUN_TEST(test_a_shot_stopped_by_leaving_is_dropped);
+    RUN_TEST(test_a_short_shot_keeps_the_last_shot);
+    RUN_TEST(test_flow_shows_while_the_shot_runs);
+    RUN_TEST(test_flow_never_shows_below_zero);
     UNITY_END();
 }
