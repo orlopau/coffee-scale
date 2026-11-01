@@ -28,4 +28,6 @@ public:
     /** The tared weight in grams to show, averaged while it holds still. */
     virtual float getWeight() = 0;
     virtual void tare() = 0;
+    /** How often it was tared, from any source. A change means a tare since. */
+    virtual uint32_t tareCount() = 0;
 };

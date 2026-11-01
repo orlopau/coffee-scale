@@ -24,6 +24,8 @@
 #include "data/recipes.h"
 #include "modes/mode_scale.h"
 #include "modes/mode_espresso.h"
+#include "shot_curve.h"
+#include "ui/shot_graph.h"
 #include "modes/mode_calibrate.h"
 #include "modes/mode_settings.h"
 #include "modes/mode_recipe.h"
@@ -192,11 +194,77 @@ void test_espresso(void)
     for (int i = 1; i <= 8; i++)
     {
         sleep_for(500);
-        weightSource->newReading(2.5f * i);
+        weightSource->newReading(2.5f * i, 5.0f);
         espresso.update();
     }
     weightSource->readings.clear();
     show("espresso_brewing", espresso);
+}
+
+// an accepted shot isn't stopped by the target, the dashed line is at the yield
+void test_espresso_shot_over_target(void)
+{
+    ModeEspresso espresso(*weightSource, *stopwatch);
+    espresso.enter();
+    const unsigned long start = now();
+    sleep_for(32000);
+    std::vector<Reading> readings;
+    for (uint32_t t = 100; t <= 32000; t += 100)
+    {
+        const float tau = t / 1000.0f - 7;
+        const float grams = tau > 0 ? 0.0782f * tau * tau : 0;
+        readings.push_back({static_cast<uint32_t>(start + t), 0, grams, grams, grams, 0});
+    }
+    espresso.startShot(start, ShotStartSource::FirstDrop, start + 7000, readings);
+    espresso.stopShotAt(start + 30000);
+    weightSource->weight = readings.back().net;
+    show("espresso_shot_over_target", espresso);
+
+    click(espresso);
+    render("espresso_back", espresso);
+}
+
+/** Flat for 7 s, then a flow that speeds up, like a real shot: yieldGrams at durationMs. */
+static ShotCurve espressoShot(uint32_t durationMs, float yieldGrams)
+{
+    auto shape = [](float t) {
+        const float tau = t - 7;
+        return tau > 0 ? 0.5f * tau + 0.0625f * tau * tau : 0;
+    };
+    const float scale = yieldGrams / shape(durationMs / 1000.0f);
+    ShotCurve curve;
+    for (uint32_t t = 100; t <= durationMs; t += 100)
+    {
+        curve.add(t, scale * shape(t / 1000.0f));
+    }
+    curve.finish(durationMs);
+    return curve;
+}
+
+void test_shot_graph(void)
+{
+    Canvas &canvas = display.canvas();
+    const ShotCurve shot = espressoShot(28000, 36.5f);
+
+    canvas.clear();
+    ShotGraph::render(canvas, shot, nullptr);
+    check("espresso_shot");
+
+    const ShotCurve last = espressoShot(31000, 40);
+    canvas.clear();
+    ShotGraph::render(canvas, shot, &last);
+    check("espresso_shot_with_last");
+
+    // longer than the curve holds: its time goes on, its curve ends at 90 s
+    ShotCurve longShot;
+    for (uint32_t t = 100; t <= 100000; t += 100)
+    {
+        longShot.add(t, 0.5f * t / 1000);
+    }
+    longShot.finish(100000);
+    canvas.clear();
+    ShotGraph::render(canvas, longShot, nullptr);
+    check("espresso_shot_long");
 }
 
 void test_recipe_switcher(void)
@@ -571,6 +639,8 @@ int main(void)
     UNITY_BEGIN();
     RUN_TEST(test_scale);
     RUN_TEST(test_espresso);
+    RUN_TEST(test_shot_graph);
+    RUN_TEST(test_espresso_shot_over_target);
     RUN_TEST(test_recipe_switcher);
     RUN_TEST(test_recipe_summary);
     RUN_TEST(test_recipe_config_ratio);

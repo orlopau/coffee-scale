@@ -392,6 +392,51 @@ void test_leaving_to_the_scale_mode_before_the_shot_was_accepted_stays_there(voi
     TEST_ASSERT_EQUAL_PTR(scale, manager->activeMode());
 }
 
+/** A detected shot, from the pump start to its stop, ended by the scale. */
+static void detectedShot()
+{
+    autoStart->setOffsetMs(7000);
+    steady(3000);
+    shotFeed(28000);
+    shotFeed(7000);
+}
+
+void test_a_detected_shot_ends_on_the_finished_shot(void)
+{
+    detectedShot();
+    TEST_ASSERT_TRUE(espresso->isShowingShot());
+    const ShotCurve &shot = espresso->currentShot();
+    TEST_ASSERT_UINT32_WITHIN(500, pumpStop() - (firstDrop() - 7000), shot.durationMs());
+    TEST_ASSERT_FLOAT_WITHIN(2.0f, stop(PUMP_STOP_S), shot.yieldGrams());
+    // 6 s in, before the first drop
+    TEST_ASSERT_EQUAL_FLOAT(0, shot.gramsAt(30));
+}
+
+// e.g. lift-to-tare
+void test_a_tare_on_the_finished_shot_goes_back(void)
+{
+    detectedShot();
+    weights->tare();
+    loop(stop(PUMP_STOP_S + 5));
+    TEST_ASSERT_FALSE(espresso->isShowingShot());
+}
+
+void test_the_next_detected_shot_leaves_the_finished_shot(void)
+{
+    detectedShot();
+    const float firstYield = espresso->currentShot().yieldGrams();
+
+    // a new cup, tared
+    weights->tare();
+    shotElapsedMs = 0;
+    steady(3000);
+    shotFeed(25000);
+    TEST_ASSERT_TRUE(espresso->isMeasuring());
+    TEST_ASSERT_FALSE(espresso->isShowingShot());
+    TEST_ASSERT_TRUE(espresso->lastShot().isFinished());
+    TEST_ASSERT_EQUAL_FLOAT(firstYield, espresso->lastShot().yieldGrams());
+}
+
 int main(void)
 {
     UNITY_BEGIN();
@@ -408,5 +453,8 @@ int main(void)
     RUN_TEST(test_a_shot_the_target_weight_stopped_before_it_was_accepted_is_not_restarted);
     RUN_TEST(test_a_shot_a_click_stopped_before_it_was_accepted_is_not_restarted);
     RUN_TEST(test_leaving_to_the_scale_mode_before_the_shot_was_accepted_stays_there);
+    RUN_TEST(test_a_detected_shot_ends_on_the_finished_shot);
+    RUN_TEST(test_a_tare_on_the_finished_shot_goes_back);
+    RUN_TEST(test_the_next_detected_shot_leaves_the_finished_shot);
     UNITY_END();
 }
