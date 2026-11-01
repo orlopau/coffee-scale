@@ -42,7 +42,7 @@ The scale understands what happens on it.
 - [x] **Shot detection** _(Firmware)_
   With shot detection on, the scale notices a shot after a tare by how smoothly it flows, switches from the scale mode to the espresso screen, times it from the pump start (the first drop minus an adjustable offset) and stops the time when the pump stops. Off by default; the click works as before. See [ADR 2](adr/0002-shot-detection/README.md).
 - [ ] **Shot graph on the display** _(Firmware)_
-  Live curve with target line and flow in g/s. After the shot, a summary with yield, time and ratio.
+  While a shot runs, the espresso screen also shows the flow in g/s. When it ends, at the pump stop, the click or the target weight, the screen shows the whole shot: its curve, the last shot's curve dotted behind it, the time on the time axis and the yield on a line at its height. A click or a tare goes back.
 
 ## 03 Shot log & web app
 
@@ -78,7 +78,7 @@ Collected, but not yet planned.
 - **Live weight via Bluetooth** _(Firmware)_
   The Decent Scale protocol, so apps like Beanconqueror can use the scale directly.
 - **Dose sets the target weight** _(Firmware)_
-  The measured dose sets the espresso target automatically, e.g. 18.2 g × 2 = 36.4 g.
+  The measured dose sets the espresso target automatically, e.g. 18.2 g × 2 = 36.4 g. The finished shot then also shows the ratio.
 - **Container detection** _(Firmware)_
   The weight of the container set down picks the mode: portafilter opens espresso, V60 opens your recipe.
 - **Auto-sleep** _(Firmware)_

@@ -54,6 +54,7 @@ void WeightPipeline::tare()
 
     // right after a new calibration the filter is empty, the last sample is all there is
     offsetCounts = average.isEmpty() ? last.raw : average.value() / gramsPerCount;
+    tares++;
     zeroTracker.reset();
     last.net = (last.raw - offsetCounts) * gramsPerCount;
     last.filtered = 0;
@@ -67,6 +68,7 @@ void WeightPipeline::tareTo(float grams)
     }
 
     offsetCounts = grams / gramsPerCount;
+    tares++;
     zeroTracker.reset();
     last.net = last.grams - grams;
     last.filtered = (average.isEmpty() ? last.grams : average.value()) - grams;
