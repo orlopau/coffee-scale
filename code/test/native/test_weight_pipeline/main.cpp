@@ -285,6 +285,24 @@ void test_tare_to_starts_zero_tracking_over(void)
     TEST_ASSERT_FLOAT_WITHIN(0.0001, 0.06, r.filtered);
 }
 
+// the modes see every tare by the count, also lift-to-tare's
+void test_tare_count_counts_tare_and_tare_to(void)
+{
+    pipeline->process({0, 10000});
+    TEST_ASSERT_EQUAL(0, pipeline->tareCount());
+    pipeline->tare();
+    TEST_ASSERT_EQUAL(1, pipeline->tareCount());
+    pipeline->tareTo(5);
+    TEST_ASSERT_EQUAL(2, pipeline->tareCount());
+}
+
+void test_no_tare_counted_before_the_first_sample(void)
+{
+    pipeline->tare();
+    pipeline->tareTo(5);
+    TEST_ASSERT_EQUAL(0, pipeline->tareCount());
+}
+
 int main(void)
 {
     UNITY_BEGIN();
@@ -312,5 +330,7 @@ int main(void)
     RUN_TEST(test_tare_to_a_weight);
     RUN_TEST(test_tare_to_before_the_first_sample_does_nothing);
     RUN_TEST(test_tare_to_starts_zero_tracking_over);
+    RUN_TEST(test_tare_count_counts_tare_and_tare_to);
+    RUN_TEST(test_no_tare_counted_before_the_first_sample);
     return UNITY_END();
 }

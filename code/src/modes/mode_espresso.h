@@ -5,6 +5,7 @@
 #include "stopwatch.h"
 #include "regression.h"
 #include "shot_start.h"
+#include "shot_curve.h"
 
 #include <vector>
 
@@ -27,8 +28,11 @@ public:
     void update() override;
     void render(Canvas &canvas) override;
     void enter() override;
-    /** Stops a running shot, e.g. one detected by mistake. */
-    void leave() override { stopwatch.stop(); }
+    /**
+     * Stops a running shot, e.g. one detected by mistake, and drops it. Back
+     * on the espresso screen, the progress screen shows.
+     */
+    void leave() override;
     bool canSwitchMode() override;
     /** While the shot's stopwatch runs. */
     bool isMeasuring() override { return stopwatch.isRunning(); }
@@ -42,7 +46,7 @@ public:
     void startShot(unsigned long startMs, ShotStartSource source, uint32_t firstDropMs,
                    const std::vector<Reading> &readings);
     /** Stops the shot as if at stopMs, a now() time in the past, e.g. the pump stop. */
-    void stopShotAt(unsigned long stopMs) { stopwatch.stopAt(stopMs); }
+    void stopShotAt(unsigned long stopMs);
     /** An accepted shot isn't stopped by the target weight, its detector stops it. */
     void setAccepted(bool accepted) { this->accepted = accepted; }
     bool isAccepted() const { return accepted; }
@@ -52,6 +56,13 @@ public:
     uint32_t getFirstDropMs() const { return firstDropMs; }
 
     int32_t getTargetWeightMg() const { return targetWeightMg; }
+    /** The finished-shot screen is up, instead of the progress screen. */
+    bool isShowingShot() const { return showingShot; }
+    /** The running shot, or the one that ended last. */
+    const ShotCurve &currentShot() const { return current; }
+    /** The finished shot before the current one, shown dotted behind it. */
+    const ShotCurve &lastShot() const { return last; }
+
     /** Estimated time until the target weight is reached. Only meaningful if !isWaitingForEstimate(). */
     int32_t getRemainingTimeMs();
     /** True while there is no usable estimate for the time to finish. */
@@ -70,5 +81,17 @@ private:
     /** The newest reading that went into the estimate, so none counts twice. */
     uint32_t lastReadingMs = 0;
 
+    ShotCurve current;
+    ShotCurve last;
+    bool showingShot = false;
+    /** The weight source's tare count when update() last looked. */
+    uint32_t seenTares = 0;
+    /** The newest reading's flow, for the progress screen. */
+    float flow = 0;
+
+    /** A shot starts: a finished one before it becomes the last shot. */
+    void beginShot();
+    /** The stopwatch stopped a running shot: it shows if it is finished. */
+    void endShot();
     void handleReading(const Reading &reading);
 };
