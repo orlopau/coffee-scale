@@ -18,6 +18,9 @@ public:
     bool canSwitchMode();
 
 private:
+    /** Keeps the latest raw value and counts the readings per second. */
+    void noteReading(const Reading &reading);
+
     enum class CalibrationStep
     {
         BEGIN,
@@ -34,5 +37,17 @@ private:
     long sumMeasurements;
     unsigned int numMeasurements;
     long tare;
+    /** The latest raw reading, shown on every step to see the load cell work. */
+    long lastRaw;
+    /**
+     * Readings in the last full second. 10 or 80 from a working HX711, 5 if
+     * its data pin stays low and the load cell task reads on its timeout.
+     */
+    unsigned int rate;
+    unsigned int rateCount;
+    uint32_t rateStartMs;
+    /** False until the first reading starts the first second. */
+    bool rateStarted;
+    float average;
     float scale;
 };

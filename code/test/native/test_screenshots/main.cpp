@@ -351,6 +351,20 @@ void test_calibration(void)
     show("calibration_end", calibration);
 }
 
+void test_calibration_unchanged(void)
+{
+    weightSource->readings = {rawReading(1000)};
+    ModeCalibration calibration(*weightSource, *stopwatch, saveScale);
+    click(calibration);
+    click(calibration);
+    for (int i = 0; i < CALIBRATION_SAMPLE_SIZE; i++)
+    {
+        Interface::reset();
+        calibration.update();
+    }
+    show("calibration_unchanged", calibration);
+}
+
 void test_settings(void)
 {
     static const SettingsAction actions[] = {{SETTINGS_WIFI, [] {}}};
@@ -579,6 +593,7 @@ int main(void)
     RUN_TEST(test_recipe_brewing);
     RUN_TEST(test_recipe_done);
     RUN_TEST(test_calibration);
+    RUN_TEST(test_calibration_unchanged);
     RUN_TEST(test_settings);
     RUN_TEST(test_mode_switcher);
     RUN_TEST(test_updater);
