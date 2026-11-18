@@ -38,6 +38,8 @@ jobs:
       run: python -m unittest discover -s scripts -p 'test_*.py'
     - name: Run Native Tests
       run: pio test -e native
+    - name: Run Screenshot Tests DE
+      run: pio test -e native_de
     - name: Build Firmware EN
       run: COMPILE_LANG=en pio run -e esp32dev
     - name: Build Firmware DE

@@ -1,0 +1,15 @@
+{{/* Remembers a language picked in the language switch, so the start page (static/index.html) opens it next time. */}}
+<script>
+  document.addEventListener("click", function (event) {
+    var link = event.target.closest && event.target.closest(".hextra-language-options a");
+    if (!link) return;
+    // the first en or de in the path, also under a path like /coffee-scale/de/...
+    var lang = new URL(link.href, location.href).pathname.split("/").filter(function (part) {
+      return part === "en" || part === "de";
+    })[0];
+    if (!lang) return;
+    try {
+      localStorage.setItem("coffee-scale-lang", lang);
+    } catch (e) {}
+  });
+</script>

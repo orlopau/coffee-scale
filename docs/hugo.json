@@ -1,0 +1,66 @@
+{
+  "baseURL": "https://coffee-scale.orlopau.dev/",
+  "title": "Coffee Scale",
+  "theme": "hextra",
+  "enableRobotsTXT": true,
+  "defaultContentLanguage": "en",
+  "defaultContentLanguageInSubdir": true,
+  "disableDefaultLanguageRedirect": true,
+  "languages": {
+    "en": {
+      "label": "English",
+      "locale": "en-US",
+      "weight": 1,
+      "title": "Coffee Scale",
+      "params": {
+        "description": "A coffee scale with an espresso timer, shot detection and recipes, built on an ESP32."
+      },
+      "menus": {
+        "main": [
+          { "name": "Manual", "pageRef": "/manual", "weight": 1 },
+          { "name": "Search", "weight": 2, "params": { "type": "search" } },
+          { "name": "GitHub", "url": "https://github.com/orlopau/coffee-scale", "weight": 3, "params": { "icon": "github" } }
+        ]
+      }
+    },
+    "de": {
+      "label": "Deutsch",
+      "locale": "de-DE",
+      "weight": 2,
+      "title": "Kaffeewaage",
+      "params": {
+        "description": "Eine Kaffeewaage mit Espresso-Timer, Shot-Erkennung und Rezepten, gebaut mit einem ESP32."
+      },
+      "menus": {
+        "main": [
+          { "name": "Anleitung", "pageRef": "/manual", "weight": 1 },
+          { "name": "Suche", "weight": 2, "params": { "type": "search" } },
+          { "name": "GitHub", "url": "https://github.com/orlopau/coffee-scale", "weight": 3, "params": { "icon": "github" } }
+        ]
+      }
+    }
+  },
+  "module": {
+    "hugoVersion": { "extended": true, "min": "0.146.0" },
+    "mounts": [
+      { "source": "assets", "target": "assets" },
+      { "source": "static", "target": "static" },
+      { "source": "img", "target": "static/img" },
+      { "source": "../code/test/native/test_screenshots/screens/en", "target": "assets/screens/en" },
+      { "source": "../code/test/native/test_screenshots/screens/de", "target": "assets/screens/de" }
+    ]
+  },
+  "markup": {
+    "goldmark": { "renderer": { "unsafe": true } }
+  },
+  "params": {
+    "navbar": { "displayTitle": true, "displayLogo": false, "width": "wide" },
+    "theme": { "default": "system", "displayToggle": true },
+    "footer": { "enable": true, "displayCopyright": false, "displayPoweredBy": false, "width": "normal" },
+    "displayUpdatedDate": false,
+    "search": { "enable": true, "type": "flexsearch", "flexsearch": { "index": "content", "tokenize": "forward" } },
+    "editURL": { "enable": true, "base": "https://github.com/orlopau/coffee-scale/edit/master/docs/content" },
+    "page": { "width": "normal", "contextMenu": { "enable": false } },
+    "imageZoom": { "enable": true }
+  }
+}

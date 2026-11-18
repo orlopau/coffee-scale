@@ -45,7 +45,7 @@ public:
     unsigned long remainingMs() const;
 
     /**
-     * Writes the recording as CSV (see the README) to sink.
+     * Writes the recording as CSV (see docs/development.md) to sink.
      *
      * @return the number of bytes written
      */

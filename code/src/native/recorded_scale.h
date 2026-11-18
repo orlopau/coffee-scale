@@ -5,7 +5,7 @@
 #include <vector>
 
 /**
- * A recording of the real scale's load cell (see the README), replayed: like
+ * A recording of the real scale's load cell (see docs/development.md), replayed: like
  * SimulatedScale, but the readings come from a CSV file recorded on the
  * scale.
  *
