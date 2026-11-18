@@ -1,0 +1,17 @@
+{{/*
+  A screen of the scale, as rendered by the screenshot tests, in the page's language:
+    {{< screen name="scale_running" caption="Weighing with the timer running" >}}
+  The names are the files in code/test/native/test_screenshots/screens/<language>/.
+*/}}
+{{- $name := .Get "name" -}}
+{{- $caption := .Get "caption" -}}
+{{- $lang := .Page.Language.Lang -}}
+{{- $image := resources.Get (printf "screens/%s/%s.png" $lang $name) -}}
+{{- if not $image -}}
+  {{- errorf "screen %q has no image in screens/%s (%s)" $name $lang .Position -}}
+{{- else -}}
+<figure class="scale-screen">
+  <img src="{{ $image.RelPermalink }}" width="256" height="128" alt="{{ $caption | default $name }}" loading="lazy">
+  {{- with $caption }}<figcaption>{{ . }}</figcaption>{{ end }}
+</figure>
+{{- end -}}

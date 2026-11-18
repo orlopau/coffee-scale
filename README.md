@@ -8,110 +8,23 @@
 This project contains the schematics, code and 3D models for a coffee scale based on an ESP32.
 
 <img src="docs/img/3d.png" width="500">
- 
+
+**[Read the manual](https://coffee-scale.orlopau.dev)**, in English and German: setting up, weighing, espresso, recipes, settings and calibration, with the scale's real screens.
+
 ## Features
-* OTA updates via WiFi
-* Recipe-based brewing
+* Espresso timer with a target weight, the shot's curve when it ends, and the shot before for comparison
+* Shot detection (off by default): notices a shot by itself, times it from the pump start and stops at the pump stop
+* Step-by-step recipes for pour-over and Aeropress, with adjustable coffee and ratio
+* Lift-to-tare: slide a finger up the side of the platform, lifting it a little, and the scale tares with a double beep. Also with a cup on it, and never while the timer runs. Off, Gentle, Normal or Firm in the settings.
+* Auto-tare for containers whose weight you saved, and zero tracking that keeps the empty scale at zero
 * Auto averaging of weight values: more values are used to determine weight when weight is relatively constant
-* Brew timer
-* Lift-to-tare: slide a finger up the side of the platform, lifting it a little, and the scale tares with a double beep. Also with a cup on it, and never during a shot. Off, Gentle, Normal or Firm in the settings.
+* Calibration on the scale, with a 100 g weight
+* Wi-Fi setup from the phone: scan the QR code on the display, no app
+* Automatic updates over Wi-Fi, which ask before installing and roll back if a firmware doesn't start
+* English and German firmware
 * USB-C charging
-* Interchangeable Load Cell
+* Interchangeable load cell
 * 3D-printable case
-* Bluetooth and Wi-Fi connectivity
 
-## Recipe-Based Brewing
-The scale can be used to brew coffee using a step-by-step recipe. 
-The recipe is stored on the scale, and can be adjusted while brewing.
-
-Possible adjustments include:
-- Changing the amount of coffee
-- Changing the brew ratio
-- Other adjustments based on the chosen recipe
-
-## Updates
-Once Wi-Fi is set up, the scale looks for a new firmware by itself every few starts, in the background while you weigh. When it finds one, it asks "Update to v1.10?" the next time you switch it on. **Yes** installs it and restarts, **Later** asks again next time. If a new firmware doesn't start properly, the scale goes back to the one before, says so, and doesn't offer that version again.
-
-To update by hand, hold the button while switching on the scale and choose a language.
-
-## Development: Updating From Your Computer
-During development, the scale can install a build straight from your computer over Wi-Fi, without USB and without a GitHub release.
-
-1. In `code/`, run `pio run -t serve`. This builds the firmware and serves it on your network. It is found by the scale via mDNS, so your computer's IP does not matter. The first run installs the Python package `zeroconf`.
-2. Hold the button while switching on the scale to open the updater. It connects to the Wi-Fi saved in the updater.
-3. On the language screen, **long-press** the button instead of clicking. The scale searches for your computer and installs the build. (If it finds no server, it opens the recorder, see below.)
-
-The server keeps running, so for the next build repeat steps 2 and 3 (`pio run -t serve` rebuilds when restarted). If the scale already runs the served build, it shows "No update available". Your computer and the scale must be on the same network, and the firewall must allow incoming connections for the server.
-
-## Development: Trying Automatic Updates
-The scale's automatic updates read GitHub's releases. To try them without publishing one, the dev server can pose as a release, and a build can claim to be an older version.
-
-- **Against GitHub:** build with an older version, e.g. `FIRMWARE_VERSION=v1.8.0 pio run -t upload`. The scale then sees the latest release as newer.
-- **Against your computer:** run `python scripts/dev_server.py .pio/build/esp32dev/firmware.bin --release v9.9.9 --port 8000` in `code/`. It prints the `RELEASES_URL` to build the scale with, e.g. `RELEASES_URL=http://192.168.1.20:8000/releases pio run -t upload`. Build the firmware to serve with the same `RELEASES_URL`, so it keeps asking your computer. The served build reports the last tag as its version, not `--release`, so after installing it the scale still finds v9.9.9 at every check; build it with `FIRMWARE_VERSION=v9.9.9` too to see the scale stay quiet once it's up to date.
-
-A check runs at the first start of a new firmware if Wi-Fi is set up, then every 5th start; the serial log (`AUTO_UPDATE`) says when.
-
-## Development: Recording the Load Cell
-The scale can record the raw readings of its load cell, e.g. of taps or an espresso shot, and save them in its flash. The recordings are test data: native tests replay them with `RecordedScale` (`code/src/native/recorded_scale.h`). You don't need your computer while recording.
-
-1. Install a build with the recorder on the scale, see above.
-2. Open the updater and long-press on the language screen, as for an update. If no server is found, the scale opens the recorder by itself. It shows how many recordings are saved, and "No server".
-
-**Click** to start a recording. While recording, the scale shows the weight, the recording time, the time left and the number of markers. **Click** again to set a marker, e.g. when the pump starts. **Turn** the knob to tare the shown weight, e.g. after putting the cup on; while recording, the tare is saved in the recording too. **Long-press** to save the recording in the scale's flash; the scale then waits for the click that starts the next one. A recording takes at most 5 minutes, then the scale waits for the long-press. About 50 recordings fit. If saving fails, the recording is kept and the next long-press tries again. A recording that wasn't saved is lost when the scale is switched off.
-
-To get the recordings to your computer, run `pio run -t record` in `code/`. It does not build anything, it waits for recordings. Only one of `serve` and `record` can run at a time. Open the recorder as above; the scale now finds the server and no longer says "No server". **Long-press** while idle to send all saved recordings, oldest first. Each one is deleted from the scale after it arrived, so if sending fails, the rest stays and the next long-press tries again.
-
-The computer saves each recording as `code/test/recordings/<date>_<time>.csv`. Give the useful ones a name that says what they show, commit them, and delete the rest. A recording looks like this, with `ms` counted from its start on the scale's clock:
-
-```
-# coffee-scale recording
-# firmware: v1.9.0
-# grams_per_count: 0.002381
-ms,event,value
-0,sample,84012
-101,sample,84020
-1234,click,
-1500,tare,
-```
-
-`grams_per_count` is the calibration of the scale that recorded, so tests can convert the raw readings to grams. A sample's `value` is the HX711's raw reading, signed. The samples stay raw after a tare, a `tare` row only says when it happened (`RecordedScale::tares()`). Firmware up to v1.9.0 recorded it unsigned (16540413 instead of -236803), and the replay converts those.
-
-## Development: Emulator
-The emulator runs the firmware on your computer, in a window that shows the scale's display. It needs SDL2 (`sudo apt install libsdl2-dev` on Debian/Ubuntu).
-
-```
-cd code
-pio run -e emulator -t exec
-```
-
-With `COMPILE_LANG=de` in front, it runs in German. The load cell is simulated, and the keyboard replaces the encoder:
-
-| Key | Action |
-|---|---|
-| Left / Right | turn the encoder |
-| Enter, Space | press the encoder, hold for a long press |
-| Up / Down | put 1 g on the scale or take it off, with Shift 0.1 g |
-| PageUp / PageDown | 10 g on or off |
-| Home | 100 g, e.g. for the calibration |
-| 0, Backspace | clear the scale |
-| F | pour on/off, 2 g/s |
-| S | espresso shot: 6 s pre-infusion, then about 38 g in 33 s |
-| L | lift the platform for a moment (lift-to-tare) |
-| N | noise on/off |
-| - / + | slower/faster time, up to 20x (1x while the button is held) |
-| P | save a screenshot to the current directory |
-| Esc, Q | quit |
-
-The window title shows the weight on the scale. The frame around the display lights up while the buzzer sounds. Settings are kept in memory only, and the boot splash screen and the updater only run on the device.
-
-## Development: Screenshot Tests
-The native tests render every screen through u8g2, set up like the scale's display, and compare it with the reference images in `code/test/native/test_screenshots/screens/`. A screen that changes fails the tests, and its new image is written to `code/test/native/test_screenshots/failed/` (on GitHub, attached to the CI run as `failed-screenshots`).
-
-After changing a screen on purpose, accept the new images and commit them with the change:
-
-```
-cd code
-UPDATE_SCREENSHOTS=1 pio test -e native -f native/test_screenshots
-```
-
-The diff of the pull request then shows each changed screen before and after.
+## Development
+How to install builds from your computer, record the load cell, run the emulator and the screenshot tests: [code/docs/development.md](code/docs/development.md). What comes next: [code/docs/roadmap.md](code/docs/roadmap.md). The manual's source is in [docs/](docs/), built with Hugo.

@@ -1,9 +1,11 @@
 // Screenshot tests: renders every screen through u8g2, set up like the scale's
-// display, and compares it with the reference images in screens/.
+// display, and compares it with the reference images in screens/en/ (env native)
+// and screens/de/ (env native_de). The manual on the website shows these images.
 //
 // After changing a screen on purpose, accept the new images with
 //   UPDATE_SCREENSHOTS=1 pio test -e native -f native/test_screenshots
-// and review them in the diff. Images that do not match are written to failed/.
+//   UPDATE_SCREENSHOTS=1 pio test -e native_de
+// and review them in the diff. Images that do not match are written to failed/<language>/.
 
 #include <unity.h>
 
@@ -47,9 +49,16 @@ namespace fs = std::filesystem;
 // Each display pixel becomes 2x2 pixels in the images, so they are readable in diffs.
 static const int SCALE = 2;
 
+// The texts are chosen at compile time, so each language has its own images.
+#ifdef LANG_DE
+static const char *const LANGUAGE = "de";
+#else
+static const char *const LANGUAGE = "en";
+#endif
+
 static const fs::path HERE = fs::path(__FILE__).parent_path();
-static const fs::path SCREENS_DIR = HERE / "screens";
-static const fs::path FAILED_DIR = HERE / "failed";
+static const fs::path SCREENS_DIR = HERE / "screens" / LANGUAGE;
+static const fs::path FAILED_DIR = HERE / "failed" / LANGUAGE;
 
 static VirtualDisplay display;
 static MockWeightSource *weightSource;

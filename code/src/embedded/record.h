@@ -8,7 +8,7 @@
 
 /**
  * Records the load cell and saves the recordings to flash, with or without the
- * dev server's recording mode (see the README), entered from the updater.
+ * dev server's recording mode (see docs/development.md), entered from the updater.
  */
 namespace Recording
 {

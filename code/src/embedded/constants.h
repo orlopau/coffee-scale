@@ -32,7 +32,7 @@
 #define PIN_UPDATE_FIRMWARE PIN_ENC_BTN
 
 // UPDATE
-// RELEASES_URL=http://<computer>:<port>/releases at build time points the scale at the dev server's release, see the README
+// RELEASES_URL=http://<computer>:<port>/releases at build time points the scale at the dev server's release, see docs/development.md
 #ifndef RELEASES_URL
 #define RELEASES_URL "https://github.com/orlopau/coffee-scale/releases"
 #endif

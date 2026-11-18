@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Coffee Scale</title>
+  <script>
+    // Opens the manual in the language picked by hand before (see the language switch),
+    // otherwise in the browser's language: German for de, de-AT, de-CH, ..., else English.
+    (function () {
+      var lang = null;
+      try {
+        lang = localStorage.getItem("coffee-scale-lang");
+      } catch (e) {}
+      if (lang !== "en" && lang !== "de") {
+        var preferred = (navigator.languages && navigator.languages[0]) || navigator.language || "";
+        lang = preferred.toLowerCase().split("-")[0] === "de" ? "de" : "en";
+      }
+      // relative, so it also works under a path like orlopau.github.io/coffee-scale/
+      location.replace(lang + "/");
+    })();
+  </script>
+  <noscript><meta http-equiv="refresh" content="0; url=en/"></noscript>
+</head>
+<body>
+  <p><a href="en/">Coffee Scale manual (English)</a></p>
+  <p><a href="de/">Anleitung der Kaffeewaage (Deutsch)</a></p>
+</body>
+</html>

@@ -11,10 +11,10 @@ The file is re-read on every request, so rebuilding while the server runs is
 fine. If the scale already runs exactly this build, it gets "no update".
 
 Pose as a GitHub release of a version, so the scale's automatic updates find
-it (build the scale with RELEASES_URL, see the README):
+it (build the scale with RELEASES_URL, see docs/development.md):
     python scripts/dev_server.py .pio/build/esp32dev/firmware.bin --release v9.9.9 --port 8000
 
-Receive recordings of the scale's load cell, see the README:
+Receive recordings of the scale's load cell, see docs/development.md:
     pio run -t record
     python scripts/dev_server.py --record test/recordings
 
