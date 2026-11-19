@@ -28,7 +28,7 @@ Vorher stellt sie vielleicht eine Frage:
 
 ## WLAN einrichten
 
-Die Waage sucht über das WLAN nach Updates. Du richtest es vom Handy aus ein, ohne App.
+Die Waage sucht über das WLAN nach Updates und spricht darüber mit einer [Mahlkönig-Mühle](../grinder/). Du richtest es vom Handy aus ein, ohne App.
 
 {{% steps %}}
 

@@ -18,7 +18,12 @@ public:
     };
 
     std::vector<Text> texts;
+    struct Box
+    {
+        int x, y, w, h;
+    };
     int boxes = 0;
+    std::vector<Box> boxList;
     int clears = 0;
     int flushes = 0;
     Font font = Font::Body;
@@ -29,6 +34,7 @@ public:
     {
         texts.clear();
         boxes = 0;
+        boxList.clear();
         clears++;
     }
     void flush() override { flushes++; }
@@ -45,7 +51,10 @@ public:
     void drawLine(int x0, int y0, int x1, int y1) override {}
     void drawHLine(int x, int y, int w) override {}
     void drawVLine(int x, int y, int h) override {}
-    void drawBox(int x, int y, int w, int h) override { boxes++; }
+    void drawBox(int x, int y, int w, int h) override {
+        boxes++;
+        boxList.push_back({x, y, w, h});
+    }
     void drawFrame(int x, int y, int w, int h) override {}
 
     /** True if some text drawn in the current frame equals text exactly. */
@@ -61,10 +70,24 @@ public:
         return false;
     }
 
+    /** True if a box of exactly this size was drawn at x, y in the current frame. */
+    bool hasBox(int x, int y, int w, int h) const
+    {
+        for (const Box &b : boxList)
+        {
+            if (b.x == x && b.y == y && b.w == w && b.h == h)
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
     void reset()
     {
         texts.clear();
         boxes = clears = flushes = 0;
+        boxList.clear();
         font = Font::Body;
     }
 };

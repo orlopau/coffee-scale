@@ -1,6 +1,6 @@
 ---
 title: Settings
-weight: 5
+weight: 6
 ---
 
 Open **Settings** from the list of modes.
@@ -24,8 +24,9 @@ Open **Settings** from the list of modes.
 | **Shot Offset** | Seconds from the pump start to the first drop. A detected shot's timer starts that much earlier. See [Espresso](../espresso/#shot-offset). | 7.0 |
 | **Lift-to-Tare** | How firmly you have to lift the platform to tare: **Off**, **Gentle**, **Normal**, **Firm**. See [Weighing](../weighing/#lift-to-tare). | Normal |
 | **Shot Detection** | Whether the scale notices espresso shots by itself: **Off** or **On**. See [Espresso](../espresso/#shot-detection). | Off |
+| **Mahlkönig grinder** | Whether the scale stands in for the Xenia, so a Mahlkönig E64 WS dials itself in from your shots: **Off** or **On**. On keeps the scale on Wi-Fi. See [Mahlkönig grinder](../grinder/). | Off |
 | **Wi-Fi** | Sets up Wi-Fi from your phone. See [Getting started](../getting-started/#setting-up-wi-fi). | |
 
 {{< callout type="info" >}}
-Shot Detection and Shot Offset apply as soon as you leave the settings. Weight Averaging Threshold, Zero Tracking and Lift-to-Tare apply the next time you switch the scale on.
+Shot Detection, Shot Offset and Mahlkönig grinder apply as soon as you leave the settings. Weight Averaging Threshold, Zero Tracking and Lift-to-Tare apply the next time you switch the scale on.
 {{< /callout >}}

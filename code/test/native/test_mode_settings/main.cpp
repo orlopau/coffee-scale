@@ -112,6 +112,76 @@ void test_long_press_keeps_the_stored_choice(void)
     TEST_ASSERT_EQUAL(liftTare().def, Settings::getChoice(liftTare()));
 }
 
+static void ipConnected(char *out, size_t size) { snprintf(out, size, "192.168.1.42"); }
+static void ipMissing(char *out, size_t size) { out[0] = '\0'; }
+
+/**
+ * Edits the Mahlkönig grinder choice of a settings mode that knows the IP, rendering at ticks.
+ * storedOn is what is stored, so what is active, when the settings are entered.
+ */
+static void editGrinder(void (*grinderIp)(char *, size_t), Settings::ChoiceSettingID id, int ticks,
+                        bool storedOn = false)
+{
+    Settings::setChoice(Settings::choiceSettings[Settings::MAHLKOENIG], storedOn ? 1 : 0);
+    delete modeSettings;
+    modeSettings = new ModeSettings(ACTIONS, 1, nullptr, grinderIp);
+    modeSettings->enter();
+    Display::reset();
+    editChoice(id, ticks);
+}
+
+void test_grinder_choice_shows_the_address(void)
+{
+    // already active when the settings were entered, so it is the IP that shows
+    editGrinder(ipConnected, Settings::MAHLKOENIG, 0, true);
+    TEST_ASSERT_TRUE(Display::mockCanvas.hasText(SETTINGS_SHOT_AUTO_ON));
+    TEST_ASSERT_TRUE(Display::mockCanvas.hasText("coffee-scale.local"));
+    TEST_ASSERT_TRUE(Display::mockCanvas.hasText("192.168.1.42"));
+    TEST_ASSERT_FALSE(Display::mockCanvas.hasText(GRINDER_NOT_CONNECTED));
+    TEST_ASSERT_FALSE(Display::mockCanvas.hasText(GRINDER_ACTIVE_AFTER_LEAVING));
+
+    Settings::setChoice(Settings::choiceSettings[Settings::MAHLKOENIG], 0);
+}
+
+void test_grinder_not_active_yet_shows_the_hint(void)
+{
+    // off when the settings were entered, so On only takes effect after leaving
+    editGrinder(ipConnected, Settings::MAHLKOENIG, 1);
+    TEST_ASSERT_TRUE(Display::mockCanvas.hasText(SETTINGS_SHOT_AUTO_ON));
+    TEST_ASSERT_TRUE(Display::mockCanvas.hasText("coffee-scale.local"));
+    TEST_ASSERT_TRUE(Display::mockCanvas.hasText(GRINDER_ACTIVE_AFTER_LEAVING));
+    TEST_ASSERT_FALSE(Display::mockCanvas.hasText("192.168.1.42"));
+    TEST_ASSERT_FALSE(Display::mockCanvas.hasText(GRINDER_NOT_CONNECTED));
+}
+
+void test_grinder_choice_off_shows_no_address(void)
+{
+    editGrinder(ipConnected, Settings::MAHLKOENIG, 0);
+    TEST_ASSERT_TRUE(Display::mockCanvas.hasText(SETTINGS_SHOT_AUTO_OFF));
+    TEST_ASSERT_FALSE(Display::mockCanvas.hasText("coffee-scale.local"));
+    TEST_ASSERT_FALSE(Display::mockCanvas.hasText("192.168.1.42"));
+}
+
+void test_grinder_without_an_ip_is_not_connected(void)
+{
+    editGrinder(ipMissing, Settings::MAHLKOENIG, 0, true);
+    TEST_ASSERT_TRUE(Display::mockCanvas.hasText("coffee-scale.local"));
+    TEST_ASSERT_TRUE(Display::mockCanvas.hasText(GRINDER_NOT_CONNECTED));
+
+    editGrinder(nullptr, Settings::MAHLKOENIG, 0, true);
+    TEST_ASSERT_TRUE(Display::mockCanvas.hasText(GRINDER_NOT_CONNECTED));
+
+    Settings::setChoice(Settings::choiceSettings[Settings::MAHLKOENIG], 0);
+}
+
+void test_other_choices_show_no_address(void)
+{
+    editGrinder(ipConnected, Settings::SHOT_AUTO, 1);
+    TEST_ASSERT_TRUE(Display::mockCanvas.hasText(SETTINGS_SHOT_AUTO_ON));
+    TEST_ASSERT_FALSE(Display::mockCanvas.hasText("coffee-scale.local"));
+    TEST_ASSERT_FALSE(Display::mockCanvas.hasText("192.168.1.42"));
+}
+
 void test_actions_come_after_the_settings(void)
 {
     Interface::encoderTurns = 100;
@@ -172,6 +242,11 @@ int main(void)
     RUN_TEST(test_choice_stops_at_the_first_label);
     RUN_TEST(test_click_stores_the_choice);
     RUN_TEST(test_long_press_keeps_the_stored_choice);
+    RUN_TEST(test_grinder_choice_shows_the_address);
+    RUN_TEST(test_grinder_not_active_yet_shows_the_hint);
+    RUN_TEST(test_grinder_choice_off_shows_no_address);
+    RUN_TEST(test_grinder_without_an_ip_is_not_connected);
+    RUN_TEST(test_other_choices_show_no_address);
     RUN_TEST(test_actions_come_after_the_settings);
     RUN_TEST(test_click_runs_the_action);
     RUN_TEST(test_without_actions_the_menu_ends_with_the_settings);

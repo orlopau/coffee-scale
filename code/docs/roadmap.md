@@ -43,6 +43,8 @@ The scale understands what happens on it.
   With shot detection on, the scale notices a shot after a tare by how smoothly it flows, switches from the scale mode to the espresso screen, times it from the pump start (the first drop minus an adjustable offset) and stops the time when the pump stops. Off by default; the click works as before. See [ADR 2](adr/0002-shot-detection/README.md).
 - [ ] **Shot graph on the display** _(Firmware)_
   While a shot runs, the espresso screen also shows the flow in g/s. When it ends, at the pump stop, the click or the target weight, the screen shows the whole shot: its curve, the last shot's curve dotted behind it, the time on the time axis and the yield on a line at its height. A click or a tare goes back.
+- [ ] **Mahlkönig grinder** _(Firmware)_
+  With the setting on, the scale plays the Xenia for a Mahlkönig E64 WS: the grinder finds it on the network, a knob press opens the espresso screen with the recipe's weight as the target, and the grinder dials itself in from the time until the cup reached it. See [ADR 3](adr/0003-mahlkoenig-grinder/README.md).
 
 ## 03 Shot log & web app
 

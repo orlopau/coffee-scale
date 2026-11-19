@@ -12,6 +12,7 @@ Everything the scale does, and how to use it.
   {{< card link="getting-started" title="Getting started" subtitle="The knob, charging, switching on, Wi-Fi" >}}
   {{< card link="weighing" title="Weighing" subtitle="Taring, the timer, lift to tare, auto-tare" >}}
   {{< card link="espresso" title="Espresso" subtitle="Target weight, the shot curve, shot detection" >}}
+  {{< card link="grinder" title="Mahlkönig grinder" subtitle="Grind-by-Sync with an E64 WS, the scale as the Xenia" >}}
   {{< card link="recipes" title="Recipes" subtitle="Filter coffee and Aeropress, step by step" >}}
   {{< card link="settings" title="Settings" subtitle="Every setting and its default" >}}
   {{< card link="calibration" title="Calibration" subtitle="With a 100 g weight" >}}

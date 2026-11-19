@@ -126,6 +126,9 @@
 #define SETTINGS_SHOT_DETECTION "Shot-Erkennung"
 #define SETTINGS_SHOT_AUTO_OFF "Aus"
 #define SETTINGS_SHOT_AUTO_ON "An"
+#define SETTINGS_MAHLKOENIG "Mahlkönig-Mühle"
+#define GRINDER_NOT_CONNECTED "Nicht verbunden"
+#define GRINDER_ACTIVE_AFTER_LEAVING "Aktiv nach Verlassen"
 #define SETTINGS_WIFI "WLAN"
 //////////////////////////////////////////////
 #else
@@ -254,6 +257,9 @@
 #define SETTINGS_SHOT_DETECTION "Shot Detection"
 #define SETTINGS_SHOT_AUTO_OFF "Off"
 #define SETTINGS_SHOT_AUTO_ON "On"
+#define SETTINGS_MAHLKOENIG "Mahlkönig grinder"
+#define GRINDER_NOT_CONNECTED "Not connected"
+#define GRINDER_ACTIVE_AFTER_LEAVING "Active after leaving"
 #define SETTINGS_WIFI "Wi-Fi"
 //////////////////////////////////////////////
 #endif

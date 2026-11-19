@@ -23,6 +23,7 @@ layout: hextra-home
 
 {{< hextra/feature-grid >}}
   {{< hextra/feature-card title="Shot-Erkennung" subtitle="Startet den Espresso-Timer, wenn die ersten Tropfen in die Tasse fallen, und stoppt ihn, wenn die Pumpe aufhört." >}}
+  {{< hextra/feature-card title="Mahlkönig Grind-by-Sync" subtitle="Nimmt den Platz der Xenia ein, damit sich eine E64 WS nach deinen Shots selbst einstellt." link="manual/grinder" >}}
   {{< hextra/feature-card title="Rezepte" subtitle="Aeropress-, French-Press- und V60-Rezepte auf der Waage, mit einstellbarer Kaffeemenge und Verhältnis." >}}
   {{< hextra/feature-card title="Tara durch Anheben" subtitle="Die Plattform mit einem Finger leicht anheben, und die Waage tariert, auch mit Tasse darauf." >}}
   {{< hextra/feature-card title="Einrichtung vom Handy" subtitle="QR-Code auf dem Display scannen, WLAN wählen, fertig. Ohne App." >}}

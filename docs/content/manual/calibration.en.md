@@ -1,6 +1,6 @@
 ---
 title: Calibration
-weight: 6
+weight: 7
 ---
 
 Calibration teaches the scale what 100 g weighs. Calibrate it once when it's new, and again if it weighs wrong, e.g. after changing the load cell, or if the scale says it [can't read its calibration](../problems/#cant-read-calibration).

@@ -31,6 +31,11 @@
 #ifdef NET_LOG
 #include "embedded/network/net_log.h"
 #endif
+#include "embedded/network/wifi_station.h"
+#include "embedded/network/grinder_server.h"
+#include "grinder/xenia.h"
+#include "grinder/grinder_link.h"
+#include "millis.h"
 
 #define AVERAGING_LOOPS 100
 
@@ -70,25 +75,55 @@ void showRolledBack()
 ModeScale modeDefault(weightPipeline, stopwatch);
 ModeEspresso modeEspresso(weightPipeline, stopwatch);
 ModeCalibration modeCalibration(weightPipeline, stopwatch, saveScale);
+// the grinder's server task and the loop share the machine, under the lock
+Xenia::Machine xenia;
+SemaphoreHandle_t xeniaLock = xSemaphoreCreateMutex();
 void runWifiSetup()
 {
+  // the setup's server needs port 80 too
+  GrinderServer::pause();
   WifiSetup::run();
+  GrinderServer::resume();
 }
 
-void applyShotSettings();
+void applySettings();
 const SettingsAction settingsActions[] = {{SETTINGS_WIFI, runWifiSetup}};
-ModeSettings modeSettings(settingsActions, 1, applyShotSettings);
+ModeSettings modeSettings(settingsActions, 1, applySettings, GrinderServer::address);
 ModeRecipes modeRecipes(weightPipeline, RECIPES, RECIPE_COUNT);
 Mode *modes[] = {&modeDefault, &modeRecipes, &modeEspresso, &modeCalibration, &modeSettings};
 ModeManager modeManager(modes, 5, Display::canvas());
 ShotAutoStart shotAutoStart(weightPipeline, modeManager, modeDefault, modeEspresso);
 
+GrinderLink grinderLink(xenia, weightPipeline, modeManager, modeDefault, modeEspresso);
+// read in applySettings(), not in every loop
+bool grinderOn = false;
+bool settingsApplied = false;
+
 // at the start, and when leaving the settings, so a change needs no restart
-void applyShotSettings()
+void applySettings()
 {
   shotAutoStart.setEnabled(Settings::shotDetection());
   shotAutoStart.setOffsetMs(Settings::shotOffsetMs());
   ESP_LOGI(TAG, "Shot detection: %d, offset %u ms", Settings::shotDetection(), (unsigned)Settings::shotOffsetMs());
+
+  // only on a change: enabling the link again forgets the shot it watches
+  const bool grinder = Settings::mahlkoenig();
+  if (grinder != grinderOn || !settingsApplied)
+  {
+    grinderOn = grinder;
+    xSemaphoreTake(xeniaLock, portMAX_DELAY);
+    grinderLink.setEnabled(grinder);
+    xSemaphoreGive(xeniaLock);
+    GrinderServer::setEnabled(grinder);
+    ESP_LOGI(TAG, "Mahlkönig grinder: %d", grinder);
+    // not at the start: there WifiSetup::askOnce() asks, but only once ever,
+    // so after a cancelled setup only Settings → Wi-Fi connects the grinder
+    if (grinder && settingsApplied && WifiStation::begin() && !WifiStation::hasSavedNetwork())
+    {
+      runWifiSetup();
+    }
+  }
+  settingsApplied = true;
 }
 
 void setup()
@@ -134,7 +169,7 @@ void setup()
   liftTare.setDepth(liftDepth);
   ESP_LOGI(TAG, "Lift-to-tare depth: %f g", liftDepth);
 
-  applyShotSettings();
+  applySettings();
 
   // tare after 32 samples
   ESP_LOGI(TAG, "Taring...");
@@ -183,6 +218,10 @@ void setup()
   // in the background, while the modes run
   AutoUpdate::begin();
 
+  //////// MAHLKOENIG GRINDER ////////
+  // after AutoUpdate::begin(), which may shut the Wi-Fi driver down again
+  GrinderServer::begin(xenia, xeniaLock);
+
   ESP_LOGI(TAG, "Setup finished!");
 }
 
@@ -208,6 +247,12 @@ void loop()
   liftTare.update(modeManager.isMeasuring());
   // from the mode's state of the last loop, like liftTare
   shotAutoStart.update();
+  // the lock is held only for this, the server's task waits at most that long
+  xSemaphoreTake(xeniaLock, portMAX_DELAY);
+  grinderLink.update();
+  xSemaphoreGive(xeniaLock);
+  const uint32_t lastPoll = GrinderServer::lastPollMs();
+  modeManager.setLinkMark(grinderOn && lastPoll != 0 && now() - lastPoll < 6000);
   modeManager.update();
 
 #ifdef CRASH_AFTER_MS

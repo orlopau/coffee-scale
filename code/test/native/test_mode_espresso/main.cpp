@@ -255,6 +255,107 @@ void test_target_weight_does_not_stop_an_accepted_shot(void)
     TEST_ASSERT_GREATER_THAN(0, canvas->boxes);
 }
 
+void test_target_set_from_outside_is_clamped(void)
+{
+    modeEspresso->setTargetWeightMg(40000);
+    TEST_ASSERT_EQUAL(40000, modeEspresso->getTargetWeightMg());
+    modeEspresso->setTargetWeightMg(500);
+    TEST_ASSERT_EQUAL(MIN_TARGET_WEIGHT_MG, modeEspresso->getTargetWeightMg());
+    modeEspresso->setTargetWeightMg(200000);
+    TEST_ASSERT_EQUAL(MAX_TARGET_WEIGHT_MG, modeEspresso->getTargetWeightMg());
+}
+
+// the time of the first reading at the target, and the stopwatch stops there
+void test_target_reached_time(void)
+{
+    modeEspresso->setTargetWeightMg(40000);
+    set_now(1000);
+    Interface::encoderClick = ClickType::SINGLE;
+    modeEspresso->update();
+    Interface::reset();
+    TEST_ASSERT_EQUAL(-1, modeEspresso->targetReachedMs());
+
+    sleep_for(10000);
+    weightSource->readings = {readingAt(now(), 20)};
+    modeEspresso->update();
+    TEST_ASSERT_EQUAL(-1, modeEspresso->targetReachedMs());
+
+    sleep_for(10000);
+    weightSource->readings = {readingAt(now(), 39.9)};
+    modeEspresso->update();
+    TEST_ASSERT_EQUAL(-1, modeEspresso->targetReachedMs());
+
+    sleep_for(100);
+    weightSource->readings = {readingAt(now(), 40.0)};
+    modeEspresso->update();
+    TEST_ASSERT_EQUAL(20100, modeEspresso->targetReachedMs());
+    TEST_ASSERT_FALSE(stopwatch->isRunning());
+}
+
+void test_target_reached_on_an_accepted_shot(void)
+{
+    modeEspresso->setTargetWeightMg(40000);
+    const unsigned long t = now();
+    sleep_for(1000);
+    modeEspresso->startShot(t, ShotStartSource::FirstDrop, t, {readingAt(t + 1000, 10)});
+    TEST_ASSERT_EQUAL(-1, modeEspresso->targetReachedMs());
+
+    sleep_for(2000);
+    weightSource->readings = {readingAt(t + 2000, 39.9), readingAt(t + 2500, 40.2), readingAt(t + 3000, 41)};
+    modeEspresso->update();
+    TEST_ASSERT_EQUAL(2500, modeEspresso->targetReachedMs());
+    TEST_ASSERT_TRUE(stopwatch->isRunning());
+
+    sleep_for(1000);
+    weightSource->readings = {readingAt(t + 4000, 42)};
+    modeEspresso->update();
+    TEST_ASSERT_EQUAL(2500, modeEspresso->targetReachedMs());
+}
+
+void test_target_not_reached(void)
+{
+    modeEspresso->setTargetWeightMg(40000);
+    Interface::encoderClick = ClickType::SINGLE;
+    modeEspresso->update();
+    Interface::reset();
+    sleep_for(30000);
+    weightSource->readings = {readingAt(now(), 30)};
+    modeEspresso->update();
+    Interface::encoderClick = ClickType::SINGLE;
+    modeEspresso->update();
+    Interface::reset();
+    TEST_ASSERT_FALSE(stopwatch->isRunning());
+    TEST_ASSERT_EQUAL(-1, modeEspresso->targetReachedMs());
+
+    // a shot that reaches the target ...
+    sleep_for(1000);
+    weightSource->readings = {};
+    // the first click leaves the finished shot
+    Interface::encoderClick = ClickType::SINGLE;
+    modeEspresso->update();
+    Interface::reset();
+    Interface::encoderClick = ClickType::SINGLE;
+    modeEspresso->update();
+    Interface::reset();
+    sleep_for(20000);
+    weightSource->readings = {readingAt(now(), 40.5)};
+    modeEspresso->update();
+    TEST_ASSERT_FALSE(stopwatch->isRunning());
+    TEST_ASSERT_TRUE(modeEspresso->targetReachedMs() >= 0);
+
+    // ... and the next shot starts at -1 again
+    sleep_for(1000);
+    weightSource->readings = {};
+    Interface::encoderClick = ClickType::SINGLE;
+    modeEspresso->update();
+    Interface::reset();
+    Interface::encoderClick = ClickType::SINGLE;
+    modeEspresso->update();
+    Interface::reset();
+    TEST_ASSERT_TRUE(stopwatch->isRunning());
+    TEST_ASSERT_EQUAL(-1, modeEspresso->targetReachedMs());
+}
+
 void test_set_accepted_on_a_click_started_shot(void)
 {
     const unsigned long start = now();
@@ -537,6 +638,10 @@ int main(void)
     RUN_TEST(test_start_shot_over_the_target_keeps_running);
     RUN_TEST(test_target_weight_stops_a_shot_that_is_not_accepted);
     RUN_TEST(test_target_weight_does_not_stop_an_accepted_shot);
+    RUN_TEST(test_target_set_from_outside_is_clamped);
+    RUN_TEST(test_target_reached_time);
+    RUN_TEST(test_target_reached_on_an_accepted_shot);
+    RUN_TEST(test_target_not_reached);
     RUN_TEST(test_set_accepted_on_a_click_started_shot);
     RUN_TEST(test_click_start_clears_accepted);
     RUN_TEST(test_stop_shot_at_backdates_the_time);

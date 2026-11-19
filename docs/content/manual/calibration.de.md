@@ -1,6 +1,6 @@
 ---
 title: Kalibrieren
-weight: 6
+weight: 7
 ---
 
 Beim Kalibrieren lernt die Waage, was 100 g wiegen. Kalibriere sie einmal, wenn sie neu ist, und wieder, wenn sie falsch wiegt, z. B. nach dem Tausch der Wägezelle, oder wenn die Waage meldet, dass sie ihre [Kalibrierung nicht lesen kann](../problems/#kalibrierung-nicht-lesbar).

@@ -226,6 +226,47 @@ void test_mode_manager_renders_canvas_mode_after_update(void)
     TEST_ASSERT_TRUE(canvas.hasText("Canvas Mode"));
 }
 
+void test_link_mark_drawn_only_when_on(void)
+{
+    RecordingCanvas canvas;
+    MockCanvasMode mode("Canvas Mode");
+    Mode *canvasModes[] = {&mode};
+    ModeManager manager(canvasModes, 1, canvas);
+    manager.begin();
+    manager.update();
+    TEST_ASSERT_FALSE(canvas.hasBox(124, 1, 3, 3));
+
+    // the change shows in the next frame, inside the frame interval
+    manager.setLinkMark(true);
+    manager.update();
+    TEST_ASSERT_EQUAL(2, mode.renderCount);
+    TEST_ASSERT_TRUE(canvas.hasBox(124, 1, 3, 3));
+
+    manager.setLinkMark(false);
+    manager.update();
+    TEST_ASSERT_EQUAL(3, mode.renderCount);
+    TEST_ASSERT_FALSE(canvas.hasBox(124, 1, 3, 3));
+}
+
+void test_link_mark_is_not_drawn_on_the_mode_switcher(void)
+{
+    RecordingCanvas canvas;
+    MockCanvasMode mode("Canvas Mode");
+    Mode *canvasModes[] = {&mode};
+    ModeManager manager(canvasModes, 1, canvas);
+    manager.begin();
+    manager.setLinkMark(true);
+    manager.update();
+    TEST_ASSERT_TRUE(canvas.hasBox(124, 1, 3, 3));
+
+    Interface::encoderClick = ClickType::LONG;
+    manager.update();
+    Interface::encoderClick = ClickType::NONE;
+    manager.update();
+    TEST_ASSERT_TRUE(canvas.hasText("Canvas Mode"));
+    TEST_ASSERT_FALSE(canvas.hasBox(124, 1, 3, 3));
+}
+
 void test_mode_manager_caps_render_rate(void)
 {
     RecordingCanvas canvas;
@@ -357,6 +398,8 @@ int main(void)
     RUN_TEST(test_switch_to_leaves_the_mode_before);
     RUN_TEST(test_switch_to_the_same_mode_does_not_leave_it);
     RUN_TEST(test_switch_to_from_the_switcher_leaves_nothing_again);
+    RUN_TEST(test_link_mark_drawn_only_when_on);
+    RUN_TEST(test_link_mark_is_not_drawn_on_the_mode_switcher);
     RUN_TEST(test_mode_manager_caps_render_rate);
     RUN_TEST(test_mode_manager_renders_immediately_after_mode_selection);
     RUN_TEST(test_mode_manager_updates_current_mode_by_default);

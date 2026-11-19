@@ -94,7 +94,7 @@ The scale can't stop the pump; the person does. If the scale sent the time to th
 
 - **The scale is the Xenia** for an E64 WS: a web server on port 80 answers the grinder as in section 2. E64 WS only, nothing besides the scale.
 - **One setting, "Mahlkönig grinder", off by default.** Off, nothing changes. On, the scale stays connected to its Wi-Fi whenever it is on, runs the server and announces itself over mDNS. Turning it on without a saved network opens the Wi-Fi setup first.
-- **Found by the grinder's scan,** by announcing what a Xenia announces, once we know what that is. Until then, and as the fallback, the user types the scale's name under Edit Host. The settings show the scale's name and IP.
+- **Found by the grinder's scan,** by announcing what a Xenia announces, once we know what that is. Until then the scale also answers as `xenia-coffee.local` (the Xenia manual) and `xenia.local` (what Xenia owners use), only while the setting is on, in case the scan asks for a name. As the fallback, the user types the scale's name under Edit Host. The settings show the scale's name and IP.
 - **The knob press acts where shot detection acts.** In the scale mode it switches to the espresso screen, on the espresso screen it stays there; either way the scale tares (the cup is already on) and tells the grinder the shot is running. Recipes, calibration, the settings and the mode switcher are never interrupted: a knob press there is answered as an aborted shot.
 - **The recipe's Brew Weight becomes the target.** At the knob press the espresso screen takes the Brew Weight the grinder sent after the grind. It stays the target like one set by hand; the encoder still changes it.
 - **The grinder always gets the time until the cup reaches the target weight.** It starts where the espresso stopwatch starts: at the estimated pump start with shot detection on, at the click with it off. It ends at the first reading at or above the target weight. The display stays as it is, so with shot detection on it still runs to the pump stop. The weight sent is the weight in the cup at the end.
@@ -111,7 +111,8 @@ The scale can't stop the pump; the person does. If the scale sent the time to th
 | Port | 80, plain HTTP | the E64 WS asks there; Edit Host takes no port |
 | Grinder's poll | every 2 s | gbs-anywhere |
 | "Finishing" held | 6 s, then "on" | longer than one poll, with room for a late one; gbs-anywhere uses the same |
-| No shot after the knob press | aborted after 3 minutes | gbs-anywhere's default for the time to pull a shot |
+| No shot after the knob press | aborted after 3 minutes; a shot that started runs as long as it takes | gbs-anywhere's default for the time to pull a shot |
+| Knob press while "finishing" | ends it and starts the next shot | the grinder has moved on from the last one |
 | Drips after the pump stop | the target reached within a few seconds after the pump stop still counts | ADR 2: 0.4–1.2 g still reach the cup after the pump stop, within about 1 s |
 | Heated | `BG_SET_TEMP` 93.0, `BG_SENS_TEMP` 93.0 | the grinder wants `BG_SENS_TEMP > BG_SET_TEMP − 2` |
 | Tank | `TANK_LEVEL` 1 | 1 is full to the grinder |
@@ -128,7 +129,7 @@ The scale can't stop the pump; the person does. If the scale sent the time to th
 - The time starts where the espresso stopwatch starts. With shot detection on that is the pump start estimated with the offset, so a wrong offset shifts every time sent by the same amount. The grinder then dials in to a slightly different shot, consistently.
 - Wi-Fi on all the time costs battery while the setting is on. How much, we'll see on the scale.
 - The setup portal also uses port 80: while it is open, the grinder's server is stopped.
-- What the grinder's scan asks for is unknown. A laptop on the same Wi-Fi can overhear the grinder's mDNS questions during a scan (`tcpdump udp port 5353`). Until then, Edit Host is the way in.
+- What the grinder's scan asks for is unknown; the two Xenia names are a guess. A laptop on the same Wi-Fi can overhear the grinder's mDNS questions during a scan (`tcpdump udp port 5353`). Until then, Edit Host is the way in.
 - What the grinder does while the scale is off is unknown: whether it still grinds GbS recipes or blocks them. If it blocks, the user turns off Enable Xenia, and the setting says so.
 - The rules rest on gbs-anywhere's experience with the E64 WS and Mahlkönig's manuals, not on a recording of a Xenia. The first shots on the scale with the real grinder are the test.
 - The E65/E80 GbS could follow later, as a client with pairing; nothing here stands in its way.

@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <algorithm>
 
 #include "modes/mode_espresso.h"
 #include "data/localization.h"
@@ -110,6 +111,11 @@ void ModeEspresso::stopShotAt(unsigned long stopMs)
     }
 }
 
+void ModeEspresso::setTargetWeightMg(int32_t mg)
+{
+    targetWeightMg = std::min(std::max(mg, (int32_t)MIN_TARGET_WEIGHT_MG), (int32_t)MAX_TARGET_WEIGHT_MG);
+}
+
 void ModeEspresso::beginShot()
 {
     if (current.isFinished())
@@ -119,6 +125,7 @@ void ModeEspresso::beginShot()
     current.reset();
     showingShot = false;
     flow = 0;
+    targetReached = -1;
 }
 
 void ModeEspresso::endShot()
@@ -212,6 +219,11 @@ void ModeEspresso::handleReading(const Reading &reading)
     int32_t weightMg = reading.net * 1000;
     approximator.addPoint({time, (float)weightMg});
     lastEstimatedTime = approximator.getXAtY(targetWeightMg);
+
+    if (targetReached < 0 && weightMg >= targetWeightMg)
+    {
+        targetReached = time;
+    }
 
     if (!accepted && weightMg >= targetWeightMg)
     {
