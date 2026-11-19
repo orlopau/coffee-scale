@@ -19,13 +19,20 @@ struct SettingsAction
 class ModeSettings : public Mode
 {
 public:
-    /** @param onLeave runs when the mode is left, so changed settings apply without a restart */
-    explicit ModeSettings(const SettingsAction *actions = nullptr, int actionCount = 0, void (*onLeave)() = nullptr);
+    /**
+     * @param onLeave runs when the mode is left, so changed settings apply without a restart
+     * @param grinderIp writes the scale's IP address into out, or nothing if it has none, shown
+     *                  under the Mahlkönig grinder setting when it is On
+     */
+    explicit ModeSettings(const SettingsAction *actions = nullptr, int actionCount = 0, void (*onLeave)() = nullptr,
+                          void (*grinderIp)(char *out, size_t size) = nullptr);
     void update() override;
     void render(Canvas &canvas) override;
     void enter() {
         selected = 0;
         modifySetting = false;
+        // applied at startup and on every leave, so what is stored now is what is active
+        grinderActive = Settings::mahlkoenig();
     };
     void leave() override
     {
@@ -52,6 +59,8 @@ private:
     }
     int selected = 0;
     bool modifySetting = false;
+    /** Whether the Mahlkönig grinder setting was on when the settings were entered. */
+    bool grinderActive = false;
     // value of the setting being modified, saved on click
     float value = 0;
     // level of the choice setting being modified, saved on click
@@ -59,6 +68,7 @@ private:
     const SettingsAction *actions;
     int actionCount;
     void (*onLeave)();
+    void (*grinderIp)(char *out, size_t size);
     /** The names of the settings, then of the actions. */
     std::vector<const char *> options;
 };

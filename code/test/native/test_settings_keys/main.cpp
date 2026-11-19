@@ -138,6 +138,19 @@ void test_shot_detection_is_off_by_default(void)
     TEST_ASSERT_FALSE(Settings::shotDetection());
 }
 
+void test_mahlkoenig_grinder_is_off_by_default(void)
+{
+    const auto &grinder = Settings::choiceSettings[Settings::MAHLKOENIG];
+    TEST_ASSERT_EQUAL_STRING("mkGrinder", grinder.key);
+    TEST_ASSERT_EQUAL_STRING(SETTINGS_MAHLKOENIG, grinder.name);
+    TEST_ASSERT_EQUAL(0, grinder.def);
+    TEST_ASSERT_FALSE(Settings::mahlkoenig());
+    Settings::setChoice(grinder, 1);
+    TEST_ASSERT_TRUE(Settings::mahlkoenig());
+    Settings::setChoice(grinder, 0);
+    TEST_ASSERT_FALSE(Settings::mahlkoenig());
+}
+
 int main(void)
 {
     UNITY_BEGIN();
@@ -150,5 +163,6 @@ int main(void)
     RUN_TEST(test_shot_offset_defaults_to_seven_seconds);
     RUN_TEST(test_shot_offset_is_clamped);
     RUN_TEST(test_shot_detection_is_off_by_default);
+    RUN_TEST(test_mahlkoenig_grinder_is_off_by_default);
     UNITY_END();
 }

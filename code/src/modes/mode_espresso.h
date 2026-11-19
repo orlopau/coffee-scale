@@ -56,6 +56,13 @@ public:
     uint32_t getFirstDropMs() const { return firstDropMs; }
 
     int32_t getTargetWeightMg() const { return targetWeightMg; }
+    /** Sets the target from outside, e.g. a grinder's recipe, within the encoder's limits. */
+    void setTargetWeightMg(int32_t mg);
+    /**
+     * The stopwatch time of the current shot's first reading at or above the
+     * target weight, -1 if none yet.
+     */
+    int32_t targetReachedMs() const { return targetReached; }
     /** The finished-shot screen is up, instead of the progress screen. */
     bool isShowingShot() const { return showingShot; }
     /** The running shot, or the one that ended last. */
@@ -75,6 +82,7 @@ private:
     Regression::Approximator approximator;
     int32_t targetWeightMg;
     long lastEstimatedTime;
+    int32_t targetReached = -1;
     ShotStartSource startSource = ShotStartSource::Click;
     bool accepted = false;
     uint32_t firstDropMs = 0;

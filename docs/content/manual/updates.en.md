@@ -1,6 +1,6 @@
 ---
 title: Updates
-weight: 7
+weight: 8
 ---
 
 New firmware brings new features and fixes. The scale finds it by itself once [Wi-Fi is set up](../getting-started/#setting-up-wi-fi).

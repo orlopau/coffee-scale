@@ -1,6 +1,6 @@
 ---
 title: Rezepte
-weight: 4
+weight: 5
 ---
 
 Die Waage kennt ein paar Rezepte für Filterkaffee und führt dich hindurch: wie viel Kaffee, wie viel Wasser und wann du gießt.

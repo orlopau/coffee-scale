@@ -1,6 +1,6 @@
 ---
 title: Einstellungen
-weight: 5
+weight: 6
 ---
 
 Öffne **Einstellungen** in der Liste der Modi.
@@ -24,8 +24,9 @@ weight: 5
 | **Shot-Vorlauf** | Sekunden vom Pumpenstart bis zum ersten Tropfen. Der Timer eines erkannten Shots startet um so viel früher. Siehe [Espresso](../espresso/#shot-vorlauf). | 7,0 |
 | **Tara durch Anheben** | Wie fest du die Plattform anheben musst, um zu tarieren: **Aus**, **Sanft**, **Normal**, **Fest**. Siehe [Wiegen](../weighing/#tara-durch-anheben). | Normal |
 | **Shot-Erkennung** | Ob die Waage Espresso-Shots von selbst bemerkt: **Aus** oder **An**. Siehe [Espresso](../espresso/#shot-erkennung). | Aus |
+| **Mahlkönig-Mühle** | Ob die Waage den Platz der Xenia einnimmt, damit sich eine Mahlkönig E64 WS nach deinen Shots selbst einstellt: **Aus** oder **An**. An hält die Waage im WLAN. Siehe [Mahlkönig-Mühle](../grinder/). | Aus |
 | **WLAN** | Richtet das WLAN vom Handy aus ein. Siehe [Erste Schritte](../getting-started/#wlan-einrichten). | |
 
 {{< callout type="info" >}}
-Shot-Erkennung und Shot-Vorlauf gelten, sobald du die Einstellungen verlässt. Gewichts-Mittelung Schwellwert, Nullpunkt-Nachführung und Tara durch Anheben gelten ab dem nächsten Einschalten.
+Shot-Erkennung, Shot-Vorlauf und Mahlkönig-Mühle gelten, sobald du die Einstellungen verlässt. Gewichts-Mittelung Schwellwert, Nullpunkt-Nachführung und Tara durch Anheben gelten ab dem nächsten Einschalten.
 {{< /callout >}}

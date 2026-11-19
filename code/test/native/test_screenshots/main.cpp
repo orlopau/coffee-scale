@@ -453,7 +453,7 @@ void test_settings(void)
     turn(settings, 8);
     show("settings_last", settings);
 
-    // the last float setting, the shot offset, before the two choices and Wi-Fi
+    // the last float setting, the shot offset, before the three choices and Wi-Fi
     turn(settings, -3);
     click(settings);
     for (int ticks : {0, 7, -3})
@@ -464,11 +464,60 @@ void test_settings(void)
         render("settings_value_" + std::string(ticks == 0 ? "unchanged" : ticks > 0 ? "up" : "down"), settings);
     }
 
-    // shot detection, the last setting, with its levels
+    // shot detection, with its levels
     click(settings, ClickType::LONG);
     turn(settings, 2);
     click(settings);
     show("settings_choice", settings);
+}
+
+static void connectedIp(char *out, size_t size) { snprintf(out, size, "192.168.1.42"); }
+static void noIp(char *out, size_t) { out[0] = '\0'; }
+
+void test_settings_grinder(void)
+{
+    // Mahlkönig grinder, the last choice, edited to On; stored On when entering means it is active
+    for (auto ip : {connectedIp, noIp})
+    {
+        Settings::setChoice(Settings::choiceSettings[Settings::MAHLKOENIG], 1);
+        ModeSettings settings(nullptr, 0, nullptr, ip);
+        settings.enter();
+        turn(settings, Settings::SETTING_COUNT - 1);
+        click(settings);
+        Interface::reset();
+        settings.update();
+        render(ip == connectedIp ? "settings_grinder_on_connected" : "settings_grinder_on_not_connected", settings);
+    }
+
+    // stored Off when entering, turned to On: only active after leaving
+    Settings::setChoice(Settings::choiceSettings[Settings::MAHLKOENIG], 0);
+    ModeSettings settings(nullptr, 0, nullptr, connectedIp);
+    settings.enter();
+    turn(settings, Settings::SETTING_COUNT - 1);
+    click(settings);
+    Interface::reset();
+    Interface::encoderTicks = 1;
+    settings.update();
+    render("settings_grinder_on_not_active", settings);
+    Settings::setChoice(Settings::choiceSettings[Settings::MAHLKOENIG], 0);
+}
+
+void test_grinder_link_mark(void)
+{
+    // the espresso screen after the grinder's knob press: its Brew Weight as the target,
+    // and the mark top right while the grinder polls
+    ModeScale scale(*weightSource, *stopwatch);
+    ModeEspresso espresso(*weightSource, *stopwatch);
+    Mode *modes[] = {&scale, &espresso};
+    ModeManager manager(modes, 2, display.canvas());
+    manager.begin();
+    manager.switchTo(&espresso);
+    espresso.setTargetWeightMg(40000);
+    manager.setLinkMark(true);
+    sleep_for(100);
+    Interface::reset();
+    manager.update();
+    check("espresso_grinder");
 }
 
 void test_mode_switcher(void)
@@ -674,6 +723,8 @@ int main(void)
     RUN_TEST(test_calibration);
     RUN_TEST(test_calibration_unchanged);
     RUN_TEST(test_settings);
+    RUN_TEST(test_settings_grinder);
+    RUN_TEST(test_grinder_link_mark);
     RUN_TEST(test_mode_switcher);
     RUN_TEST(test_updater);
     RUN_TEST(test_wifi);

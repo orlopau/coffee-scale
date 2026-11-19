@@ -46,6 +46,9 @@ namespace Widgets
      */
     int qrCode(Canvas &canvas, const char *text, int x, int y, uint8_t version = 2, uint8_t ecc = 2);
 
+    /** Draws the link mark, a filled 3x3 px square in the top right corner. */
+    void linkMark(Canvas &canvas);
+
     /** Baseline that vertically centers text of the current font on y. */
     int centerBaseline(Canvas &canvas, int y);
 

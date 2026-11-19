@@ -28,7 +28,7 @@ Before that, it may ask a question:
 
 ## Setting up Wi-Fi
 
-The scale uses Wi-Fi to look for updates. You set it up from your phone, no app needed.
+The scale uses Wi-Fi to look for updates, and to talk to a [Mahlkönig grinder](../grinder/). You set it up from your phone, no app needed.
 
 {{% steps %}}
 

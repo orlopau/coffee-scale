@@ -65,6 +65,7 @@ namespace Settings
     {
         LIFT_TARE = 0,
         SHOT_AUTO,
+        MAHLKOENIG,
         CHOICE_SETTING_NUM
     };
 
@@ -90,9 +91,19 @@ namespace Settings
         SETTINGS_SHOT_AUTO_ON,
     };
 
+    /** Whether the scale acts as a Xenia espresso machine for a Mahlkönig grinder. */
+    constexpr const char *MAHLKOENIG_LABELS[] = {
+        SETTINGS_SHOT_AUTO_OFF,
+        SETTINGS_SHOT_AUTO_ON,
+    };
+
+    /** The scale's name on the network, what the grinder is told to connect to. */
+    constexpr const char *GRINDER_HOST = "coffee-scale.local";
+
     constexpr std::array<ChoiceSetting, CHOICE_SETTING_NUM> choiceSettings = {{
         {LIFT_TARE, "liftTare", SETTINGS_LIFT_TARE, 2, 4, LIFT_TARE_LABELS},
         {SHOT_AUTO, "shotAuto", SETTINGS_SHOT_DETECTION, 0, 2, SHOT_AUTO_LABELS},
+        {MAHLKOENIG, "mkGrinder", SETTINGS_MAHLKOENIG, 0, 2, MAHLKOENIG_LABELS},
     }};
 
     /** Entries of the settings menu: the float settings, then the choice settings. */
@@ -154,6 +165,9 @@ namespace Settings
 
     /** True if shots are detected. */
     static inline bool shotDetection() { return getChoice(choiceSettings[SHOT_AUTO]) == 1; }
+
+    /** True if the scale acts as an espresso machine for a Mahlkönig grinder. */
+    static inline bool mahlkoenig() { return getChoice(choiceSettings[MAHLKOENIG]) == 1; }
 
     /** Grams per count, 1.0 if the scale was never calibrated. Device only. */
     float getCalibration();

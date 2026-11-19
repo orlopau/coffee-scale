@@ -14,6 +14,7 @@ This project contains the schematics, code and 3D models for a coffee scale base
 ## Features
 * Espresso timer with a target weight, the shot's curve when it ends, and the shot before for comparison
 * Shot detection (off by default): notices a shot by itself, times it from the pump start and stops at the pump stop
+* Mahlkönig E64 WS Grind-by-Sync (off by default): the scale stands in for the Xenia, so the grinder dials itself in from the time until the cup reached the recipe's weight
 * Step-by-step recipes for pour-over and Aeropress, with adjustable coffee and ratio
 * Lift-to-tare: slide a finger up the side of the platform, lifting it a little, and the scale tares with a double beep. Also with a cup on it, and never while the timer runs. Off, Gentle, Normal or Firm in the settings.
 * Auto-tare for containers whose weight you saved, and zero tracking that keeps the empty scale at zero

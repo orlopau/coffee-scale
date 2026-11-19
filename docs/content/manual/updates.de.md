@@ -1,6 +1,6 @@
 ---
 title: Updates
-weight: 7
+weight: 8
 ---
 
 Neue Firmware bringt neue Funktionen und Korrekturen. Die Waage findet sie von selbst, sobald das [WLAN eingerichtet](../getting-started/#wlan-einrichten) ist.

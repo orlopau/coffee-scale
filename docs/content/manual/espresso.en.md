@@ -39,6 +39,10 @@ When the shot ends, the scale shows its whole curve: the weight over time, the y
 
 **Click** to go back to the espresso screen; the next click starts a new shot. Taring, e.g. by lifting the platform for the next cup, also goes back.
 
+{{< callout type="info" >}}
+With a Mahlkönig E64 WS, a press on the grinder's knob opens this screen with your recipe's weight as the target, and the grinder dials itself in from the shot. See [Mahlkönig grinder](../grinder/).
+{{< /callout >}}
+
 ## Shot detection
 
 With shot detection on, you don't need to click: the scale notices the shot by itself.

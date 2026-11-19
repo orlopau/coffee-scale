@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Shot detection: the scale notices an espresso shot by itself. In the scale mode it switches to the espresso screen, on the espresso screen it starts the shot. The time counts from the pump start (the first drop minus the new Shot Offset setting, 7.0 s by default) and stops when the pump stops. Turn it on under Settings → Shot Detection; it is off by default.
 - When a shot ends, the espresso screen shows the whole shot: its curve, the last shot's curve dotted behind it, the time and the yield. While a shot runs, it shows the flow in g/s.
 - The calibration screen shows the load cell's raw reading and how many readings arrive per second, so a broken load cell is visible right away.
+- Mahlkönig grinder: the scale takes the place of the Xenia espresso machine, so a Mahlkönig E64 WS dials itself in with Grind-by-Sync. A press on the grinder's knob opens the espresso screen with the recipe's brew weight as the target, and the grinder gets the time until the cup reached it, however late the pump stops. Turn it on under Settings → Mahlkönig grinder; it is off by default and keeps the scale on Wi-Fi while it is on. The manual's Mahlkönig grinder page shows how to set it up.
 - The manual, in English and German, at [coffee-scale.orlopau.dev](https://coffee-scale.orlopau.dev), with this changelog.
 
 ### Fixed

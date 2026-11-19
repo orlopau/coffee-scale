@@ -216,6 +216,12 @@ namespace Widgets
         return size;
     }
 
+    void linkMark(Canvas &canvas)
+    {
+        canvas.setColor(1);
+        canvas.drawBox(124, 1, 3, 3);
+    }
+
     int centerBaseline(Canvas &canvas, int y)
     {
         // same as u8g2's setFontPosCenter()

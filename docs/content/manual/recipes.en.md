@@ -1,6 +1,6 @@
 ---
 title: Recipes
-weight: 4
+weight: 5
 ---
 
 The scale knows a few recipes for filter coffee and walks you through them: how much coffee, how much water, and when to pour.

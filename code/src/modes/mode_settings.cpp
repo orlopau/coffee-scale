@@ -8,8 +8,9 @@
 #include "logger.h"
 #include "settings.h"
 
-ModeSettings::ModeSettings(const SettingsAction *actions, int actionCount, void (*onLeave)())
-    : actions(actions), actionCount(actionCount), onLeave(onLeave)
+ModeSettings::ModeSettings(const SettingsAction *actions, int actionCount, void (*onLeave)(),
+                           void (*grinderIp)(char *out, size_t size))
+    : actions(actions), actionCount(actionCount), onLeave(onLeave), grinderIp(grinderIp)
 {
     const char **settings = Settings::getOptions();
     options.assign(settings, settings + Settings::SETTING_COUNT);
@@ -136,7 +137,28 @@ void ModeSettings::render(Canvas &canvas)
     if (modifySetting && isChoice())
     {
         canvas.setFont(Font::Medium);
-        Widgets::textHCentered(canvas, selectedChoice().labels[choice], 40);
+        if (selectedChoice().id == Settings::MAHLKOENIG && choice == 1)
+        {
+            // the grinder is told this name or address, so it is shown under the label
+            Widgets::textHCentered(canvas, selectedChoice().labels[choice], 28);
+            char ip[16] = "";
+            if (grinderIp != nullptr)
+            {
+                grinderIp(ip, sizeof(ip));
+            }
+            canvas.setFont(Font::Body);
+            Widgets::textHCentered(canvas, Settings::GRINDER_HOST, 44);
+            // turned on just now, nothing has tried to connect yet
+            Widgets::textHCentered(canvas,
+                                   !grinderActive  ? GRINDER_ACTIVE_AFTER_LEAVING
+                                   : ip[0] != '\0' ? ip
+                                                   : GRINDER_NOT_CONNECTED,
+                                   58);
+        }
+        else
+        {
+            Widgets::textHCentered(canvas, selectedChoice().labels[choice], 40);
+        }
     }
     else if (modifySetting)
     {

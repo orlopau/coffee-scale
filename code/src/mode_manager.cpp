@@ -39,6 +39,10 @@ void ModeManager::renderIfDue()
     else
     {
         modes[currentMode]->render(canvas);
+        if (linkMark)
+        {
+            Widgets::linkMark(canvas);
+        }
     }
     canvas.flush();
 }
@@ -99,6 +103,15 @@ void ModeManager::updateModeChange()
         inModeChange = false;
         modes[currentMode]->enter();
         // show the new mode right away instead of waiting for the next frame slot
+        renderNow = true;
+    }
+}
+
+void ModeManager::setLinkMark(bool on)
+{
+    if (on != linkMark)
+    {
+        linkMark = on;
         renderNow = true;
     }
 }

@@ -23,6 +23,7 @@ layout: hextra-home
 
 {{< hextra/feature-grid >}}
   {{< hextra/feature-card title="Shot detection" subtitle="Starts the espresso timer when the first drops hit the cup and stops it when the pump stops." >}}
+  {{< hextra/feature-card title="Mahlkönig Grind-by-Sync" subtitle="Takes the Xenia's place, so an E64 WS grinder dials itself in from your shots." link="manual/grinder" >}}
   {{< hextra/feature-card title="Recipes" subtitle="Aeropress, French Press and V60 recipes on the scale, with adjustable coffee and ratio." >}}
   {{< hextra/feature-card title="Lift to tare" subtitle="Lift the platform a little with a finger and the scale tares, even with a cup on it." >}}
   {{< hextra/feature-card title="Set up from your phone" subtitle="Scan the QR code on the display, choose your Wi-Fi, done. No app needed." >}}

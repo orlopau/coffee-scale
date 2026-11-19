@@ -26,6 +26,8 @@ public:
      * Leaves the mode before. Does nothing if mode isn't one of the modes.
      */
     void switchTo(Mode *mode);
+    /** Shows or hides the link mark on the modes' frames, the next frame shows the change. */
+    void setLinkMark(bool on);
 
 private:
     const int modeCount;
@@ -39,6 +41,7 @@ private:
     Canvas &canvas;
     unsigned long lastRenderTime;
     bool renderNow;
+    bool linkMark = false;
 
     void updateModeChange();
     void renderIfDue();

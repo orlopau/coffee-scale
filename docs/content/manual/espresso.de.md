@@ -39,6 +39,10 @@ Wenn der Shot endet, zeigt die Waage seine ganze Kurve: das Gewicht über die Ze
 
 **Klick**, um zum Espresso-Bildschirm zurückzugehen; der nächste Klick startet einen neuen Shot. Tarieren, z. B. durch Anheben der Plattform für die nächste Tasse, geht auch zurück.
 
+{{< callout type="info" >}}
+Mit einer Mahlkönig E64 WS öffnet ein Druck auf den Knopf der Mühle diesen Bildschirm mit dem Gewicht deines Rezepts als Ziel, und die Mühle stellt sich nach dem Shot selbst ein. Siehe [Mahlkönig-Mühle](../grinder/).
+{{< /callout >}}
+
 ## Shot-Erkennung
 
 Mit eingeschalteter Shot-Erkennung musst du nicht klicken: Die Waage bemerkt den Shot von selbst.
