@@ -18,8 +18,9 @@
       "menus": {
         "main": [
           { "name": "Manual", "pageRef": "/manual", "weight": 1 },
-          { "name": "Search", "weight": 2, "params": { "type": "search" } },
-          { "name": "GitHub", "url": "https://github.com/orlopau/coffee-scale", "weight": 3, "params": { "icon": "github" } }
+          { "name": "Changelog", "pageRef": "/changelog", "weight": 2 },
+          { "name": "Search", "weight": 3, "params": { "type": "search" } },
+          { "name": "GitHub", "url": "https://github.com/orlopau/coffee-scale", "weight": 4, "params": { "icon": "github" } }
         ]
       }
     },
@@ -34,8 +35,9 @@
       "menus": {
         "main": [
           { "name": "Anleitung", "pageRef": "/manual", "weight": 1 },
-          { "name": "Suche", "weight": 2, "params": { "type": "search" } },
-          { "name": "GitHub", "url": "https://github.com/orlopau/coffee-scale", "weight": 3, "params": { "icon": "github" } }
+          { "name": "Änderungen", "pageRef": "/changelog", "weight": 2 },
+          { "name": "Suche", "weight": 3, "params": { "type": "search" } },
+          { "name": "GitHub", "url": "https://github.com/orlopau/coffee-scale", "weight": 4, "params": { "icon": "github" } }
         ]
       }
     }
@@ -46,6 +48,7 @@
       { "source": "assets", "target": "assets" },
       { "source": "static", "target": "static" },
       { "source": "img", "target": "static/img" },
+      { "source": "../CHANGELOG.md", "target": "assets/changelog.md" },
       { "source": "../code/test/native/test_screenshots/screens/en", "target": "assets/screens/en" },
       { "source": "../code/test/native/test_screenshots/screens/de", "target": "assets/screens/de" }
     ]

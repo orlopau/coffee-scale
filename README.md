@@ -27,4 +27,4 @@ This project contains the schematics, code and 3D models for a coffee scale base
 * 3D-printable case
 
 ## Development
-How to install builds from your computer, record the load cell, run the emulator and the screenshot tests: [code/docs/development.md](code/docs/development.md). What comes next: [code/docs/roadmap.md](code/docs/roadmap.md). The manual's source is in [docs/](docs/), built with Hugo.
+How to install builds from your computer, record the load cell, run the emulator and the screenshot tests: [code/docs/development.md](code/docs/development.md). What comes next: [code/docs/roadmap.md](code/docs/roadmap.md). What changed: [CHANGELOG.md](CHANGELOG.md). The manual's source is in [docs/](docs/), built with Hugo.

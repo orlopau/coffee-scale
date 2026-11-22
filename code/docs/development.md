@@ -96,4 +96,23 @@ cd docs
 hugo server
 ```
 
-On a push to master that changes `docs/` or the screens, `.github/workflows/hugo.yml` publishes it to GitHub Pages.
+The changelog page shows [CHANGELOG.md](../../CHANGELOG.md) from the top of the repository.
+
+On a push to master that changes `docs/`, the screens or `CHANGELOG.md`, `.github/workflows/hugo.yml` publishes it to GitHub Pages.
+
+## Changelog and Releasing
+[CHANGELOG.md](../../CHANGELOG.md) follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), in English. Every change people using the scale would notice adds a line under `## [Unreleased]` in the same commit, in Added, Changed, Deprecated, Removed, Fixed or Security, written for them rather than for developers.
+
+A release is a pushed `firmware-vX.Y.Z` tag: `.github/workflows/pio_deploy.yaml` builds the English and German firmware and attaches them to the GitHub release, where the scales find them. Before that, in one commit on master:
+
+1. Rename `## [Unreleased]` to `## [X.Y.Z] - YYYY-MM-DD` and put a new, empty `## [Unreleased]` above it.
+2. At the bottom, point `[unreleased]` at `firmware-vX.Y.Z...HEAD` and add `[X.Y.Z]: https://github.com/orlopau/coffee-scale/compare/<previous tag>...firmware-vX.Y.Z`.
+
+Push that commit to master, then tag it with an annotated tag and push the tag:
+
+```
+git tag -a firmware-vX.Y.Z -m "Firmware vX.Y.Z"
+git push origin firmware-vX.Y.Z
+```
+
+It must be annotated (`-a`): the build finds its version with `git describe`, which skips plain tags, so a plain tag gives a firmware that calls itself the previous version and offers itself as an update forever. The release build stops before building if `CHANGELOG.md` has no `## [X.Y.Z] - YYYY-MM-DD` for the tag; then add it, delete the tag (`git tag -d firmware-vX.Y.Z && git push origin :refs/tags/firmware-vX.Y.Z`) and tag again.

@@ -16,6 +16,14 @@ jobs:
     - uses: actions/checkout@v4
     - name: Get tags
       run: git fetch --force --tags
+    # a release needs its section in the changelog, see code/docs/development.md#releasing
+    - name: Check the changelog
+      run: |
+        version="${GITHUB_REF_NAME#firmware-v}"
+        if ! grep -qE "^## \[${version//./\\.}\] - [0-9]{4}-[0-9]{2}-[0-9]{2}\$" ../CHANGELOG.md; then
+          echo "::error file=CHANGELOG.md::CHANGELOG.md has no section '## [${version}] - YYYY-MM-DD' for ${GITHUB_REF_NAME}. Move the entries from [Unreleased] into it, then tag again, see code/docs/development.md#releasing."
+          exit 1
+        fi
     - name: Cache pip
       uses: actions/cache@v4
       with:

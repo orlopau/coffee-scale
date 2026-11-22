@@ -1,0 +1,21 @@
+{{/*
+  The firmware changelog, CHANGELOG.md at the top of the repository (mounted as
+  the asset changelog.md in hugo.json), from its first version heading on:
+    {{% changelog %}}
+  Called with % so the versions become headings in the page's table of
+  contents and the file's link references resolve.
+*/}}
+{{- with resources.Get "changelog.md" -}}
+{{- $changelog := .Content -}}
+{{- $start := findRE `(?m)^## ` $changelog 1 -}}
+{{- if not $start -}}
+  {{- errorf "CHANGELOG.md has no version heading (%s)" $.Position -}}
+{{- end -}}
+<div class="changelog">
+
+{{ replaceRE `(?s)\A.*?(^|\n)## ` "## " $changelog 1 }}
+
+</div>
+{{- else -}}
+  {{- errorf "the changelog needs CHANGELOG.md at the top of the repository (%s)" .Position -}}
+{{- end -}}

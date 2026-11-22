@@ -1,13 +1,15 @@
 name: Deploy Manual to Pages
 
 # The manual in docs/, built with Hugo and published to coffee-scale.orlopau.dev.
-# It shows the screenshot tests' images, so a changed screen publishes it too.
+# It shows the screenshot tests' images and CHANGELOG.md, so a changed screen or
+# changelog publishes it too.
 on:
   push:
     branches: ["master"]
     paths:
       - "docs/**"
       - "code/test/native/test_screenshots/screens/**"
+      - "CHANGELOG.md"
       - ".github/workflows/hugo.yml"
   workflow_dispatch:
 

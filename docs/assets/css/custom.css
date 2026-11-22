@@ -36,3 +36,13 @@
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 0 1rem;
 }
+
+/* The changelog's version headings link to GitHub's comparison; they look like headings. */
+.changelog h2 a:not(.subheading-anchor) {
+  color: inherit;
+  text-decoration: none;
+}
+
+.changelog h2 a:not(.subheading-anchor):hover {
+  text-decoration: underline;
+}
