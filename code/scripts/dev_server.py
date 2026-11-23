@@ -19,15 +19,20 @@ Receive recordings of the scale's load cell, see docs/development.md:
     python scripts/dev_server.py --record test/recordings
 
 Each recording the scale uploads is saved as <date>_<time>.csv.
+
+Every mode also prints the log of a scale that runs the log firmware
+(pio run -e esp32dev-log), which sends it here over UDP. --no-log turns that off.
 """
 
 import argparse
 import hashlib
 import http.server
 import os
+import re
 import socket
 import subprocess
 import sys
+import threading
 from datetime import datetime
 
 SERVICE_TYPE = "_coffeescale-fw._tcp.local."
@@ -36,6 +41,8 @@ FIRMWARE_PATH = "/firmware.bin"
 LATEST_RELEASE_PREFIX = "/releases/latest/download/"
 RELEASE_PREFIX = "/releases/download/"
 RECORD_PATH = "/samples"
+# the TXT key that tells the scale where to send its log (the UDP port)
+LOG_TXT_KEY = "log"
 RECORDING_FIRST_LINE = "# coffee-scale recording\n"
 COLUMNS_LINE = "ms,event,value"
 # an upload that stalls this long is given up, so it doesn't block a thread forever
@@ -69,6 +76,62 @@ def lan_ipv4_addresses():
 
 def timestamp():
     return datetime.now()
+
+
+def format_log_lines(now, address, data):
+    """The lines of one log datagram, each with the time and the scale's address."""
+    text = data.decode("utf-8", errors="replace")
+    # no escape sequences for the terminal: drop C0 controls except tab and the newline that splits lines
+    text = re.sub(r"[\x00-\x08\x0b-\x1f]", "", text)
+    prefix = f"{now:%H:%M:%S} [{address}] "
+    return [prefix + line.rstrip("\r") for line in text.split("\n") if line.rstrip("\r")]
+
+
+class LogReceiver:
+    """Prints the log that the scale sends as UDP datagrams, one chunk per datagram."""
+
+    def __init__(self, host="0.0.0.0", port=0, output=print):
+        self.output = output
+        self.closing = False
+        self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.sock.bind((host, port))
+        self.port = self.sock.getsockname()[1]
+        self.thread = threading.Thread(target=self.run, daemon=True)
+
+    def start(self):
+        self.thread.start()
+
+    def run(self):
+        while not self.closing:
+            try:
+                data, sender = self.sock.recvfrom(65535)
+            except OSError:  # the socket was closed
+                return
+            if self.closing:  # shutdown() wakes recvfrom without a sender
+                return
+            address = sender[0]
+            for line in format_log_lines(timestamp(), address, data):
+                self.output(line)
+
+    def close(self):
+        self.closing = True
+        # closing alone doesn't wake a blocked recvfrom on Linux, shutdown does
+        try:
+            self.sock.shutdown(socket.SHUT_RDWR)
+        except OSError:
+            pass
+        self.sock.close()
+        if self.thread.is_alive():
+            self.thread.join(timeout=1)
+
+
+def service_properties(record, log_port):
+    """The mDNS TXT properties: what the scale does here, and where to send its log."""
+    # the scale updates if the server offers "path", and records if it offers "record"
+    properties = {"record": RECORD_PATH} if record else {"path": FIRMWARE_PATH}
+    if log_port is not None:
+        properties[LOG_TXT_KEY] = str(log_port)
+    return properties
 
 
 def summarize(text):
@@ -216,6 +279,7 @@ def main():
         metavar="VERSION",
         help="also pose as the GitHub release VERSION, e.g. v9.9.9, for automatic updates (use with --port)",
     )
+    parser.add_argument("--no-log", action="store_true", help="don't print the scale's log")
     args = parser.parse_args()
     if args.release and args.record:
         parser.error("--release serves a firmware, it doesn't go with --record")
@@ -223,14 +287,15 @@ def main():
 
     zeroconf = import_zeroconf()
 
+    log_receiver = None if args.no_log else LogReceiver()
+
     handler = make_handler(firmware_file=args.firmware, record_dir=args.record, release=args.release)
     server = http.server.ThreadingHTTPServer(("0.0.0.0", args.port), handler)
     port = server.server_address[1]
 
     addresses = lan_ipv4_addresses()
     host = socket.gethostname().split(".")[0] or "laptop"
-    # the scale updates if the server offers "path", and records if it offers "record"
-    properties = {"record": RECORD_PATH} if args.record else {"path": FIRMWARE_PATH}
+    properties = service_properties(bool(args.record), log_receiver.port if log_receiver else None)
     info = zeroconf.ServiceInfo(
         SERVICE_TYPE,
         f"{host}.{SERVICE_TYPE}",
@@ -245,6 +310,8 @@ def main():
     except zeroconf.NonUniqueNameException:
         zc.close()
         server.server_close()
+        if log_receiver:
+            log_receiver.close()
         sys.exit("Another dev server runs on this computer (pio run -t serve or -t record), stop it first.")
 
     if args.record:
@@ -255,8 +322,12 @@ def main():
         print(f"  at http://{addresses[0]}:{port}{FIRMWARE_PATH}")
         if args.release:
             print(f"  as release {args.release}: build the scale with RELEASES_URL=http://{addresses[0]}:{port}/releases")
+    if log_receiver:
+        print(f"Log from the scale: printed here (UDP port {log_receiver.port})")
     print("On the scale: hold the button while switching it on, then long-press on the language screen.")
     print("Press Ctrl+C to stop.")
+    if log_receiver:
+        log_receiver.start()
     try:
         server.serve_forever()
     except KeyboardInterrupt:
@@ -265,6 +336,8 @@ def main():
         zc.unregister_service(info)
         zc.close()
         server.server_close()
+        if log_receiver:
+            log_receiver.close()
 
 
 if __name__ == "__main__":
