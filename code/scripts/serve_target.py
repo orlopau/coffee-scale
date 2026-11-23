@@ -3,6 +3,7 @@
 #                      so the scale can update from this computer (dev updates)
 #   pio run -t record  receives recordings of the scale's load cell into
 #                      test/recordings, without building anything
+# Both also print the scale's log, if it runs the log firmware.
 import os
 
 Import("env")

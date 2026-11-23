@@ -28,6 +28,9 @@
 #include "embedded/blocking_screens.h"
 #include "embedded/network/auto_update.h"
 #include "embedded/network/wifi_setup.h"
+#ifdef NET_LOG
+#include "embedded/network/net_log.h"
+#endif
 
 #define AVERAGING_LOOPS 100
 
@@ -91,6 +94,9 @@ void applyShotSettings()
 void setup()
 {
   Serial.begin(115200);
+#ifdef NET_LOG
+  NetLog::begin();
+#endif
   ESP_LOGI(TAG, "CoffeeScale starting up...");
 
   const char *settingsError = Settings::begin();

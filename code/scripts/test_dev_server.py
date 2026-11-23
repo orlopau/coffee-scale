@@ -238,5 +238,58 @@ class NoReleaseTest(unittest.TestCase):
             os.remove(f.name)
 
 
+class FormatLogLinesTest(unittest.TestCase):
+    NOW = datetime(2026, 11, 23, 12, 3, 44)
+
+    def test_one_line(self):
+        self.assertEqual(
+            dev_server.format_log_lines(self.NOW, "192.168.1.37", b"I (5123) main: Tared!\n"),
+            ["12:03:44 [192.168.1.37] I (5123) main: Tared!"])
+
+    def test_several_lines_crlf_and_empty(self):
+        self.assertEqual(
+            dev_server.format_log_lines(self.NOW, "10.0.0.2", b"a\r\n\nb"),
+            ["12:03:44 [10.0.0.2] a", "12:03:44 [10.0.0.2] b"])
+
+    def test_broken_utf8_is_replaced(self):
+        self.assertEqual(
+            dev_server.format_log_lines(self.NOW, "10.0.0.2", b"x\xff\n"),
+            ["12:03:44 [10.0.0.2] x\ufffd"])
+
+    def test_control_characters_are_dropped_except_tab(self):
+        # ESC and BEL go, so "[2J" stays as plain text; the tab stays
+        self.assertEqual(
+            dev_server.format_log_lines(self.NOW, "10.0.0.2", b"a\x1b[2Jb\x07\tc\n"),
+            ["12:03:44 [10.0.0.2] a[2Jb\tc"])
+
+
+class LogReceiverTest(unittest.TestCase):
+    def test_prints_received_lines(self):
+        lines = []
+        receiver = dev_server.LogReceiver(host="127.0.0.1", output=lines.append)
+        receiver.start()
+        try:
+            with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
+                s.sendto(b"I (1) main: one\nI (2) main: two\n", ("127.0.0.1", receiver.port))
+            deadline = time.time() + 2
+            while len(lines) < 2 and time.time() < deadline:
+                time.sleep(0.01)
+        finally:
+            receiver.close()
+        self.assertEqual([l.split("] ", 1)[1] for l in lines], ["I (1) main: one", "I (2) main: two"])
+        self.assertIn("[127.0.0.1]", lines[0])
+
+
+class ServicePropertiesTest(unittest.TestCase):
+    def test_serve_with_log(self):
+        self.assertEqual(dev_server.service_properties(False, 5000), {"path": "/firmware.bin", "log": "5000"})
+
+    def test_record_with_log(self):
+        self.assertEqual(dev_server.service_properties(True, 5000), {"record": "/samples", "log": "5000"})
+
+    def test_no_log(self):
+        self.assertEqual(dev_server.service_properties(False, None), {"path": "/firmware.bin"})
+
+
 if __name__ == "__main__":
     unittest.main()

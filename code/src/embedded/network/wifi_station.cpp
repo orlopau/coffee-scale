@@ -125,6 +125,11 @@ namespace WifiStation
         return started && esp_wifi_get_config(WIFI_IF_STA, &config) == ESP_OK && config.sta.ssid[0] != '\0';
     }
 
+    bool connected()
+    {
+        return started && (xEventGroupGetBits(events) & CONNECTED) != 0;
+    }
+
     static bool startRadio()
     {
         if (!running)
@@ -188,11 +193,19 @@ namespace WifiStation
 
     Online::Online(uint32_t timeoutMs)
     {
+        // cheap early exit, without waiting for the lock
         if (!begin() || !hasSavedNetwork())
         {
             return;
         }
         Locked locked(connectLock);
+        // again under the lock: the Wi-Fi setup's tryNetwork holds it with a
+        // candidate network in the config, and when it fails the config is
+        // empty again, so there is nothing to connect to
+        if (!hasSavedNetwork())
+        {
+            return;
+        }
         if (xEventGroupGetBits(events) & CONNECTED)
         {
             status = WifiStatus::Connected;

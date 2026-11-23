@@ -11,6 +11,22 @@ During development, the scale can install a build straight from your computer ov
 
 The server keeps running, so for the next build repeat steps 2 and 3 (`pio run -t serve` rebuilds when restarted). If the scale already runs the served build, it shows "No update available". Your computer and the scale must be on the same network, and the firewall must allow incoming connections for the server.
 
+## Watching the Log
+To see the scale's log without a serial cable, build the log firmware. It is the normal firmware plus a task that sends every log line to the dev server over Wi-Fi.
+
+1. In `code/`, run `pio run -e esp32dev-log -t serve` and long-press in the updater, as for any update above.
+2. The scale installs the build and restarts. The terminal of `serve` now prints its log from boot on, one line per log line, with the time and the scale's address: `12:03:44 [192.168.1.37] [  5123][I][main.cpp:148] setup(): [MAIN] Tared!`. ESP-IDF's own lines (mostly Wi-Fi errors) look like `E (5123) wifi: ...`.
+3. To go back to the normal firmware, run `pio run -t serve` and long-press again.
+
+Every mode of the dev server prints the log, also `record` and `--release`. `--no-log` turns it off, e.g. `python scripts/dev_server.py .pio/build/esp32dev/firmware.bin --no-log`. Then the server doesn't tell the scale where to send it.
+
+- **What arrives:** the lines of the app and of ESP-IDF, without color codes. Nothing is saved on the scale: no log after the fact, no log of the last crash. UDP can lose a line on a bad network.
+- **Boot:** lines from before Wi-Fi was up wait in a buffer in RAM until the scale has found the dev server. If the buffer fills up first, further lines are dropped, and once there is room again a line `net_log: N lines dropped` marks the gap.
+- **Stack:** once a minute the log firmware logs the stack its tasks have left, e.g. `Stack left (bytes): net_log 1234, button 567, loadcell 890`.
+- **Wi-Fi stays on** in the log firmware, so it uses more battery. Install it only while testing, and never in a release.
+- **Restarted dev server:** UDP doesn't tell the scale that the server is gone. Restart the scale, then it finds the new one.
+- **Wi-Fi setup:** while a saved network is unreachable, the log firmware's search for the dev server keeps trying to connect, which can slow the scale's Wi-Fi setup down. To redo the setup, switch back to the normal firmware first.
+
 ## Trying Automatic Updates
 The scale's automatic updates read GitHub's releases. To try them without publishing one, the dev server can pose as a release, and a build can claim to be an older version.
 
@@ -27,7 +43,7 @@ The scale can record the raw readings of its load cell, e.g. of taps or an espre
 
 **Click** to start a recording. While recording, the scale shows the weight, the recording time, the time left and the number of markers. **Click** again to set a marker, e.g. when the pump starts. **Turn** the knob to tare the shown weight, e.g. after putting the cup on; while recording, the tare is saved in the recording too. **Long-press** to save the recording in the scale's flash; the scale then waits for the click that starts the next one. A recording takes at most 5 minutes, then the scale waits for the long-press. About 50 recordings fit. If saving fails, the recording is kept and the next long-press tries again. A recording that wasn't saved is lost when the scale is switched off.
 
-To get the recordings to your computer, run `pio run -t record` in `code/`. It does not build anything, it waits for recordings. Only one of `serve` and `record` can run at a time. Open the recorder as above; the scale now finds the server and no longer says "No server". **Long-press** while idle to send all saved recordings, oldest first. Each one is deleted from the scale after it arrived, so if sending fails, the rest stays and the next long-press tries again.
+With the log firmware, `record` prints the scale's log too, see above. To get the recordings to your computer, run `pio run -t record` in `code/`. It does not build anything, it waits for recordings. Only one of `serve` and `record` can run at a time. Open the recorder as above; the scale now finds the server and no longer says "No server". **Long-press** while idle to send all saved recordings, oldest first. Each one is deleted from the scale after it arrived, so if sending fails, the rest stays and the next long-press tries again.
 
 The computer saves each recording as `code/test/recordings/<date>_<time>.csv`. Give the useful ones a name that says what they show, commit them, and delete the rest. A recording looks like this, with `ms` counted from its start on the scale's clock:
 

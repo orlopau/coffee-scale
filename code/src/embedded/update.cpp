@@ -1,7 +1,6 @@
 #ifndef NATIVE
 
 #include <Arduino.h>
-#include <ESPmDNS.h>
 
 #include "constants.h"
 #include "interface.h"
@@ -10,6 +9,7 @@
 #include "embedded/blocking_screens.h"
 #include "embedded/record.h"
 #include "embedded/network/auto_update.h"
+#include "embedded/network/dev_server_search.h"
 #include "embedded/network/firmware_check.h"
 #include "embedded/network/firmware_download.h"
 #include "embedded/network/wifi_setup.h"
@@ -17,8 +17,8 @@
 
 #define TAG "UPDATER"
 
-// mDNS service announced by scripts/dev_server.py (`pio run -t serve` or `-t record`)
-#define DEV_SERVER_SERVICE "coffeescale-fw"
+// The mDNS service scripts/dev_server.py announces (`pio run -t serve` or `-t record`) is
+// searched by DevServerSearch, also for the log, see net_log.h.
 // each attempt waits up to 3 s for answers
 #define DEV_SERVER_SEARCH_ATTEMPTS 3
 // how long the updater tries the saved network before it runs the setup
@@ -136,34 +136,13 @@ namespace Updater
         runUpdate(url);
     }
 
-    struct DevServer
+    static bool findDevServer(DevServerSearch::Server &server)
     {
-        IPAddress ip;
-        uint16_t port;
-        /** Path of the firmware, if the server serves one (`pio run -t serve`). */
-        String firmwarePath;
-        /** Path to upload recordings to, if the server receives them (`pio run -t record`). */
-        String recordPath;
-    };
-
-    static bool findDevServer(DevServer &server)
-    {
-        if (!MDNS.begin("coffee-scale"))
-        {
-            ESP_LOGE(TAG, "mDNS could not be started");
-            return false;
-        }
-
         for (int attempt = 0; attempt < DEV_SERVER_SEARCH_ATTEMPTS; attempt++)
         {
-            int found = MDNS.queryService(DEV_SERVER_SERVICE, "tcp");
-            if (found > 0)
+            if (DevServerSearch::find(server, 3000))
             {
-                server.ip = MDNS.IP(0);
-                server.port = MDNS.port(0);
-                server.firmwarePath = MDNS.txt(0, "path");
-                server.recordPath = MDNS.txt(0, "record");
-                if (server.firmwarePath.length() == 0 && server.recordPath.length() == 0)
+                if (server.firmwarePath.empty() && server.recordPath.empty())
                 {
                     server.firmwarePath = "/firmware.bin";
                 }
@@ -178,21 +157,21 @@ namespace Updater
         showMessage(UPDATER_DEV_SEARCHING);
         ESP_LOGI(TAG, "Searching for dev firmware server...");
 
-        DevServer server;
+        DevServerSearch::Server server;
         if (!findDevServer(server))
         {
             ESP_LOGI(TAG, "No dev firmware server found, recording without one");
             Recording::run(*loadCellSamples, nullptr, gramsPerCount);
         }
 
-        if (server.recordPath.length() > 0)
+        if (!server.recordPath.empty())
         {
-            Recording::Server recordServer{server.ip, server.port, server.recordPath.c_str()};
+            Recording::Server recordServer{IPAddress(server.ip.addr), server.port, server.recordPath.c_str()};
             Recording::run(*loadCellSamples, &recordServer, gramsPerCount);
         }
 
         char url[128];
-        snprintf(url, sizeof(url), "http://%s:%u%s", server.ip.toString().c_str(), server.port, server.firmwarePath.c_str());
+        snprintf(url, sizeof(url), "http://%s:%u%s", IPAddress(server.ip.addr).toString().c_str(), server.port, server.firmwarePath.c_str());
         runUpdate(url);
     }
 

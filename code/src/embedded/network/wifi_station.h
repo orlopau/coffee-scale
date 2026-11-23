@@ -26,6 +26,11 @@ namespace WifiStation
     void end();
     bool hasSavedNetwork();
     /**
+     * True while the station has an IP address from the saved network, right
+     * now. False if begin() hasn't run. Any task may ask.
+     */
+    bool connected();
+    /**
      * Connects to ssid for up to timeoutMs, and saves it only if that worked.
      * Whoever was online through the station before loses that connection.
      */
