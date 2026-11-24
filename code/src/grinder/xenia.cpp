@@ -5,6 +5,10 @@
 #include <cstring>
 #include <strings.h>
 
+#include "logger.h"
+
+#define TAG "XENIA"
+
 namespace Xenia
 {
     namespace
@@ -27,14 +31,32 @@ namespace Xenia
         }
     }
 
+    const char *phaseName(Phase phase)
+    {
+        switch (phase)
+        {
+        case Phase::Ready:
+            return "Ready";
+        case Phase::Running:
+            return "Running";
+        case Phase::Finishing:
+            return "Finishing";
+        }
+        return "?";
+    }
+
     void Machine::start(uint32_t nowMs)
     {
         // a repeat in Finishing or Ready would start a shot nobody pulls, and tare the cup
         const bool repeat = everStarted && since(nowMs, startMs) < static_cast<int32_t>(START_REPEAT_MS);
         if (repeat || currentPhase == Phase::Running)
         {
+            LOGW(TAG, "Start ignored: %s, %ld ms after the last start (%s)",
+                 repeat ? "a repeat of the last knob press" : "already Running", (long)since(nowMs, startMs),
+                 phaseName(currentPhase));
             return;
         }
+        LOGI(TAG, "Start: %s -> Running", phaseName(currentPhase));
         everStarted = true;
         currentPhase = Phase::Running;
         startMs = nowMs;
@@ -43,12 +65,28 @@ namespace Xenia
         seenInPhase = false;
     }
 
+    void Machine::shotRuns()
+    {
+        if (currentPhase != Phase::Running)
+        {
+            LOGW(TAG, "Shot runs ignored: %s", phaseName(currentPhase));
+            shotStarted = false;
+            return;
+        }
+        LOGI(TAG, "Shot runs: no timeout any more");
+        shotStarted = true;
+    }
+
     void Machine::finish(uint32_t nowMs, uint32_t timeMs, float weightG)
     {
         if (currentPhase != Phase::Running || pending != Pending::None)
         {
+            LOGW(TAG, "Finish (%lu ms, %.1f g) ignored: %s%s", (unsigned long)timeMs, (double)weightG,
+                 phaseName(currentPhase), pending != Pending::None ? ", an end is pending already" : "");
             return;
         }
+        LOGI(TAG, "Finish pending: %lu ms, %.1f g%s", (unsigned long)timeMs, (double)weightG,
+             seenInPhase ? "" : ", until the grinder has seen Running");
         pending = Pending::Finish;
         pendingTimeMs = timeMs;
         pendingWeightG = std::isfinite(weightG) ? weightG : 0;
@@ -58,8 +96,12 @@ namespace Xenia
     {
         if (currentPhase != Phase::Running || pending != Pending::None)
         {
+            LOGW(TAG, "Abort ignored: %s%s", phaseName(currentPhase),
+                 pending != Pending::None ? ", an end is pending already" : "");
             return;
         }
+        LOGI(TAG, "Abort pending, %ld ms after the start%s", (long)since(nowMs, startMs),
+             seenInPhase ? "" : ", until the grinder has seen Running");
         pending = Pending::Abort;
         pendingTimeMs = static_cast<uint32_t>(since(nowMs, startMs));
         pendingWeightG = 0;
@@ -74,6 +116,8 @@ namespace Xenia
         finishingStartMs = nowMs;
         pending = Pending::None;
         seenInPhase = false;
+        LOGI(TAG, "Running -> Finishing: %s, %lu ms, %.1f g", wasAborted ? "aborted" : "done",
+             (unsigned long)lastTimeMs, (double)lastWeightG);
     }
 
     void Machine::update(uint32_t nowMs)
@@ -82,6 +126,7 @@ namespace Xenia
         {
             if (pending == Pending::None && !shotStarted && since(nowMs, startMs) >= static_cast<int32_t>(SHOT_TIMEOUT_MS))
             {
+                LOGI(TAG, "No shot within %lu s of the start", (unsigned long)(SHOT_TIMEOUT_MS / 1000));
                 abort(nowMs);
             }
             // a shot that ends before the grinder saw it start would leave
@@ -97,6 +142,8 @@ namespace Xenia
             bool held = age >= static_cast<int32_t>(FINISHING_HOLD_MS) && seenInPhase;
             if (held || age >= static_cast<int32_t>(FINISHING_MAX_MS))
             {
+                LOGI(TAG, "Finishing -> Ready after %ld ms, %s", (long)age,
+                     held ? "the grinder has seen it" : "the grinder never polled in it");
                 currentPhase = Phase::Ready;
                 seenInPhase = false;
             }
@@ -120,6 +167,10 @@ namespace Xenia
         {
             status = 4;
             extraction = wasAborted ? 2 : 1;
+        }
+        if (!seenInPhase && currentPhase != Phase::Ready)
+        {
+            LOGI(TAG, "The grinder sees %s", phaseName(currentPhase));
         }
         seenInPhase = true;
 

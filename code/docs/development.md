@@ -35,6 +35,8 @@ To see what the Mahlkönig E64 WS sends without the scale in between, `scripts/f
 3. On the grinder, set that IP under Connectivity → Machine To Machine → Configuration → Edit Host. Polls show up about every second, all on one connection.
 4. Grind a GbS recipe and press the knob. A shot ends by itself after `--shot-seconds` (27 s), or on Enter. `a` aborts it, `s N` forces `MA_STATUS`, `t N` and `w N` the temperature and tank, `v` shows every poll in full.
 
+With the setting "Mahlkönig grinder" on, the log firmware logs the same on the scale (tag `GRINDER`): one line per request, with its body, the reply and how long it took, e.g. `poll #213 +649 ms: GET /api/v2/mako from 192.168.1.132:46276 -> {"MA_STATUS":1,…}, 64 ms`, and requests the server refuses before answering (`refused with 431`, an unknown method, a broken request).
+
 `--announce` also answers as `xenia-coffee.local` and `xenia.local`, for the grinder's Scan. `--help` lists the rest.
 
 ## Trying Automatic Updates
