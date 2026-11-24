@@ -69,9 +69,15 @@ namespace GrinderServer
     // the address the Xenia's names point to, 0 while they are not announced
     static uint32_t xeniaNamesIp = 0;
 
-    // A Xenia answers as xenia-coffee.local (its manual) or xenia.local (its owners): perhaps the grinder's
-    // scan asks for one of them. Announced only with the setting on, like everything here.
-    static const char *const XENIA_NAMES[] = {"xenia-coffee", "xenia"};
+    // A Xenia answers as xenia-coffee.local (its manual) or xenia.local (its owners). Announced only with the
+    // setting on, like everything here. Written with a capital X for the grinder's scan, see XENIA_SERVICE_HOST;
+    // mDNS names compare without case, so both still answer in any spelling.
+    static const char *const XENIA_NAMES[] = {"Xenia-coffee", "Xenia"};
+    // The grinder's scan (its firmware, read 2026-11-24) runs avahi-browse for _http._tcp and keeps only the
+    // entries whose host name contains "Xenia", capital X, then asks them for /api/v2/machine. The scale's own
+    // _http._tcp is on coffee-scale.local, so a second one is announced on this Xenia name.
+    static const char *const XENIA_SERVICE_HOST = "Xenia-coffee";
+    static const char *const XENIA_SERVICE_INSTANCE = "Xenia Coffee Scale";
     // keeps Wi-Fi on while the server runs or is wanted. The IDF station
     // default power save (WIFI_PS_MIN_MODEM) stays: it wakes at every DTIM
     // beacon, so a reply can wait for one, typically 100-300 ms. The grinder
@@ -374,10 +380,14 @@ namespace GrinderServer
         bool ok = true;
         for (const char *name : XENIA_NAMES)
         {
-            // a delegated name holds a fixed address: a new one replaces it; removing one not there only fails
+            // a delegated name holds a fixed address: a new one replaces it; removing one not there only fails.
+            // Removing a name also removes the services on it.
             mdns_delegate_hostname_remove(name);
-            ok =mdns_delegate_hostname_add(name, &address) == ESP_OK && ok;
+            ok = mdns_delegate_hostname_add(name, &address) == ESP_OK && ok;
         }
+        // the entry the grinder's scan looks for, after its host name
+        ok = ok && mdns_service_add_for_host(XENIA_SERVICE_INSTANCE, "_http", "_tcp", XENIA_SERVICE_HOST, 80, nullptr,
+                                             0) == ESP_OK;
         // on a failure the next tick tries again
         xeniaNamesIp = ok ? info.ip.addr : 0;
         if (!ok)
@@ -386,7 +396,8 @@ namespace GrinderServer
         }
         else
         {
-            ESP_LOGI(TAG, "mDNS: xenia-coffee.local and xenia.local -> " IPSTR, IP2STR(&info.ip));
+            ESP_LOGI(TAG, "mDNS: Xenia-coffee.local and Xenia.local -> " IPSTR ", _http._tcp on Xenia-coffee.local",
+                     IP2STR(&info.ip));
         }
     }
 
