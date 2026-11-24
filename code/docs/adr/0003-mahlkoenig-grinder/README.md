@@ -1,6 +1,6 @@
 # 3. Play the Xenia for a Mahlkönig E64 WS, with the time to the target weight
 
-Status: proposed, 2026-11-18. Accepted once confirmed with the real E64 WS.
+Status: accepted, 2026-11-24, confirmed with the real E64 WS
 
 ## Context
 
@@ -21,7 +21,7 @@ Before designing it, we read how the grinder and a Xenia talk and what a Xenia m
 | [Xenia manual](https://downloads.mahlkoenig.de/Service/Mahlkoenig_Xenia_Brew_by_Sync_Instruction_Manual_EN.pdf) | The Xenia's own name on the network (4.2), its connection to the E64 WS (4.3), its scale and how it stops at the brew weight (6.3, 6.7) |
 | [E64 WS software manual](https://downloads.mahlkoenig.de/Service/Mahlkoenig_E64_WS_Espresso_Home_Software_Manual.pdf) | The grinder's Connectivity and Machine to Machine menus (2.8) |
 
-Not available: a Xenia or a recording of one talking to the grinder. What the grinder's scan asks for is therefore still unknown, see Consequences.
+Not available: a Xenia or a recording of one talking to the grinder. What the grinder's scan asks for was found later, in its firmware, see Consequences.
 
 Added on 2026-11-24: a recording of the real E64 WS talking to `scripts/fake_xenia.py`, which answers like the scale, through one GbS grind and knob press, with the grinder's requests, their headers, bodies and replies. Where it differs from gbs-anywhere, section 2 follows the recording.
 
@@ -142,6 +142,6 @@ The scale can't stop the pump; the person does. If the scale sent the time to th
 - The setup portal also uses port 80: while it is open, the grinder's server is stopped.
 - The grinder's scan (its firmware, read 2026-11-24) browses `_http._tcp` over mDNS and keeps only the entries whose host name contains "Xenia", capital X, then asks them for `/api/v2/machine`. So the scale also announces `_http._tcp` on `Xenia-coffee.local`, besides its own on `coffee-scale.local`. Edit Host with the scale's IP skips the scan.
 - What the grinder does while the scale is off is unknown: whether it still grinds GbS recipes or blocks them. If it blocks, the user turns off Enable Xenia, and the setting says so.
-- The rules rest on gbs-anywhere's experience with the E64 WS and Mahlkönig's manuals, and on one recording of the grinder with a stand-in on a computer, not on a recording of a Xenia. Why the grinder repeats its POSTs, and whether a real Xenia's answer stops it, is unknown. The first shots on the scale with the real grinder are the test.
+- The rules rest on gbs-anywhere's experience with the E64 WS and Mahlkönig's manuals, and on one recording of the grinder with a stand-in on a computer, not on a recording of a Xenia. Why the grinder repeats its POSTs, and whether a real Xenia's answer stops it, is unknown. Confirmed with the real grinder on 2026-11-24.
 - The scale keeps the radio's power save, so a reply can wait for the next DTIM beacon (typically 100–300 ms). The grinder gives every request 1000 ms and counts a slower reply as the scale being unreachable (its firmware, read 2026-11-24). Of 4 479 requests through a proxy, 2.5 % took longer; directly, without the proxy's extra connections, the log firmware will tell. Turning power save off would roughly double the scale's current draw while the setting is on.
 - The E65/E80 GbS could follow later, as a client with pairing; nothing here stands in its way.
