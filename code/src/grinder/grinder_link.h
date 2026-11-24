@@ -64,6 +64,7 @@ private:
     uint32_t droppedAtMs = 0;
 
     void onKnobPress();
-    void abort();
+    void abort(const char *why);
+    const char *activeName();
     bool onEspressoScreen() { return modes.activeMode() == &espresso; }
 };

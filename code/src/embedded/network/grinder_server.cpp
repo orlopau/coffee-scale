@@ -12,6 +12,8 @@
 #include <esp_netif.h>
 #include <esp_wifi.h>
 #include <freertos/task.h>
+#include <lwip/sockets.h>
+#include <unistd.h>
 #include <mdns.h>
 
 #include "embedded/network/grinder_server.h"
@@ -39,6 +41,10 @@ namespace GrinderServer
     static const int MAX_TIMEOUTS = 3;
     // the reply is built from floats and strings
     static const size_t SERVER_STACK = 6144;
+    // a body or reply longer than this is cut in the log
+    static const int LOG_BODY_MAX = 600;
+    // like the link mark in main.cpp: a longer gap between polls is logged
+    static const uint32_t POLL_GAP_MS = 6000;
     // the server answers one request at a time, so one buffer is enough
     // allocated while the server runs, so the setting Off costs no RAM for it
     static char *body = nullptr;
@@ -52,6 +58,10 @@ namespace GrinderServer
     static volatile bool enabled = false;
     static volatile bool paused = false;
     static volatile uint32_t lastPoll = 0;
+    // for the log: the server's handler counts the polls, the task reports a gap and the connection
+    static uint32_t polls = 0;
+    static volatile bool pollGapLogged = false;
+    static bool wasConnected = false;
 
     // under stateLock
     static httpd_handle_t server = nullptr;
@@ -79,6 +89,72 @@ namespace GrinderServer
     static bool wanted()
     {
         return enabled && !paused;
+    }
+
+    /** The client's IPv4 address and port, "?" if unknown. The server's socket may be IPv6 with IPv4 mapped into it. */
+    static void socketPeer(int socket, char *out, size_t size)
+    {
+        snprintf(out, size, "?");
+        sockaddr_storage address = {};
+        socklen_t length = sizeof(address);
+        if (getpeername(socket, (sockaddr *)&address, &length) != 0)
+        {
+            return;
+        }
+        uint16_t port = 0;
+        const uint8_t *ip = nullptr;
+        if (address.ss_family == AF_INET)
+        {
+            ip = (const uint8_t *)&((sockaddr_in *)&address)->sin_addr.s_addr;
+            port = ntohs(((sockaddr_in *)&address)->sin_port);
+        }
+        else if (address.ss_family == AF_INET6)
+        {
+            ip = ((sockaddr_in6 *)&address)->sin6_addr.s6_addr + 12;
+            port = ntohs(((sockaddr_in6 *)&address)->sin6_port);
+        }
+        if (ip != nullptr)
+        {
+            snprintf(out, size, "%u.%u.%u.%u:%u", ip[0], ip[1], ip[2], ip[3], (unsigned)port);
+        }
+    }
+
+    /** The client's address of a request, see socketPeer(). */
+    static void peer(httpd_req_t *request, char *out, size_t size)
+    {
+        socketPeer(httpd_req_to_sockfd(request), out, size);
+    }
+
+    /** A request the server refuses before the handler: too long, broken, an unknown method. Logged, then answered as without this. */
+    static esp_err_t onError(httpd_req_t *request, httpd_err_code_t error)
+    {
+        static const char *const CODES[] = {"500", "501", "505", "400", "401", "403", "404",
+                                            "405", "408", "411", "414", "431"};
+        char from[24];
+        peer(request, from, sizeof(from));
+        // method and URI may not be parsed yet
+        ESP_LOGW(TAG, "<- refused with %s: method %d, URI \"%.80s\", from %s", error < HTTPD_ERR_CODE_MAX ? CODES[error] : "?",
+                 request->method, request->uri, from);
+        httpd_resp_send_err(request, error, nullptr);
+        return ESP_FAIL;
+    }
+
+    static const char *requestName(Xenia::Request kind)
+    {
+        switch (kind)
+        {
+        case Xenia::Request::Identity:
+            return "identity";
+        case Xenia::Request::Mako:
+            return "poll";
+        case Xenia::Request::BrewRatio:
+            return "brew ratio";
+        case Xenia::Request::StartBrew:
+            return "knob press";
+        case Xenia::Request::Other:
+            return "UNKNOWN";
+        }
+        return "?";
     }
 
     static esp_err_t send(httpd_req_t *request, const std::string &json)
@@ -120,8 +196,14 @@ namespace GrinderServer
 
     static esp_err_t handle(httpd_req_t *request)
     {
+        const uint32_t started = now();
+        const char *method = http_method_str((httpd_method_t)request->method);
+        char from[24];
+        peer(request, from, sizeof(from));
         if (request->content_len > MAX_BODY)
         {
+            ESP_LOGW(TAG, "%s %s from %s: body of %u B refused, more than %u B", method, request->uri, from,
+                     (unsigned)request->content_len, (unsigned)MAX_BODY);
             // IDF 4.4 has no HTTPD_413 error code
             httpd_resp_set_status(request, "413 Payload Too Large");
             httpd_resp_set_hdr(request, "Connection", "close");
@@ -131,10 +213,19 @@ namespace GrinderServer
         }
         if (!readBody(request))
         {
+            ESP_LOGW(TAG, "%s %s from %s: body of %u B broke off", method, request->uri, from,
+                     (unsigned)request->content_len);
             return ESP_FAIL;
         }
 
-        const Xenia::Request kind = Xenia::classify(http_method_str((httpd_method_t)request->method), request->uri);
+        const Xenia::Request kind = Xenia::classify(method, request->uri);
+        // the gap to the previous poll, for the log
+        uint32_t sincePoll = 0;
+        if (kind == Xenia::Request::Mako)
+        {
+            sincePoll = lastPoll == 0 ? 0 : now() - lastPoll;
+            polls++;
+        }
         std::string reply = "{}";
         // only the calls on the machine are locked, never the sending
         switch (kind)
@@ -144,6 +235,7 @@ namespace GrinderServer
             reply = machine->mako(now());
             xSemaphoreGive(machineLock);
             lastPoll = now();
+            pollGapLogged = false;
             break;
         case Xenia::Request::Identity:
         {
@@ -171,7 +263,22 @@ namespace GrinderServer
         case Xenia::Request::Other:
             break;
         }
-        return send(request, reply);
+        const esp_err_t sent = send(request, reply);
+        // one line per request: what came, from where, and the reply
+        char tag[32];
+        if (kind == Xenia::Request::Mako)
+        {
+            snprintf(tag, sizeof(tag), "poll #%lu +%lu ms", (unsigned long)polls, (unsigned long)sincePoll);
+        }
+        else
+        {
+            snprintf(tag, sizeof(tag), "%s", requestName(kind));
+        }
+        ESP_LOGI(TAG, "%s: %s %s from %s%s%.*s -> %.*s%s, %lu ms", tag, method, request->uri, from,
+                 request->content_len > 0 ? " " : "", LOG_BODY_MAX, request->content_len > 0 ? body : "",
+                 LOG_BODY_MAX, reply.c_str(), sent == ESP_OK ? "" : " (sending failed)",
+                 (unsigned long)(now() - started));
+        return sent;
     }
 
     /** Under stateLock. */
@@ -199,9 +306,13 @@ namespace GrinderServer
             body = nullptr;
             return false;
         }
+        // every method reaches handle(), so anything the grinder might send is logged and answered with {};
+        // 7 of the server's 8 handlers
         const httpd_uri_t handlers[] = {
-            {"/*", HTTP_GET, handle, nullptr},
-            {"/*", HTTP_POST, handle, nullptr},
+            {"/*", HTTP_GET, handle, nullptr},    {"/*", HTTP_POST, handle, nullptr},
+            {"/*", HTTP_PUT, handle, nullptr},    {"/*", HTTP_DELETE, handle, nullptr},
+            {"/*", HTTP_HEAD, handle, nullptr},   {"/*", HTTP_OPTIONS, handle, nullptr},
+            {"/*", HTTP_PATCH, handle, nullptr},
         };
         for (const httpd_uri_t &handler : handlers)
         {
@@ -216,7 +327,12 @@ namespace GrinderServer
                 return false;
             }
         }
-        ESP_LOGI(TAG, "Serving the grinder");
+        // what the server refuses on its own: logged too
+        for (int error = 0; error < HTTPD_ERR_CODE_MAX; error++)
+        {
+            httpd_register_err_handler(server, (httpd_err_code_t)error, onError);
+        }
+        ESP_LOGI(TAG, "Serving the grinder on port %u", (unsigned)config.server_port);
         return true;
     }
 
@@ -238,6 +354,7 @@ namespace GrinderServer
             return;
         }
         mdnsOn = true;
+        ESP_LOGI(TAG, "mDNS on: coffee-scale.local, _http._tcp on port 80");
     }
 
     /** Under stateLock, with mDNS on: points the Xenia's names to the current address, also after it changed. */
@@ -267,11 +384,20 @@ namespace GrinderServer
         {
             ESP_LOGE(TAG, "Announcing the Xenia's names failed");
         }
+        else
+        {
+            ESP_LOGI(TAG, "mDNS: xenia-coffee.local and xenia.local -> " IPSTR, IP2STR(&info.ip));
+        }
     }
 
     /** Under stateLock: server, name and Wi-Fi all off. */
     static void stopAll()
     {
+        if (server != nullptr || mdnsOn || radio != nullptr)
+        {
+            ESP_LOGI(TAG, "Stopping:%s%s%s", server != nullptr ? " server" : "", mdnsOn ? " mDNS" : "",
+                     radio != nullptr ? " Wi-Fi hold" : "");
+        }
         if (server != nullptr)
         {
             // httpd_stop() returns after the handlers are done, so none reads body any more
@@ -302,12 +428,36 @@ namespace GrinderServer
         }
         if (radio == nullptr)
         {
+            ESP_LOGI(TAG, "Keeping Wi-Fi on for the grinder");
             radio = new WifiStation::Radio();
         }
         xSemaphoreGive(stateLock);
 
+        const bool connectedNow = WifiStation::connected();
+        if (connectedNow != wasConnected)
+        {
+            char ip[16];
+            address(ip, sizeof(ip));
+            if (connectedNow)
+            {
+                ESP_LOGI(TAG, "Wi-Fi connected, the grinder reaches the scale at %s", ip);
+            }
+            else
+            {
+                ESP_LOGW(TAG, "Wi-Fi lost");
+            }
+            wasConnected = connectedNow;
+        }
+        const uint32_t polled = lastPoll;
+        if (polled != 0 && !pollGapLogged && now() - polled >= POLL_GAP_MS)
+        {
+            ESP_LOGW(TAG, "No poll from the grinder for %lu ms", (unsigned long)(now() - polled));
+            pollGapLogged = true;
+        }
+
         if (retryNow)
         {
+            ESP_LOGI(TAG, "Connecting again without waiting");
             retryNow = false;
             failed = false;
             retryWait = ReconnectBackoff::FIRST_MS;
@@ -322,6 +472,7 @@ namespace GrinderServer
         else if (!failed || ReconnectBackoff::over(lastFailure, retryWait, now()))
         {
             // not under the lock: it takes seconds, and pause() must not wait for it
+            ESP_LOGI(TAG, "Connecting to the saved network%s", WifiStation::hasSavedNetwork() ? "" : " (none saved)");
             {
                 // the scope ends the Online before connected() is read; the radio keeps Wi-Fi on
                 WifiStation::Online online(CONNECT_TIMEOUT_MS);
@@ -405,6 +556,7 @@ namespace GrinderServer
 
     void setEnabled(bool on)
     {
+        ESP_LOGI(TAG, "Setting %s", on ? "on" : "off");
         if (on)
         {
             // from the loop's task, see begin()
@@ -420,6 +572,7 @@ namespace GrinderServer
 
     void pause()
     {
+        ESP_LOGI(TAG, "Pause, for the Wi-Fi setup");
         paused = true;
         if (stateLock == nullptr)
         {
@@ -433,6 +586,7 @@ namespace GrinderServer
 
     void resume()
     {
+        ESP_LOGI(TAG, "Resume");
         retryNow = true;
         paused = false;
     }

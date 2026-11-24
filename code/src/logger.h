@@ -15,7 +15,9 @@ inline void log_default(const char *tag, const char *format, ...)
 }
 
 #define LOGI log_default
+#define LOGW log_default
 #else
 #include <Arduino.h>
 #define LOGI ESP_LOGI
+#define LOGW ESP_LOGW
 #endif

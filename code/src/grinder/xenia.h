@@ -36,7 +36,7 @@ namespace Xenia
         // (START_REPEAT_MS) changes nothing, whatever the phase.
         void start(uint32_t nowMs);
         // the shot started, the timeout no longer applies; only while Running
-        void shotRuns() { shotStarted = currentPhase == Phase::Running; }
+        void shotRuns();
         // the shot ended; only while Running
         void finish(uint32_t nowMs, uint32_t timeMs, float weightG);
         // the shot did not happen; only while Running
@@ -82,6 +82,9 @@ namespace Xenia
         bool wasAborted = false;
         float brewGrams = NAN;
     };
+
+    // for the log
+    const char *phaseName(Phase phase);
 
     // the body of /api/v2/machine
     std::string identityJson(const char *serial);
