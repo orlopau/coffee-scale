@@ -21,3 +21,6 @@ __pycache__/
 
 # fake_xenia.py's logs
 fake_xenia_*.jsonl
+
+# the scale's log, saved by scripts/dev_server.py
+logs/

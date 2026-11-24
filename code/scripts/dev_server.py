@@ -21,7 +21,9 @@ Receive recordings of the scale's load cell, see docs/development.md:
 Each recording the scale uploads is saved as <date>_<time>.csv.
 
 Every mode also prints the log of a scale that runs the log firmware
-(pio run -e esp32dev-log), which sends it here over UDP. --no-log turns that off.
+(pio run -e esp32dev-log), which sends it here over UDP, and saves it in
+logs/scale_<date>_<time>.log (one file per run of the server, made at the first
+line). --no-log turns both off, --log-dir saves it elsewhere.
 """
 
 import argparse
@@ -85,6 +87,36 @@ def format_log_lines(now, address, data):
     text = re.sub(r"[\x00-\x08\x0b-\x1f]", "", text)
     prefix = f"{now:%H:%M:%S} [{address}] "
     return [prefix + line.rstrip("\r") for line in text.split("\n") if line.rstrip("\r")]
+
+
+# next to scripts/, i.e. code/logs, whatever directory the server runs from
+DEFAULT_LOG_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "logs")
+
+
+class LogFile:
+    """Prints each log line and appends it to a file, made at the first line so a run without a scale leaves none."""
+
+    def __init__(self, directory, output=print):
+        self.path = os.path.join(directory, f"scale_{timestamp():%Y-%m-%d_%H%M%S}.log")
+        self.output = output
+        self.file = None
+        self.lock = threading.Lock()
+
+    def __call__(self, line):
+        self.output(line)
+        with self.lock:
+            if self.file is None:
+                os.makedirs(os.path.dirname(self.path), exist_ok=True)
+                self.file = open(self.path, "a", encoding="utf-8")
+                self.output(f"(saving the log to {self.path})")
+            self.file.write(line + "\n")
+            self.file.flush()
+
+    def close(self):
+        with self.lock:
+            if self.file is not None:
+                self.file.close()
+                self.file = None
 
 
 class LogReceiver:
@@ -279,7 +311,8 @@ def main():
         metavar="VERSION",
         help="also pose as the GitHub release VERSION, e.g. v9.9.9, for automatic updates (use with --port)",
     )
-    parser.add_argument("--no-log", action="store_true", help="don't print the scale's log")
+    parser.add_argument("--no-log", action="store_true", help="don't print or save the scale's log")
+    parser.add_argument("--log-dir", default=DEFAULT_LOG_DIR, help="where the log files go (default: code/logs)")
     args = parser.parse_args()
     if args.release and args.record:
         parser.error("--release serves a firmware, it doesn't go with --record")
@@ -287,7 +320,8 @@ def main():
 
     zeroconf = import_zeroconf()
 
-    log_receiver = None if args.no_log else LogReceiver()
+    log_file = None if args.no_log else LogFile(args.log_dir)
+    log_receiver = None if args.no_log else LogReceiver(output=log_file)
 
     handler = make_handler(firmware_file=args.firmware, record_dir=args.record, release=args.release)
     server = http.server.ThreadingHTTPServer(("0.0.0.0", args.port), handler)
@@ -323,7 +357,7 @@ def main():
         if args.release:
             print(f"  as release {args.release}: build the scale with RELEASES_URL=http://{addresses[0]}:{port}/releases")
     if log_receiver:
-        print(f"Log from the scale: printed here (UDP port {log_receiver.port})")
+        print(f"Log from the scale: printed here and saved to {log_file.path} (UDP port {log_receiver.port})")
     print("On the scale: hold the button while switching it on, then long-press on the language screen.")
     print("Press Ctrl+C to stop.")
     if log_receiver:
@@ -338,6 +372,8 @@ def main():
         server.server_close()
         if log_receiver:
             log_receiver.close()
+        if log_file:
+            log_file.close()
 
 
 if __name__ == "__main__":

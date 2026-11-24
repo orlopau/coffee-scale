@@ -21,8 +21,9 @@ Port 80 needs root (the grinder's Edit Host takes no port). Then:
    last one as a repeat. With no knob press, the log shows what the grinder
    did send, and what it was told before.
 
-The grinder polls about every 0.8 s on one connection. Polls that only repeat
-the last one are summed up every 10 s; "v" shows each in full.
+The grinder polls about every 0.8 s on one connection: each poll is one line,
+in full when something about it is new ("v" shows every one in full,
+--summarize-polls sums up the repeating ones every 10 s instead).
 
 While it runs, type a command and Enter:
     (Enter)  end the running shot, at the time so far
@@ -370,7 +371,9 @@ class Connection:
             self.server.seen_polls.add(signature)
         tag = "UNKNOWN" if kind == "unknown" else "HTTP"
         summary = self.server.summary
-        if brief:
+        if brief and not self.server.summarize:
+            log.say("HTTP", f"<- poll #{self.server.polls} from {self.peer}{gap} -> MA_STATUS {mako_status(reply)}")
+        elif brief:
             summary.append(gap_ms)
             if gap_ms > POLL_GAP_MS:
                 log.say("HTTP", f"<- poll #{self.server.polls} from {self.peer}{gap}: a long gap -> MA_STATUS {mako_status(reply)}")
@@ -418,8 +421,10 @@ def mako_status(reply):
 
 
 class HttpServer:
-    def __init__(self, log, xenia, port, close, idle_timeout, grinders):
+    def __init__(self, log, xenia, port, close, idle_timeout, grinders, summarize=False):
         self.log = log
+        # polls that only repeat the last one: one line each, or summed up every POLL_SUMMARY_MS
+        self.summarize = summarize
         # the IPs that asked what only the grinder asks, for the mDNS lines
         self.grinders = grinders
         self.xenia = xenia
@@ -641,6 +646,9 @@ def main():
         "--shot-seconds", type=float, default=27.0, help="a shot ends by itself after this (default 27; 0: only by Enter)"
     )
     parser.add_argument("--serial", default="CS0FA4E000", help="MA_SN in the identity (10 characters)")
+    parser.add_argument(
+        "--summarize-polls", action="store_true", help="sum up polls that repeat the last one every 10 s, not one line each"
+    )
     parser.add_argument("--close", action="store_true", help="close the connection after every reply")
     parser.add_argument("--idle", type=float, default=60, help="close a connection idle this long (s, default 60)")
     parser.add_argument("--watch-ports", default="443,8080", help="other ports to log connections on ('' for none)")
@@ -663,7 +671,7 @@ def main():
     grinders = set(args.grinder)
 
     try:
-        server = HttpServer(log, xenia, args.port, args.close, args.idle, grinders)
+        server = HttpServer(log, xenia, args.port, args.close, args.idle, grinders, args.summarize_polls)
     except PermissionError:
         sys.exit(f"Port {args.port} needs root: sudo python3 {sys.argv[0]} ...")
     except OSError as error:

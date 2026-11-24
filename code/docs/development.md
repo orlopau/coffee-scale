@@ -18,7 +18,7 @@ To see the scale's log without a serial cable, build the log firmware. It is the
 2. The scale installs the build and restarts. The terminal of `serve` now prints its log from boot on, one line per log line, with the time and the scale's address: `12:03:44 [192.168.1.37] [  5123][I][main.cpp:148] setup(): [MAIN] Tared!`. ESP-IDF's own lines (mostly Wi-Fi errors) look like `E (5123) wifi: ...`.
 3. To go back to the normal firmware, run `pio run -t serve` and long-press again.
 
-Every mode of the dev server prints the log, also `record` and `--release`. `--no-log` turns it off, e.g. `python scripts/dev_server.py .pio/build/esp32dev/firmware.bin --no-log`. Then the server doesn't tell the scale where to send it.
+Every mode of the dev server prints the log, also `record` and `--release`, and saves it in `code/logs/scale_<date>_<time>.log`, one file per run of the server (`--log-dir` puts it elsewhere). `--no-log` turns both off, e.g. `python scripts/dev_server.py .pio/build/esp32dev/firmware.bin --no-log`. Then the server doesn't tell the scale where to send it.
 
 - **What arrives:** the lines of the app and of ESP-IDF, without color codes. Nothing is saved on the scale: no log after the fact, no log of the last crash. UDP can lose a line on a bad network.
 - **Boot:** lines from before Wi-Fi was up wait in a buffer in RAM until the scale has found the dev server. If the buffer fills up first, further lines are dropped, and once there is room again a line `net_log: N lines dropped` marks the gap.
