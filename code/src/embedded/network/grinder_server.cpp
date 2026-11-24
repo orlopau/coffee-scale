@@ -78,11 +78,10 @@ namespace GrinderServer
     // _http._tcp is on coffee-scale.local, so a second one is announced on this Xenia name.
     static const char *const XENIA_SERVICE_HOST = "Xenia-coffee";
     static const char *const XENIA_SERVICE_INSTANCE = "Xenia Coffee Scale";
-    // keeps Wi-Fi on while the server runs or is wanted. The IDF station
-    // default power save (WIFI_PS_MIN_MODEM) stays: it wakes at every DTIM
-    // beacon, so a reply can wait for one, typically 100-300 ms. The grinder
-    // polls every 0.4-1.9 s (median 0.8 s, recorded 2026-11-24); whether it
-    // minds that wait is not known yet.
+    // keeps Wi-Fi on while the server runs or is wanted. The IDF station default power save (WIFI_PS_MIN_MODEM)
+    // stays: it wakes at every DTIM beacon, so a reply can wait for one, typically 100-300 ms. The grinder gives
+    // every request 1000 ms before it counts the scale as unreachable (its firmware, read 2026-11-24); through a
+    // proxy 2.5 % of the replies took longer, directly it is not measured yet. Off would cost battery.
     static WifiStation::Radio *radio = nullptr;
 
     // the connection attempts back off, see ReconnectBackoff. Only the task uses
