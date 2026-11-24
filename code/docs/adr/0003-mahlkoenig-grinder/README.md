@@ -23,13 +23,15 @@ Before designing it, we read how the grinder and a Xenia talk and what a Xenia m
 
 Not available: a Xenia or a recording of one talking to the grinder. What the grinder's scan asks for is therefore still unknown, see Consequences.
 
+Added on 2026-11-24: a recording of the real E64 WS talking to `scripts/fake_xenia.py`, which answers like the scale, through one GbS grind and knob press, with the grinder's requests, their headers, bodies and replies. Where it differs from gbs-anywhere, section 2 follows the recording.
+
 ## How we got there
 
 ### 1. Two families of grinders, two directions
 
 | Grinder | Who asks whom | What it would take on the scale |
 | --- | --- | --- |
-| E64 WS | The grinder asks the machine every 2 s, plain HTTP on port 80 | A small web server on the scale |
+| E64 WS | The grinder asks the machine about every 0.8 s, plain HTTP on port 80 | A small web server on the scale |
 | E65/E80 GbS | The machine asks the grinder, HTTPS on port 30001, after pairing with a code on the grinder | A client with pairing, and a stored pairing ID |
 
 - The E64 WS is the one we have, so only that one.
@@ -41,10 +43,17 @@ The grinder is the client, the machine the server: port 80, plain HTTP, JSON.
 
 | Request | When | The machine answers |
 | --- | --- | --- |
-| `GET /api/v2/mako` | every 2 s | the machine state, below |
-| `GET /api/v2/machine` | now and then | the machine's identity |
-| `POST /api/v2/brewratio` | after a grind with a GbS recipe | `{}`. The body holds the recipe's Brew Weight (`SYNC_BEVERAGE_WEIGHT`, g) |
-| `POST /api/v2/scripts/execute` | the knob press after a GbS grind, `{"ID":9}` | `{}`, and starts the shot |
+| `GET /api/v2/mako` | every 0.4–1.9 s, median 0.8 s | the machine state, below |
+| `GET /api/v2/machine` | twice when it connects | the machine's identity |
+| `POST /api/v2/brewratio` | after a grind with a GbS recipe, three times | `{}`. The body holds the recipe's Brew Weight: `{"SYNC_BEVERAGE_WEIGHT":38,"SYNC_FILTER":2}`, g, both plain numbers |
+| `POST /api/v2/scripts/execute` | the knob press after a GbS grind, `{"ID":9}`, three times | `{}`, and starts the shot |
+
+What the recording adds to gbs-anywhere:
+
+- **One connection for everything.** The grinder opens one HTTP/1.1 keep-alive connection and sends every request on it, the polls and the POSTs alike. Its headers: `Content-Type: application/json` (also on the GETs), `Connection: Keep-Alive`, `Accept-Encoding: gzip, deflate`, `Accept-Language: en,*`, `User-Agent: Mozilla/5.0`. No `Origin` or `Sec-Fetch-*`.
+- **Polls every 0.4–1.9 s,** median 0.8 s, not every 2 s. The longest gaps fall around the POSTs.
+- **Every POST three times,** 8.2–8.8 s apart, the same body each time. The knob press was repeated although the grinder had already seen "serving" in the polls after the first, so the repeats don't wait for an answer: they come whatever the machine does. The brew ratio came 21 s before the knob press, after the grind.
+- **Nothing else:** no other path, no other port, no mDNS question while it was set to an address under Edit Host.
 
 The state the grinder reads:
 
@@ -100,6 +109,7 @@ The scale can't stop the pump; the person does. If the scale sent the time to th
 - **The grinder always gets the time until the cup reaches the target weight.** It starts where the espresso stopwatch starts: at the estimated pump start with shot detection on, at the click with it off. It ends at the first reading at or above the target weight. The display stays as it is, so with shot detection on it still runs to the pump stop. The weight sent is the weight in the cup at the end.
 - **Shot detection and the grinder setting are independent.** With shot detection off, the user clicks to start after the knob press, as today, and the shot ends at the target weight or a second click.
 - **Anything that isn't a full shot goes to the grinder as aborted,** and the grinder skips it: a shot that ends under the target weight, leaving the espresso screen before the shot ended (opening the mode switcher too), or no shot after the knob press. Drips that reach the target shortly after the pump stop still count, with the time to the pump stop.
+- **A repeated knob press is the same press.** The grinder sends each knob press three times, 8.2–8.8 s apart. A knob press within 20 s of the one that started the last shot is ignored, whatever the phase: otherwise a repeat that comes after a quick abort would start a shot nobody pulls and tare the cup. A real second knob press after an abort therefore has to wait those 20 s.
 - **A shot without a knob press is never sent.** The grinder sees the machine "on" throughout.
 - **The machine is always on, heated and full,** so the grinder never refuses to grind because of it.
 - **Built like the detectors:** the Xenia's states and replies in plain C++ without network code, tested natively with a fake clock; on the ESP32 a thin layer with `esp_http_server` and mDNS. The server and the main loop share the one Xenia under a lock; the loop sees the knob press as the Xenia starting a shot.
@@ -109,10 +119,11 @@ The scale can't stop the pump; the person does. If the scale sent the time to th
 | What | Value | From the sources |
 | --- | --- | --- |
 | Port | 80, plain HTTP | the E64 WS asks there; Edit Host takes no port |
-| Grinder's poll | every 2 s | gbs-anywhere |
+| Grinder's poll | every 0.4–1.9 s, median 0.8 s | the recording |
 | "Finishing" held | 6 s, then "on" | longer than one poll, with room for a late one; gbs-anywhere uses the same |
 | No shot after the knob press | aborted after 3 minutes; a shot that started runs as long as it takes | gbs-anywhere's default for the time to pull a shot |
 | Knob press while "finishing" | ends it and starts the next shot | the grinder has moved on from the last one |
+| Repeated knob press | within 20 s of the one that started the shot: ignored | the recording: repeats 8.2–8.8 s and 16.9 s after the press |
 | Drips after the pump stop | the target reached within a few seconds after the pump stop still counts | ADR 2: 0.4–1.2 g still reach the cup after the pump stop, within about 1 s |
 | Heated | `BG_SET_TEMP` 93.0, `BG_SENS_TEMP` 93.0 | the grinder wants `BG_SENS_TEMP > BG_SET_TEMP − 2` |
 | Tank | `TANK_LEVEL` 1 | 1 is full to the grinder |
@@ -131,5 +142,6 @@ The scale can't stop the pump; the person does. If the scale sent the time to th
 - The setup portal also uses port 80: while it is open, the grinder's server is stopped.
 - What the grinder's scan asks for is unknown; the two Xenia names are a guess. A laptop on the same Wi-Fi can overhear the grinder's mDNS questions during a scan (`tcpdump udp port 5353`). Until then, Edit Host is the way in.
 - What the grinder does while the scale is off is unknown: whether it still grinds GbS recipes or blocks them. If it blocks, the user turns off Enable Xenia, and the setting says so.
-- The rules rest on gbs-anywhere's experience with the E64 WS and Mahlkönig's manuals, not on a recording of a Xenia. The first shots on the scale with the real grinder are the test.
+- The rules rest on gbs-anywhere's experience with the E64 WS and Mahlkönig's manuals, and on one recording of the grinder with a stand-in on a computer, not on a recording of a Xenia. Why the grinder repeats its POSTs, and whether a real Xenia's answer stops it, is unknown. The first shots on the scale with the real grinder are the test.
+- The scale keeps the radio's power save, so a reply can wait for the next DTIM beacon (typically 100–300 ms) while the grinder polls about every 0.8 s. Whether the grinder minds is unknown; the log firmware shows the gaps between its polls.
 - The E65/E80 GbS could follow later, as a client with pairing; nothing here stands in its way.

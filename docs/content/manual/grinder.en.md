@@ -98,5 +98,5 @@ The grinder itself also ignores shots of 10 seconds or less, or over 80 seconds.
 |---|---|
 | The setting shows **Not connected** | The scale isn't on your Wi-Fi. Check that the network is in reach, or set it up again under **Wi-Fi** in the settings. |
 | No mark in the top right corner | The grinder doesn't reach the scale. Check that both are on the same network and that **Enable Xenia** is on. Under **Edit Host**, try the address the scale shows instead of `coffee-scale.local`. |
-| The knob press does nothing on the scale | The scale has to be in the scale mode or on the espresso screen, with no shot running. Elsewhere the grinder skips the shot. |
+| The knob press does nothing on the scale | The scale has to be in the scale mode or on the espresso screen, with no shot running. Elsewhere the grinder skips the shot. Within 20 seconds of a knob press, another one does nothing: the grinder sends each press several times, and the scale takes them as one. |
 | The grinder doesn't adjust | It skips cancelled shots and shots under 10 or over 80 seconds. Check that the cup reached the brew weight. |

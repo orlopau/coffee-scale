@@ -32,7 +32,7 @@ To see what the Mahlkönig E64 WS sends without the scale in between, `scripts/f
 
 1. Turn the scale's "Mahlkönig grinder" setting off, so the grinder can't reach the scale.
 2. In `code/`, run `sudo python3 scripts/fake_xenia.py` (port 80 needs root; the grinder asks no other port). It prints the computer's IP.
-3. On the grinder, set that IP under Connectivity → Machine To Machine → Configuration → Edit Host. Polls show up every 2 s.
+3. On the grinder, set that IP under Connectivity → Machine To Machine → Configuration → Edit Host. Polls show up about every second, all on one connection.
 4. Grind a GbS recipe and press the knob. A shot ends by itself after `--shot-seconds` (27 s), or on Enter. `a` aborts it, `s N` forces `MA_STATUS`, `t N` and `w N` the temperature and tank, `v` shows every poll in full.
 
 `--announce` also answers as `xenia-coffee.local` and `xenia.local`, for the grinder's Scan. `--help` lists the rest.

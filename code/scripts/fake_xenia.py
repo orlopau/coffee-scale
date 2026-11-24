@@ -16,8 +16,13 @@ Port 80 needs root (the grinder's Edit Host takes no port). Then:
    instead, add --announce: it answers as xenia-coffee.local and xenia.local,
    which clashes with the scale if its setting is on.)
 3. Grind a GbS recipe and press the knob. The brew ratio POST and the knob
-   press POST show up here. With no knob press, the log shows what the grinder
+   press POST show up here, each three times about 8.5 s apart: the grinder
+   repeats them, and like the scale this takes a knob press within 20 s of the
+   last one as a repeat. With no knob press, the log shows what the grinder
    did send, and what it was told before.
+
+The grinder polls about every 0.8 s on one connection. Polls that only repeat
+the last one are summed up every 10 s; "v" shows each in full.
 
 While it runs, type a command and Enter:
     (Enter)  end the running shot, at the time so far
@@ -55,6 +60,13 @@ MAX_HEAD = 16384
 FINISHING_MS = 6000
 # no shot after the knob press: aborted after this long, like the scale
 NO_SHOT_MS = 180_000
+# the E64 WS sends each knob press three times, 8.2-8.8 s apart: like the scale, a knob press
+# this soon after the one that started the last shot is a repeat of it
+START_REPEAT_MS = 20_000
+# the grinder polls every 0.4-1.9 s; polls that only repeat themselves are summed up this often,
+# a longer gap is shown at once
+POLL_SUMMARY_MS = 10_000
+POLL_GAP_MS = 2_500
 STATUS_NAMES = {0: "off", 1: "on", 2: "eco", 3: "serving", 4: "finishing", 5: "testing", 6: "fault"}
 
 
@@ -96,7 +108,8 @@ class Xenia:
         self.shot_ms = int(shot_seconds * 1000) if shot_seconds > 0 else None
         self.lock = threading.Lock()
         self.phase = "Ready"
-        self.started = 0
+        # the knob press that started the last shot, None before the first
+        self.started = None
         self.finishing_since = 0
         self.seen = False
         self.aborted = False
@@ -135,6 +148,9 @@ class Xenia:
         with self.lock:
             now = now_ms()
             self._tick(now)
+            if self.started is not None and now - self.started < START_REPEAT_MS:
+                self.log.say("XENIA", f"knob press ({source}) {now - self.started} ms after the last one: a repeat, ignored ({self.phase})")
+                return
             if self.phase == "Running":
                 self.log.say("XENIA", f"knob press ({source}) while Running: the shot runs on")
                 return
@@ -327,11 +343,12 @@ class Connection:
         if kind in ("poll", "identity", "brew ratio", "knob press"):
             self.server.grinders.add(self.peer.rsplit(":", 1)[0])
         now = now_ms()
-        gap = ""
+        gap, gap_ms = "", 0
         if kind == "poll":
             self.server.polls += 1
             if self.server.last_poll:
-                gap = f", {now - self.server.last_poll} ms after the last"
+                gap_ms = now - self.server.last_poll
+                gap = f", {gap_ms} ms after the last"
             self.server.last_poll = now
         log.event(
             "request",
@@ -346,14 +363,28 @@ class Connection:
         )
 
         # A poll is one line unless something about it is new; everything else in full.
-        signature = (kind, tuple(lines[1:]), reply)
+        # the time runs while a shot runs, it alone makes no poll new
+        signature = (kind, tuple(lines[1:]), re.sub(r'"REAL_EXTRACTION_TIME_MS":\d+', "", reply))
         brief = kind == "poll" and not log.verbose_polls and signature in self.server.seen_polls
         if kind == "poll":
             self.server.seen_polls.add(signature)
         tag = "UNKNOWN" if kind == "unknown" else "HTTP"
+        summary = self.server.summary
         if brief:
-            log.say("HTTP", f"<- poll #{self.server.polls} from {self.peer}{gap} -> MA_STATUS {mako_status(reply)}")
+            summary.append(gap_ms)
+            if gap_ms > POLL_GAP_MS:
+                log.say("HTTP", f"<- poll #{self.server.polls} from {self.peer}{gap}: a long gap -> MA_STATUS {mako_status(reply)}")
+            if now - self.server.summary_since >= POLL_SUMMARY_MS:
+                gaps = [g for g in summary if g]
+                spread = f", {min(gaps)}-{max(gaps)} ms apart" if gaps else ""
+                log.say("HTTP", f"<- {len(summary)} polls up to #{self.server.polls}{spread} -> MA_STATUS {mako_status(reply)}")
+                summary.clear()
+                self.server.summary_since = now
         else:
+            if summary:
+                log.say("HTTP", f"<- {len(summary)} polls like the last, up to #{self.server.polls - 1}")
+                summary.clear()
+            self.server.summary_since = now
             text = [f"<- {kind}: {request_line} from {self.peer}" + (f" (poll #{self.server.polls}{gap})" if gap else "")]
             text += [f"     {line}" for line in lines[1:]]
             if body:
@@ -398,6 +429,9 @@ class HttpServer:
         self.polls = 0
         self.last_poll = 0
         self.seen_polls = set()
+        # the gaps of the polls not shown since the last line about them
+        self.summary = []
+        self.summary_since = 0
         self.sock = listen_tcp(port)
 
     def serve(self):
@@ -498,9 +532,10 @@ def open_mdns(interface_ip):
 
 
 def sniff_mdns(log, sock, interface_ip, everything, grinders):
-    interesting = re.compile(r"xenia|mako|mahl|coffee|_http\.", re.I)
+    # a home network is chatty: only the grinder and the Xenia's names, unless --mdns-all
+    interesting = re.compile(r"xenia|mako|mahl", re.I)
     recent = {}
-    log.say("MDNS", f"listening on {MDNS_GROUP}:{MDNS_PORT} via {interface_ip}")
+    log.say("MDNS", f"listening on {MDNS_GROUP}:{MDNS_PORT} via {interface_ip}, showing the grinder and Xenia names")
     while True:
         data, (source, _) = sock.recvfrom(9000)
         if source == interface_ip:
@@ -517,10 +552,9 @@ def sniff_mdns(log, sock, interface_ip, everything, grinders):
             text = ", ".join(f"{n} {t} {v}" for n, t, v in shown[:12])
             key = (source, "answer", text)
         else:
-            if len(questions) > 6 and not (everything or from_grinder or interesting.search(str(questions))):
-                text = f"{len(questions)} service types ({questions[0][0]}, {questions[1][0]}, ...)"
-            else:
-                text = ", ".join(f"{n} {t}{' (QU)' if u else ''}" for n, t, u in questions)
+            if not (everything or from_grinder or interesting.search(str(questions))):
+                continue
+            text = ", ".join(f"{n} {t}{' (QU)' if u else ''}" for n, t, u in questions)
             key = (source, "query", text)
         # the same question again within 10 s is one line
         now = time.monotonic()
@@ -611,7 +645,7 @@ def main():
     parser.add_argument("--idle", type=float, default=60, help="close a connection idle this long (s, default 60)")
     parser.add_argument("--watch-ports", default="443,8080", help="other ports to log connections on ('' for none)")
     parser.add_argument("--no-mdns", action="store_true", help="don't listen to mDNS")
-    parser.add_argument("--mdns-all", action="store_true", help="print every mDNS packet, not only queries and Xenia names")
+    parser.add_argument("--mdns-all", action="store_true", help="print every mDNS packet, not only the grinder's and the Xenia's names")
     parser.add_argument(
         "--announce", action="store_true", help="announce xenia-coffee.local and xenia.local, for the grinder's Scan"
     )

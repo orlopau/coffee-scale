@@ -29,10 +29,13 @@ namespace Xenia
 
     void Machine::start(uint32_t nowMs)
     {
-        if (currentPhase == Phase::Running)
+        // a repeat in Finishing or Ready would start a shot nobody pulls, and tare the cup
+        const bool repeat = everStarted && since(nowMs, startMs) < static_cast<int32_t>(START_REPEAT_MS);
+        if (repeat || currentPhase == Phase::Running)
         {
             return;
         }
+        everStarted = true;
         currentPhase = Phase::Running;
         startMs = nowMs;
         shotStarted = false;

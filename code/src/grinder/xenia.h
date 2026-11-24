@@ -16,6 +16,10 @@ namespace Xenia
     // no shot after the knob press: the machine gives up; a shot that
     // started runs as long as it takes
     constexpr uint32_t SHOT_TIMEOUT_MS = 180000;
+    // the E64 WS sends every knob press three times, 8.2-8.8 s apart, also
+    // when it already sees Running: a knob press this soon after the one that
+    // started the last shot is a repeat of it
+    constexpr uint32_t START_REPEAT_MS = 20000;
 
     enum class Phase
     {
@@ -28,7 +32,8 @@ namespace Xenia
     {
     public:
         // the knob press; from Ready, and from Finishing, which it ends: the
-        // grinder moved on from the last shot
+        // grinder moved on from the last shot. A repeat of the last knob press
+        // (START_REPEAT_MS) changes nothing, whatever the phase.
         void start(uint32_t nowMs);
         // the shot started, the timeout no longer applies; only while Running
         void shotRuns() { shotStarted = currentPhase == Phase::Running; }
@@ -62,7 +67,9 @@ namespace Xenia
         void beginFinishing(uint32_t nowMs);
 
         Phase currentPhase = Phase::Ready;
+        // the knob press that started the last shot; repeats don't move it
         uint32_t startMs = 0;
+        bool everStarted = false;
         bool shotStarted = false;
         Pending pending = Pending::None;
         uint32_t pendingTimeMs = 0;

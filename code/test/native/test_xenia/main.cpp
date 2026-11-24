@@ -209,11 +209,44 @@ void test_start_from_ready_or_finishing(void)
     m.update(7000);
     TEST_ASSERT_EQUAL(Xenia::Phase::Finishing, m.phase());
     // a knob press while finishing ends it
-    m.start(7100);
+    m.start(21000);
     TEST_ASSERT_EQUAL(Xenia::Phase::Running, m.phase());
-    std::string running = m.mako(8100);
+    std::string running = m.mako(22000);
     TEST_ASSERT_TRUE(has(running, "\"MA_STATUS\":3"));
     TEST_ASSERT_TRUE(has(running, "\"REAL_EXTRACTION_TIME_MS\":1000"));
+}
+
+// the E64 WS sent each knob press three times, 8.2-8.8 s apart, also while it saw Running (recorded 2026-11-24)
+void test_repeats_of_the_knob_press_are_one_press(void)
+{
+    Xenia::Machine m;
+    m.start(0);
+    m.mako(800);
+    // a shot over before the repeats, e.g. aborted
+    m.abort(2000);
+    m.update(2000);
+    TEST_ASSERT_EQUAL(Xenia::Phase::Finishing, m.phase());
+    m.start(8700);
+    TEST_ASSERT_EQUAL(Xenia::Phase::Finishing, m.phase());
+    m.mako(9000);
+    m.update(9000);
+    TEST_ASSERT_EQUAL(Xenia::Phase::Ready, m.phase());
+    m.start(16900);
+    TEST_ASSERT_EQUAL(Xenia::Phase::Ready, m.phase());
+    // the next knob press
+    m.start(Xenia::START_REPEAT_MS);
+    TEST_ASSERT_EQUAL(Xenia::Phase::Running, m.phase());
+    TEST_ASSERT_TRUE(has(m.mako(Xenia::START_REPEAT_MS + 500), "\"REAL_EXTRACTION_TIME_MS\":500"));
+}
+
+void test_repeats_while_running_keep_the_time(void)
+{
+    Xenia::Machine m;
+    m.start(0);
+    m.mako(800);
+    m.start(8700);
+    m.start(16900);
+    TEST_ASSERT_TRUE(has(m.mako(25000), "\"REAL_EXTRACTION_TIME_MS\":25000"));
 }
 
 void test_brew_weight_survives_start(void)
@@ -275,6 +308,8 @@ int main(int argc, char **argv)
     RUN_TEST(test_no_timeout_once_the_shot_runs);
     RUN_TEST(test_the_timeout_counts_again_for_the_next_shot);
     RUN_TEST(test_start_from_ready_or_finishing);
+    RUN_TEST(test_repeats_of_the_knob_press_are_one_press);
+    RUN_TEST(test_repeats_while_running_keep_the_time);
     RUN_TEST(test_brew_weight_survives_start);
     RUN_TEST(test_identity);
     RUN_TEST(test_classify);
