@@ -27,6 +27,16 @@ Every mode of the dev server prints the log, also `record` and `--release`. `--n
 - **Restarted dev server:** UDP doesn't tell the scale that the server is gone. Restart the scale, then it finds the new one.
 - **Wi-Fi setup:** while a saved network is unreachable, the log firmware's search for the dev server keeps trying to connect, which can slow the scale's Wi-Fi setup down. To redo the setup, switch back to the normal firmware first.
 
+## Playing the Xenia From the Computer
+To see what the Mahlkönig E64 WS sends without the scale in between, `scripts/fake_xenia.py` plays the Xenia on the computer. It answers like the scale (`src/grinder/xenia.cpp`) and logs every connection, request, header, body and reply, requests nobody knows, bytes that aren't HTTP, and the mDNS questions on the network. Everything also goes to a JSON-lines file.
+
+1. Turn the scale's "Mahlkönig grinder" setting off, so the grinder can't reach the scale.
+2. In `code/`, run `sudo python3 scripts/fake_xenia.py` (port 80 needs root; the grinder asks no other port). It prints the computer's IP.
+3. On the grinder, set that IP under Connectivity → Machine To Machine → Configuration → Edit Host. Polls show up every 2 s.
+4. Grind a GbS recipe and press the knob. A shot ends by itself after `--shot-seconds` (27 s), or on Enter. `a` aborts it, `s N` forces `MA_STATUS`, `t N` and `w N` the temperature and tank, `v` shows every poll in full.
+
+`--announce` also answers as `xenia-coffee.local` and `xenia.local`, for the grinder's Scan. `--help` lists the rest.
+
 ## Trying Automatic Updates
 The scale's automatic updates read GitHub's releases. To try them without publishing one, the dev server can pose as a release, and a build can claim to be an older version.
 
