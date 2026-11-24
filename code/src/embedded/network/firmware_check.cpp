@@ -1,6 +1,9 @@
 #ifndef NATIVE
 
 #include <esp_log.h>
+// after esp_log.h: maps ESP_LOGx to Arduino's log_x, which CORE_DEBUG_LEVEL lets through;
+// ESP-IDF's own ESP_LOGI and ESP_LOGW are compiled out, the SDK's maximum level is errors
+#include <esp32-hal-log.h>
 #include <esp_ota_ops.h>
 
 #include "embedded/network/firmware_check.h"
