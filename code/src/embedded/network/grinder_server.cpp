@@ -61,7 +61,9 @@ namespace GrinderServer
     static const char *const XENIA_NAMES[] = {"xenia-coffee", "xenia"};
     // keeps Wi-Fi on while the server runs or is wanted. The IDF station
     // default power save (WIFI_PS_MIN_MODEM) stays: it wakes at every DTIM
-    // beacon, the grinder polls every 2 s and can wait that long.
+    // beacon, so a reply can wait for one, typically 100-300 ms. The grinder
+    // polls every 0.4-1.9 s (median 0.8 s, recorded 2026-11-24); whether it
+    // minds that wait is not known yet.
     static WifiStation::Radio *radio = nullptr;
 
     // the connection attempts back off, see ReconnectBackoff. Only the task uses
@@ -180,7 +182,8 @@ namespace GrinderServer
         }
         httpd_config_t config = HTTPD_DEFAULT_CONFIG();
         config.uri_match_fn = httpd_uri_match_wildcard;
-        // the grinder may open a new connection for every poll
+        // the grinder keeps one connection open for all its requests (recorded 2026-11-24); one it
+        // abandons, e.g. after the scale's Wi-Fi dropped, must not keep the next out
         config.lru_purge_enable = true;
         config.stack_size = SERVER_STACK;
         // the load cell task runs on core 1: keep the Wi-Fi work off its core

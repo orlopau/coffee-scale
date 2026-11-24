@@ -98,5 +98,5 @@ Die Mühle selbst ignoriert außerdem Shots von 10 Sekunden oder weniger und von
 |---|---|
 | Die Einstellung zeigt **Nicht verbunden** | Die Waage ist nicht in deinem WLAN. Prüf, ob das Netz in Reichweite ist, oder richte es unter **WLAN** in den Einstellungen neu ein. |
 | Kein Zeichen oben rechts | Die Mühle erreicht die Waage nicht. Prüf, ob beide im selben Netz sind und **Enable Xenia** an ist. Versuch unter **Edit Host** die Adresse, die die Waage zeigt, statt `coffee-scale.local`. |
-| Der Knopfdruck tut nichts auf der Waage | Die Waage muss im Waagen-Modus oder auf dem Espresso-Bildschirm sein, ohne laufenden Shot. Anderswo überspringt die Mühle den Shot. |
+| Der Knopfdruck tut nichts auf der Waage | Die Waage muss im Waagen-Modus oder auf dem Espresso-Bildschirm sein, ohne laufenden Shot. Anderswo überspringt die Mühle den Shot. Innerhalb von 20 Sekunden nach einem Knopfdruck tut ein weiterer nichts: Die Mühle sendet jeden Druck mehrmals, und die Waage nimmt sie als einen. |
 | Die Mühle stellt sich nicht ein | Sie überspringt abgebrochene Shots und Shots unter 10 oder über 80 Sekunden. Prüf, ob die Tasse das Getränkegewicht erreicht hat. |

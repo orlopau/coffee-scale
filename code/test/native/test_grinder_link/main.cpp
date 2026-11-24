@@ -364,13 +364,36 @@ void test_knob_press_while_finishing_starts_the_next_shot(void)
     TEST_ASSERT_TRUE(machine->phase() == Xenia::Phase::Finishing);
     TEST_ASSERT_TRUE(machine->aborted());
 
-    sleep_for(2000);
+    // sooner it would be a repeat of the first
+    sleep_for(Xenia::START_REPEAT_MS);
     modes->switchTo(espresso);
     knob();
     loop();
     TEST_ASSERT_EQUAL(1, weights->tares);
     TEST_ASSERT_TRUE(machine->phase() == Xenia::Phase::Running);
     TEST_ASSERT_TRUE(has(machine->mako(now()), "\"MA_STATUS\":3"));
+}
+
+void test_the_grinders_repeat_of_an_aborted_knob_press_starts_nothing(void)
+{
+    modes->switchTo(other);
+    knob();
+    loop();
+    loop();
+    TEST_ASSERT_TRUE(machine->phase() == Xenia::Phase::Finishing);
+
+    // meanwhile on the scale mode: the repeat must not switch to espresso and tare
+    modes->switchTo(scale);
+    loop();
+    sleep_for(8700);
+    knob();
+    loop();
+    sleep_for(8200);
+    knob();
+    loop();
+    TEST_ASSERT_EQUAL(0, weights->tares);
+    TEST_ASSERT_TRUE(modes->activeMode() == scale);
+    TEST_ASSERT_TRUE(machine->phase() != Xenia::Phase::Running);
 }
 
 void test_disabled_does_nothing(void)
@@ -402,6 +425,7 @@ int main(int argc, char **argv)
     RUN_TEST(test_a_huge_brew_weight_is_the_largest_target);
     RUN_TEST(test_a_shot_that_started_runs_past_the_timeout);
     RUN_TEST(test_knob_press_while_finishing_starts_the_next_shot);
+    RUN_TEST(test_the_grinders_repeat_of_an_aborted_knob_press_starts_nothing);
     RUN_TEST(test_disabled_does_nothing);
     return UNITY_END();
 }
