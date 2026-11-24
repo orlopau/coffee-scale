@@ -280,6 +280,29 @@ class LogReceiverTest(unittest.TestCase):
         self.assertIn("[127.0.0.1]", lines[0])
 
 
+class LogFileTest(unittest.TestCase):
+    def test_prints_and_saves_every_line(self):
+        printed = []
+        with tempfile.TemporaryDirectory() as directory:
+            log = dev_server.LogFile(os.path.join(directory, "logs"), output=printed.append)
+            self.assertFalse(os.path.exists(log.path))
+            log("12:00:00 [10.0.0.2] one")
+            log("12:00:01 [10.0.0.2] two")
+            log.close()
+            with open(log.path, encoding="utf-8") as f:
+                self.assertEqual(f.read(), "12:00:00 [10.0.0.2] one\n12:00:01 [10.0.0.2] two\n")
+            self.assertTrue(os.path.basename(log.path).startswith("scale_"))
+        self.assertEqual(printed[0], "12:00:00 [10.0.0.2] one")
+        self.assertIn(log.path, printed[1])
+        self.assertEqual(printed[2], "12:00:01 [10.0.0.2] two")
+
+    def test_no_line_no_file(self):
+        with tempfile.TemporaryDirectory() as directory:
+            log = dev_server.LogFile(directory, output=lambda line: None)
+            log.close()
+            self.assertEqual(os.listdir(directory), [])
+
+
 class ServicePropertiesTest(unittest.TestCase):
     def test_serve_with_log(self):
         self.assertEqual(dev_server.service_properties(False, 5000), {"path": "/firmware.bin", "log": "5000"})
